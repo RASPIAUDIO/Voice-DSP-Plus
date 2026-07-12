@@ -1,0 +1,10 @@
+{
+  "output": "pi_ai_mic_usb_2ch_48khz_auto_geometry_4fc7_2026-07-10_spi_boot.bin",
+  "loader_bytes": 3384,
+  "tile0_bytes": 473224,
+  "tile1_bytes": 449356,
+  "tile0_blocks": 116,
+  "tile1_blocks": 110,
+  "transfer_block_num": 112,
+  "output_bytes": 933888
+}

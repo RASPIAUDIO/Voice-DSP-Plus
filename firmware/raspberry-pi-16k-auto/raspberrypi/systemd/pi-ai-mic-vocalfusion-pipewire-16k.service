@@ -1,0 +1,13 @@
+[Unit]
+Description=Expose PI AI MIC VocalFusion 16 kHz XMOSDevice to PipeWire and manage jack route
+After=pipewire.service pipewire-pulse.service wireplumber.service
+Wants=pipewire.service pipewire-pulse.service wireplumber.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/pi-ai-mic-vocalfusion-pipewire-16k-user.sh monitor
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,437 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "displayName": "Default Config",
+      "description": "Default build",
+      "generator": "Unix Makefiles",
+      "binaryDir": "$env{rel_path_to_root}./build/default",
+      "installDir": "$env{rel_path_to_root}./build/release",
+      "cacheVariables": {},
+      "vendor": {}
+    },
+    {
+      "name": "_release",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/app_xvf3800",
+      "installDir": "${sourceDir}/../",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/xmos_cmake_toolchain/xs3a.cmake",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      },
+      "environment": {
+      }
+    },
+    {
+      "name": "rel_app_xvf3800",
+      "displayName": "Release app_xvf3800",
+      "description": "xvf3800 device configuration for Linux and Mac host machines",
+      "inherits": "_release",
+      "condition": {
+        "type": "notEquals",
+        "lhs": "Windows",
+        "rhs": "${hostSystemName}"
+      }
+    },
+    {
+      "name": "rel_app_xvf3800_windows",
+      "displayName": "Release app_xvf3800 for Windows",
+      "description": "xvf3800 device configuration for Windows host machines",
+      "inherits": "_release",
+      "generator": "Ninja",
+      "condition": {
+        "type": "equals",
+        "lhs": "Windows",
+        "rhs": "${hostSystemName}"
+      }
+    },
+    {
+      "name": "app_xvf3800",
+      "displayName": "app_xvf3800",
+      "description": "xvf3800 device configuration",
+      "binaryDir": "${sourceDir}/build/app_xvf3800",
+      "installDir": "${sourceDir}/build/release",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/xmos_cmake_toolchain/xs3a.cmake",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_TESTS": "ON",
+        "RESERVE_USER_MEMORY": "ON"
+      },
+      "environment": {
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ua-io16-lin",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-lin","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr","compile_commands"]
+    },
+    {
+      "name": "ua-io16-lin-pimic-6ch",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-lin-pimic-6ch","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-pimic-6ch",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-pimic-6ch","compile_commands"]
+    },
+    {
+      "name": "ua-io16-lin-pimic-2ch-doa",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-lin-pimic-2ch-doa","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-pimic-2ch-doa",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-pimic-2ch-doa","compile_commands"]
+    },
+    {
+      "name": "ua-io16-lin-piaimic-debug6-voice",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-lin-piaimic-debug6-voice","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-debug6-voice",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-debug6-voice","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-debug6-voice-speaker",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-debug6-voice-speaker","compile_commands"]
+    },
+    {
+      "name": "ua-io16-lin-piaimic-beclear2-speaker-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-lin-piaimic-beclear2-speaker-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "ua-io16-auto-piaimic-beclear2-speaker-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-auto-piaimic-beclear2-speaker-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-d1230",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-d1230","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-pcbpos",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-pcbpos","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-pcbpos-gain150",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-pcbpos-gain150","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-assistant-soft",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-assistant-soft","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-assistant-balanced",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-assistant-balanced","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-assistant-balanced-hponly",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-assistant-balanced-hponly","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-assistant-balanced-hponly-dac0db",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-assistant-balanced-hponly-dac0db","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-assistant-balanced-hponly-linein6db",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-assistant-balanced-hponly-linein6db","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-piaimic-assistant-balanced-hponly-linein6db",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-piaimic-assistant-balanced-hponly-linein6db","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db-shortcut",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db-shortcut","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db-shortcut-edge-tap",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db-shortcut-edge-tap","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db-shortcut-auto10s",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-piaimic-assistant-balanced-autoroute-linein6db-shortcut-auto10s","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-assistant-aggressive",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-assistant-aggressive","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-assistant-hot",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-assistant-hot","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-bootstrap",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-beclear2-speaker-doa-neopixel-bootstrap","compile_commands"]
+    },
+    {
+      "name": "ua-io16-sqr-piaimic-beclear2-speaker-neopixel-selftest",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io16-sqr-piaimic-beclear2-speaker-neopixel-selftest","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-pimic-2ch-doa",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-pimic-2ch-doa","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-pimic-2ch-doa",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-pimic-2ch-doa","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-speaker-auto",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-speaker-auto","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-speaker-forced",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-speaker-forced","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-speaker-sine",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-speaker-sine","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-debug6",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-debug6","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-beclear2-speaker",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-beclear2-speaker","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-beclear2-speaker-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-beclear2-speaker-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "ua-io48-auto-piaimic-beclear2-speaker-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-auto-piaimic-beclear2-speaker-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-piaimic-beclear2-speaker-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-piaimic-beclear2-speaker-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr-piaimic-beclear2-speaker-doa-neopixel-pcbpos",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr-piaimic-beclear2-speaker-doa-neopixel-pcbpos","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-beclear-speaker",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-beclear-speaker","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-raw4-speaker",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-raw4-speaker","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-piaimic-raw4-mic",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-piaimic-raw4-mic","compile_commands"]
+    },
+    {
+      "name": "ua-io48-sqr",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-sqr","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-lin-spi",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-lin-spi","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-sqr-spi",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-sqr-spi","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-lin-i2c",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-lin-i2c","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-sqr-i2c",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-sqr-i2c","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-sqr-rpi-i2c",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-sqr-rpi-i2c","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-sqr-rpi-i2c-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-sqr-rpi-i2c-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-lin-rpi-i2c-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-lin-rpi-i2c-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-auto-rpi-i2c-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-auto-rpi-i2c-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-sqr-rpi-i2c-fwowned",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-sqr-rpi-i2c-fwowned","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-lin-spi",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-lin-spi","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-sqr-spi",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-sqr-spi","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-lin-i2c",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-lin-i2c","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-sqr-i2c",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-sqr-i2c","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-sqr-rpi-i2c-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-sqr-rpi-i2c-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-lin-rpi-i2c-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-lin-rpi-i2c-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-auto-rpi-i2c-doa-neopixel",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-auto-rpi-i2c-doa-neopixel","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-lin-spi-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-lin-spi-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-sqr-spi-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-sqr-spi-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-lin-i2c-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-lin-i2c-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr16-sqr-i2c-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr16-sqr-i2c-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-lin-spi-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-lin-spi-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-sqr-spi-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-sqr-spi-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-lin-i2c-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-lin-i2c-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-sqr-i2c-extmclk",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-sqr-i2c-extmclk","compile_commands"]
+    },
+    {
+      "name": "intdev-lr48-lin-i2c-spatial",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_intdev-lr48-lin-i2c-spatial","compile_commands"]
+    },
+    {
+      "name": "ua-io48-lin-spatial",
+      "configurePreset": "app_xvf3800",
+      "targets":["application_xvf3800_ua-io48-lin-spatial","compile_commands"]
+    }
+  ],
+  "testPresets" : [
+    {
+      "name" : "default",
+      "configurePreset": "app_xvf3800",
+      "output": {"outputOnFailure": true}
+    }
+  ]
+}

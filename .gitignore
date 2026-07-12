@@ -1,0 +1,8 @@
+*.log
+*.wav
+*.tmp
+.DS_Store
+Thumbs.db
+build/
+__pycache__/
+*.pyc

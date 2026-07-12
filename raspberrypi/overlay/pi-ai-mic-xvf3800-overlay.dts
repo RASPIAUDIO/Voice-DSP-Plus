@@ -1,0 +1,76 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&i2s>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+    fragment@1 {
+        target-path = "/";
+        __overlay__ {
+            pi_ai_mic_codec_tx: pi-ai-mic-codec-tx {
+                compatible = "linux,spdif-dit";
+                #sound-dai-cells = <0>;
+                status = "okay";
+            };
+
+            pi_ai_mic_codec_rx: pi-ai-mic-codec-rx {
+                compatible = "linux,spdif-dir";
+                #sound-dai-cells = <0>;
+                status = "okay";
+            };
+        };
+    };
+
+    fragment@2 {
+        target = <&sound>;
+        __overlay__ {
+            compatible = "simple-audio-card";
+            simple-audio-card,name = "PI AI MIC XVF3800 HAT";
+            i2s-controller = <&i2s>;
+            status = "okay";
+
+            simple-audio-card,dai-link@0 {
+                format = "i2s";
+                bitclock-master = <&pi_ai_mic_playback_cpu>;
+                frame-master = <&pi_ai_mic_playback_cpu>;
+
+                pi_ai_mic_playback_cpu: cpu {
+                    sound-dai = <&i2s>;
+                    dai-tdm-slot-num = <2>;
+                    dai-tdm-slot-width = <32>;
+                };
+
+                codec {
+                    sound-dai = <&pi_ai_mic_codec_tx>;
+                };
+            };
+
+            simple-audio-card,dai-link@1 {
+                format = "i2s";
+                bitclock-master = <&pi_ai_mic_capture_cpu>;
+                frame-master = <&pi_ai_mic_capture_cpu>;
+
+                pi_ai_mic_capture_cpu: cpu {
+                    sound-dai = <&i2s>;
+                    dai-tdm-slot-num = <2>;
+                    dai-tdm-slot-width = <32>;
+                };
+
+                codec {
+                    sound-dai = <&pi_ai_mic_codec_rx>;
+                };
+            };
+        };
+    };
+
+    __overrides__ {
+        card-name = <&sound>, "simple-audio-card,name";
+    };
+};

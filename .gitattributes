@@ -1,0 +1,14 @@
+* text=auto
+*.bin -text
+*.xe -text
+*.wav -text
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.dts text eol=lf
+*.service text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf

@@ -1,0 +1,10 @@
+{
+  "output": "pi_ai_mic_rpi_i2s_2ch_48khz_auto_geometry_2026-07-10_spi_boot.bin",
+  "loader_bytes": 3384,
+  "tile0_bytes": 449304,
+  "tile1_bytes": 425672,
+  "tile0_blocks": 110,
+  "tile1_blocks": 104,
+  "transfer_block_num": 106,
+  "output_bytes": 884736
+}
