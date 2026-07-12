@@ -4,12 +4,15 @@ Voice DSP+ is a four-microphone voice interface with built-in audio processing,
 speaker and stereo headphone output, direction-of-arrival LEDs and a user
 button. It can work as a simple USB sound card or as a Raspberry Pi audio HAT.
 
+[Product page](https://raspiaudio.com/product/aimic/) | [Browser firmware updater](https://raspiaudio.com/AIMIC/webflasher/)
+
 ## Start Here: USB
 
 USB is the recommended first experience. The board appears as a standard
 48 kHz sound card with two processed microphone channels and stereo playback.
 
-1. Install either the LINE or SQUARE four-microphone module while power is off.
+1. [Choose the LINE or SQUARE microphone layout](docs/hardware.md#choosing-line-or-square),
+   then install the four-microphone module while power is off.
 2. Connect Voice DSP+ to the computer with USB.
 3. Select `PI AI MIC Assistant Auto` as microphone and speaker. This is the
    current legacy USB name of the validated Voice DSP+ firmware.
@@ -18,6 +21,10 @@ USB is the recommended first experience. The board appears as a standard
 
 No driver is required on current Windows, macOS or Linux systems. The firmware
 automatically detects the microphone geometry at cold boot.
+
+| SQUARE: voices can come from all around | LINE: users are in front |
+| --- | --- |
+| [![SQUARE microphone layout](docs/images/microphones-square.svg)](docs/hardware.md#square-layout) | [![LINE microphone layout](docs/images/microphones-line.svg)](docs/hardware.md#line-layout) |
 
 [USB firmware and technical details](firmware/usb-48k-auto/README.md)
 

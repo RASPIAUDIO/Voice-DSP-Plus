@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 480" role="img" aria-labelledby="title desc">
+  <title id="title">Voice DSP+ LINE microphone layout</title>
+  <desc id="desc">Top view with USB on the left. Microphones D0, D2, D3 and D1 are arranged from left to right along the front of the product.</desc>
+  <defs>
+    <marker id="voiceArrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0 0L9 4.5L0 9Z" fill="#d66b35"/>
+    </marker>
+  </defs>
+  <rect width="760" height="480" rx="28" fill="#eef6f5"/>
+  <text x="38" y="48" font-family="Verdana, sans-serif" font-size="27" font-weight="700" fill="#12252b">LINE - front-facing listening</text>
+  <text x="38" y="78" font-family="Verdana, sans-serif" font-size="15" fill="#52636a">Top view. USB connector is on the left.</text>
+  <rect x="145" y="105" width="520" height="220" rx="30" fill="#1e5158" stroke="#12252b" stroke-width="5"/>
+  <rect x="101" y="164" width="58" height="92" rx="11" fill="#d7dfe0" stroke="#12252b" stroke-width="4"/>
+  <text x="72" y="151" font-family="Verdana, sans-serif" font-size="15" font-weight="700" fill="#12252b">USB</text>
+  <rect x="295" y="145" width="220" height="105" rx="18" fill="#f1c981"/>
+  <text x="405" y="194" text-anchor="middle" font-family="Verdana, sans-serif" font-size="20" font-weight="700" fill="#12252b">Voice DSP+</text>
+  <text x="405" y="221" text-anchor="middle" font-family="Verdana, sans-serif" font-size="14" fill="#33464d">users face this edge</text>
+  <rect x="125" y="286" width="560" height="66" rx="24" fill="#183d43" stroke="#12252b" stroke-width="4"/>
+  <g font-family="Verdana, sans-serif" text-anchor="middle">
+    <circle cx="205" cy="319" r="25" fill="#fff" stroke="#d66b35" stroke-width="6"/>
+    <text x="205" y="325" font-size="17" font-weight="700" fill="#12252b">D0</text>
+    <circle cx="338" cy="319" r="25" fill="#fff" stroke="#d66b35" stroke-width="6"/>
+    <text x="338" y="325" font-size="17" font-weight="700" fill="#12252b">D2</text>
+    <circle cx="472" cy="319" r="25" fill="#fff" stroke="#d66b35" stroke-width="6"/>
+    <text x="472" y="325" font-size="17" font-weight="700" fill="#12252b">D3</text>
+    <circle cx="605" cy="319" r="25" fill="#fff" stroke="#d66b35" stroke-width="6"/>
+    <text x="605" y="325" font-size="17" font-weight="700" fill="#12252b">D1</text>
+  </g>
+  <path d="M280 433L335 369" stroke="#d66b35" stroke-width="5" marker-end="url(#voiceArrow)"/>
+  <path d="M405 433L405 369" stroke="#d66b35" stroke-width="5" marker-end="url(#voiceArrow)"/>
+  <path d="M530 433L475 369" stroke="#d66b35" stroke-width="5" marker-end="url(#voiceArrow)"/>
+  <text x="405" y="460" text-anchor="middle" font-family="Verdana, sans-serif" font-size="14" fill="#52636a">Recommended for displays, kiosks, soundbars and wall-mounted products.</text>
+  <rect x="38" y="397" width="132" height="39" rx="19" fill="#52636a"/>
+  <text x="104" y="422" text-anchor="middle" font-family="Verdana, sans-serif" font-size="15" font-weight="700" fill="#fff">P6 = 0</text>
+</svg>
