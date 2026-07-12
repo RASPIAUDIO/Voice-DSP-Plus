@@ -6,6 +6,8 @@ button. It can work as a simple USB sound card or as a Raspberry Pi audio HAT.
 
 [Product page](https://raspiaudio.com/product/aimic/) | [Browser firmware updater](https://raspiaudio.com/AIMIC/webflasher/)
 
+[![RASPIAUDIO Voice DSP+ product, connectors and audio outputs](docs/images/voice-dsp-plus-product.png)](https://raspiaudio.com/product/aimic/)
+
 ## Start Here: USB
 
 USB is the recommended first experience. The board appears as a standard
