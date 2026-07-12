@@ -36,6 +36,8 @@ Use Raspberry Pi mode when you want I2S audio and XVF3800 control from Linux.
 The default product mode is 16 kHz voice processing with automatic microphone
 geometry detection.
 
+[![Voice DSP+ Raspberry Pi I2S mode with SQUARE and LINE microphone layouts](docs/images/raspberry-pi-i2s-mode.png)](docs/hardware.md#choosing-line-or-square)
+
 ```bash
 git clone https://github.com/RASPIAUDIO/Voice-DSP-Plus.git
 cd Voice-DSP-Plus
