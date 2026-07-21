@@ -47,6 +47,10 @@ sudo reboot
 
 Quick test after reboot:
 
+The installer starts the speaker output at a safe 10% desktop volume. Raise it
+gradually only after confirming that the Raspberry Pi power supply remains
+stable with the onboard amplifier.
+
 ```bash
 speaker-test -D pulse -c 2 -r 16000 -F S32_LE -t sine -f 1000 -l 1
 arecord -D pulse -f S32_LE -r 16000 -c 2 -d 10 ~/voice-dsp-plus.wav

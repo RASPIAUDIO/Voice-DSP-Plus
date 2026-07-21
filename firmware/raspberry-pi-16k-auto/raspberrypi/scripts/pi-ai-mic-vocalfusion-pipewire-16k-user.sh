@@ -14,7 +14,7 @@ HOST_CONTROL_DIR="${HOST_CONTROL_DIR:-/opt/pi-ai-mic/host_control}"
 XVF_HOST="${XVF_HOST:-$HOST_CONTROL_DIR/xvf_host}"
 SINK_NAME="${SINK_NAME:-pi_ai_mic_vocalfusion_speaker}"
 SOURCE_NAME="${SOURCE_NAME:-pi_ai_mic_vocalfusion_microphone}"
-SPEAKER_VOLUME="${SPEAKER_VOLUME:-33%}"
+SPEAKER_VOLUME="${SPEAKER_VOLUME:-10%}"
 POLL_INTERVAL="${POLL_INTERVAL:-1}"
 LED_INDICATORS="${LED_INDICATORS:-1}"
 ACTIVE_SINK_NAME="$SINK_NAME"
@@ -123,6 +123,25 @@ load_pipewire_nodes() {
     pactl set-default-sink "$ACTIVE_SINK_NAME" >/dev/null 2>&1 || true
     pactl set-sink-volume "$ACTIVE_SINK_NAME" "$SPEAKER_VOLUME" >/dev/null 2>&1 || true
     echo "PipeWire nodes ready: sink=$ACTIVE_SINK_NAME source=$SOURCE_NAME card=$card playback=$playback_dev capture=$capture_dev volume=$SPEAKER_VOLUME"
+}
+
+prime_pipewire_sink_controls() {
+    local silence
+    local player
+
+    silence="$(mktemp /tmp/voice-dsp-plus-startup-silence.XXXXXX.raw)"
+    dd if=/dev/zero of="$silence" bs=32000 count=1 status=none
+
+    # PipeWire 1.4 ignores controls on a freshly created suspended ALSA sink.
+    # Activate it with 250 ms of digital silence while the speaker amp is off.
+    aplay -q -D pulse -t raw -f S32_LE -r 16000 -c 2 "$silence" &
+    player=$!
+    sleep 0.15
+    pactl set-sink-volume "$ACTIVE_SINK_NAME" "$SPEAKER_VOLUME" >/dev/null 2>&1 || true
+    pactl set-sink-mute "$ACTIVE_SINK_NAME" 0 >/dev/null 2>&1 || true
+    wait "$player" || true
+    rm -f "$silence"
+    echo "PipeWire startup volume applied: $SPEAKER_VOLUME"
 }
 
 run_board_init() {
@@ -343,6 +362,7 @@ main() {
     # the speaker amp or jack route in an undefined state.
     configure_pcal_output "$OUT_HEADPHONE"
     load_pipewire_nodes "$card"
+    prime_pipewire_sink_controls
     apply_state "$(read_pcal_input)" 0
     if [ "${1:-monitor}" = "monitor" ]; then
         monitor_jack_and_playback

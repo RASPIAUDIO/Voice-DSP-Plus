@@ -18,6 +18,9 @@ sudo reboot
 
 After reboot:
 
+The PipeWire runtime initializes playback at 10% volume. Increase it gradually
+after the first successful test, especially when using the onboard amplifier.
+
 ```bash
 speaker-test -D pulse -c 2 -r 16000 -F S32_LE -t sine -f 1000 -l 1
 arecord -D pulse -f S32_LE -r 16000 -c 2 -d 10 ~/voice-dsp-plus.wav
