@@ -13,3 +13,8 @@ This directory keeps specialist images out of the normal setup path.
 The 6-channel images are microphone-debug tools, not normal product firmware.
 They are intended to confirm that all four physical microphones are active.
 They do not replace the two-channel processed USB firmware.
+
+## Noise-suppression tuning
+
+The validated Raspberry Pi runtime settings, baseline procedure and comparison
+tools are documented in [noise-suppression-demo.md](noise-suppression-demo.md).

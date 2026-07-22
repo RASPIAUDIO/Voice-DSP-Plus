@@ -6,3 +6,4 @@ Thumbs.db
 build/
 __pycache__/
 *.pyc
+noise_test/
