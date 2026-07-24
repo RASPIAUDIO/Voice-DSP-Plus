@@ -18,3 +18,17 @@ They do not replace the two-channel processed USB firmware.
 
 The validated Raspberry Pi runtime settings, baseline procedure and comparison
 tools are documented in [noise-suppression-demo.md](noise-suppression-demo.md).
+
+## AEC tuning
+
+The controlled AEC profiles and repeatable bass-heavy playback test are
+documented in [aec-comparison.md](aec-comparison.md).
+
+The selected double-talk candidate, corrected clean AEC OFF baseline and the
+reason the test-only pipeline bypass was rejected are recorded in
+[aec-davos-validation-2026-07-23.md](aec-davos-validation-2026-07-23.md).
+
+The repeat measurement, listening extracts and every applied XVF3800 parameter
+are archived in [aec-proof/README.md](aec-proof/README.md). Future firmware
+integration work is tracked separately in
+[aec-firmware-todo.md](aec-firmware-todo.md).
