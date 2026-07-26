@@ -1,0 +1,14 @@
+[Unit]
+Description=Voice DSP+ Hey Jarvis far-field detector
+After=pipewire-pulse.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/voice-dsp-hey-jarvis
+ExecStartPre=%h/voice-dsp-hey-jarvis/apply_xmos_profile.sh
+ExecStart=%h/voice-dsp-hey-jarvis/.venv/bin/python %h/voice-dsp-hey-jarvis/hey_jarvis_detector.py --device plughw:2,0 --threshold 0.30 --cooldown 1.5 --status-interval 5
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
