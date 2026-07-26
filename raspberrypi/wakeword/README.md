@@ -41,6 +41,10 @@ The service uses:
 - threshold `0.30`;
 - one model hit per detection;
 - 1.5 second application cooldown;
+- a short 880 Hz confirmation beep on the Voice DSP+ output; its playback
+  temporarily uses 50% sink volume, then restores the previous volume;
+- an amber user LED indication for two seconds, followed by restoration of the
+  normal red=jack and green=square status;
 - continuous model windows; the optional reset mode is kept for diagnostics only;
 - no additional Speex noise suppression.
 
@@ -68,6 +72,15 @@ like:
 ```text
 DETECTED model=hey_jarvis score=0.982 rms=0.0843 time=2026-07-26T17:52:17
 ```
+
+Disable audible and LED feedback for measurement runs with `--no-feedback`.
+The feedback runs on a separate worker and does not pause microphone capture or
+wake-word inference.
+
+Hardware checkpoint validated on 2026-07-26: detection changes the bicolor LED
+immediately, plays the short confirmation beep without the previous DAC startup
+delay, restores the normal jack/micro-pattern indication, and returns the
+speaker sink to its previous volume.
 
 ## Remote Windows test
 

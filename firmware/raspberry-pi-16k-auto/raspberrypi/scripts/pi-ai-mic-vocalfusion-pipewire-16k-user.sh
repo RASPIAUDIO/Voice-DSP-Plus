@@ -15,7 +15,7 @@ XVF_HOST="${XVF_HOST:-$HOST_CONTROL_DIR/xvf_host}"
 SINK_NAME="${SINK_NAME:-pi_ai_mic_vocalfusion_speaker}"
 SOURCE_NAME="${SOURCE_NAME:-pi_ai_mic_vocalfusion_microphone}"
 SPEAKER_VOLUME="${SPEAKER_VOLUME:-10%}"
-POLL_INTERVAL="${POLL_INTERVAL:-1}"
+POLL_INTERVAL="${POLL_INTERVAL:-0.10}"
 LED_INDICATORS="${LED_INDICATORS:-1}"
 ACTIVE_SINK_NAME="$SINK_NAME"
 
@@ -28,6 +28,7 @@ P6_MIC_MASK=0x40
 OUT_HEADPHONE=0x05
 OUT_SPEAKER=0x85
 CONFIG_PI_AI_MIC=0x62
+DAC_ROUTE=""
 
 wait_for_pactl() {
     for _ in $(seq 1 30); do
@@ -214,6 +215,7 @@ configure_dac_speaker_diff_muted() {
     i2cset -y 1 0x18 0x41 0x00 b
     i2cset -y 1 0x18 0x42 0x00 b
     i2cset -y 1 0x18 0x3f 0x90 b
+    DAC_ROUTE="speaker"
     echo "PI_AI_MIC DAC route: full 16 kHz speaker differential init, muted"
 }
 
@@ -229,6 +231,7 @@ configure_dac_headphone() {
     i2cset -y 1 0x18 0x40 0x00 b
     i2cset -y 1 0x18 0x41 0x00 b
     i2cset -y 1 0x18 0x42 0x00 b
+    DAC_ROUTE="headphone"
     echo "PI_AI_MIC DAC route: headphone stereo"
 }
 
@@ -306,14 +309,20 @@ apply_state() {
 
     if [ "$jack" = "1" ]; then
         configure_pcal_output "$OUT_HEADPHONE"
-        configure_dac_headphone
+        if [ "$DAC_ROUTE" != "headphone" ]; then
+            configure_dac_headphone
+        fi
         echo "PI_AI_MIC route: input=${input:-unknown} output=0x05 mode=headphone mic_square=$mic_square"
     elif [ "$playback_active" = "1" ]; then
-        configure_dac_speaker_diff_muted
+        if [ "$DAC_ROUTE" != "speaker" ]; then
+            configure_dac_speaker_diff_muted
+        fi
         speaker_unmute
         echo "PI_AI_MIC route: input=${input:-unknown} output=0x85 mode=speaker_active mic_square=$mic_square"
     else
-        configure_dac_speaker_diff_muted
+        if [ "$DAC_ROUTE" != "speaker" ]; then
+            configure_dac_speaker_diff_muted
+        fi
         speaker_mute
         echo "PI_AI_MIC route: input=${input:-unknown} output=0x05 mode=speaker_idle mic_square=$mic_square"
     fi
