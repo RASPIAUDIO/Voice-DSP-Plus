@@ -1,27 +1,15 @@
 # Application Note: Far-Field Wake-Word Demo
 
 This application note turns Voice DSP+ and a Raspberry Pi into a standalone
-far-field wake-word demonstrator. No cloud service is required.
-
-> [!IMPORTANT]
-> The wake-word model runs on the **Raspberry Pi CPU**, not on the XMOS
-> XVF3800. The XMOS firmware performs the far-field audio front end
-> (microphone capture, beamforming and voice processing), then sends a
-> processed 16 kHz stream to the Raspberry Pi over I2S. The Raspberry Pi runs
-> `pyopen-wakeword` and the pretrained `hey_jarvis` machine-learning model.
-
-| Component | Role in this demo |
-| --- | --- |
-| XMOS XVF3800 on Voice DSP+ | Audio DSP only: four-microphone acquisition, beamforming and voice processing |
-| Raspberry Pi | Wake-word inference: Python, `pyopen-wakeword` and the `hey_jarvis` model |
-| Cloud | Not used |
+far-field wake-word demonstrator. The pretrained `hey_jarvis` model runs on the
+processed 16 kHz microphone stream; no cloud service is required.
 
 ```mermaid
 flowchart LR
     A["Voice at a distance"] --> B["Four-microphone array"]
-    B --> C["XMOS XVF3800: audio DSP only"]
-    C -->|"16 kHz processed I2S"| D["Raspberry Pi CPU"]
-    D --> E["ML inference: openWakeWord / Hey Jarvis"]
+    B --> C["XVF3800 voice processing"]
+    C -->|"16 kHz processed I2S"| D["Raspberry Pi"]
+    D --> E["openWakeWord: Hey Jarvis"]
     E --> F["Amber LED for 2 seconds"]
     E --> G["Short 880 Hz confirmation beep"]
 ```
@@ -115,3 +103,4 @@ distances, angles, noise types and multi-hour false-activation measurements.
 
 The complete scripts, systemd unit, Windows test tools and tuning notes are in
 [`raspberrypi/wakeword/`](../../raspberrypi/wakeword/README.md).
+

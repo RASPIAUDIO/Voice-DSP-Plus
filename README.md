@@ -4,7 +4,7 @@ Voice DSP+ is a four-microphone voice interface with built-in audio processing,
 speaker and stereo headphone output, direction-of-arrival LEDs and a user
 button. It can work as a simple USB sound card or as a Raspberry Pi audio HAT.
 
-[Product page](https://raspiaudio.com/product/aimic/) | [Browser firmware updater](https://raspiaudio.com/voicedsp/webflasher/) | [90-second overview](marketing/product-video/voice-dsp-plus-overview-90s.mp4)
+[Product page](https://raspiaudio.com/product/aimic/) | [Browser firmware updater](https://raspiaudio.com/AIMIC/webflasher/)
 
 [![RASPIAUDIO Voice DSP+ product, connectors and audio outputs](docs/images/voice-dsp-plus-product.png)](https://raspiaudio.com/product/aimic/)
 
@@ -19,7 +19,7 @@ USB is the recommended first experience. The board appears as a standard
 3. Select `PI AI MIC Assistant Auto` as microphone and speaker. This is the
    current legacy USB name of the validated Voice DSP+ firmware.
 4. To update the firmware, open the
-   [Voice DSP+ browser updater](https://raspiaudio.com/voicedsp/webflasher/).
+   [Voice DSP+ browser updater](https://raspiaudio.com/AIMIC/webflasher/).
 
 No driver is required on current Windows, macOS or Linux systems. The firmware
 automatically detects the microphone geometry at cold boot.
@@ -57,9 +57,8 @@ arecord -D pulse -f S32_LE -r 16000 -c 2 -d 10 ~/voice-dsp-plus.wav
 aplay -D pulse ~/voice-dsp-plus.wav
 ```
 
-[Far-field demo: run the pretrained **Hey Jarvis** model locally on the
-Raspberry Pi and get LED plus audible confirmation. The XMOS provides the
-processed audio front end; it does not run the wake-word model.](docs/application-notes/far-field-wake-word-demo.md)
+[Far-field demo: run the pretrained **Hey Jarvis** wake word locally and get
+LED plus audible confirmation](docs/application-notes/far-field-wake-word-demo.md)
 
 [Raspberry Pi firmware details](firmware/raspberry-pi-16k-auto/README.md)
 
