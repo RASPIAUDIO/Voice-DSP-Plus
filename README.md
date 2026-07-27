@@ -57,6 +57,9 @@ arecord -D pulse -f S32_LE -r 16000 -c 2 -d 10 ~/voice-dsp-plus.wav
 aplay -D pulse ~/voice-dsp-plus.wav
 ```
 
+[Far-field demo: run the pretrained **Hey Jarvis** wake word locally and get
+LED plus audible confirmation](docs/application-notes/far-field-wake-word-demo.md)
+
 [Raspberry Pi firmware details](firmware/raspberry-pi-16k-auto/README.md)
 
 ## Main Features
@@ -75,6 +78,7 @@ aplay -D pulse ~/voice-dsp-plus.wav
 - [Hardware and connectors](docs/hardware.md)
 - [Pinout](docs/pinout.md)
 - [Build from source](docs/building-firmware.md)
+- [Application note: far-field wake-word demo](docs/application-notes/far-field-wake-word-demo.md)
 - [Advanced firmware](advanced/README.md)
 
 The repository intentionally exposes only two normal product choices: USB

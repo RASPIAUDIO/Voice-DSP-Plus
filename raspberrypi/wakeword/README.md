@@ -38,7 +38,7 @@ The service uses:
 
 - processed input `plughw:2,0`, mono, signed 16-bit PCM, 16 kHz;
 - pretrained `hey_jarvis` model;
-- threshold `0.30`;
+- threshold `0.35` (slightly reduced sensitivity);
 - one model hit per detection;
 - 1.5 second application cooldown;
 - a short 880 Hz confirmation beep on the Voice DSP+ output; its playback
