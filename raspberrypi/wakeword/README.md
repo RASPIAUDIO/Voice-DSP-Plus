@@ -1,8 +1,13 @@
 # Hey Jarvis far-field demo
 
-This optional Raspberry Pi demo runs the pretrained `hey_jarvis` model on the
-processed 16 kHz Voice DSP+ microphone stream. It does not add another noise
-suppression stage: the XVF3800 remains responsible for the audio front end.
+This optional demo runs the pretrained `hey_jarvis` model on the **Raspberry Pi
+CPU** using the processed 16 kHz Voice DSP+ microphone stream. The model is not
+embedded in or executed by the XMOS XVF3800. The XVF3800 supplies the far-field
+audio front end and this application does not add another noise-suppression
+stage after its DSP.
+
+See the [far-field wake-word application note](../../docs/application-notes/far-field-wake-word-demo.md)
+for the complete XMOS-versus-Raspberry-Pi architecture and validated demo.
 
 ## Audio prerequisite
 
