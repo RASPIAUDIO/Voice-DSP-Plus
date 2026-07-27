@@ -8,3 +8,4 @@ __pycache__/
 *.pyc
 noise_test/
 aec_test/
+marketing/

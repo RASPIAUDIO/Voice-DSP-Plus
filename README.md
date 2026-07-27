@@ -4,7 +4,7 @@ Voice DSP+ is a four-microphone voice interface with built-in audio processing,
 speaker and stereo headphone output, direction-of-arrival LEDs and a user
 button. It can work as a simple USB sound card or as a Raspberry Pi audio HAT.
 
-[Product page](https://raspiaudio.com/product/voicedsp/) | [Browser firmware updater](https://raspiaudio.com/voicedsp/webflasher/) | [90-second overview](marketing/product-video/voice-dsp-plus-overview-90s.mp4)
+[Product page](https://raspiaudio.com/product/voicedsp/) | [Browser firmware updater](https://raspiaudio.com/voicedsp/webflasher/)
 
 [![RASPIAUDIO Voice DSP+ product, connectors and audio outputs](docs/images/voice-dsp-plus-product.png)](https://raspiaudio.com/product/voicedsp/)
 
