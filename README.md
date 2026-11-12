@@ -80,6 +80,7 @@ processed audio front end; it does not run the wake-word model.](docs/applicatio
 - [Pinout](docs/pinout.md)
 - [Build from source](docs/building-firmware.md)
 - [Application note: far-field wake-word demo](docs/application-notes/far-field-wake-word-demo.md)
+- [Development note: Pi 4 / 48 kHz internal-speaker AEC test (V2, not a release)](docs/application-notes/pi4-48k-aec-development-test.md)
 - [Advanced firmware](advanced/README.md)
 
 The repository intentionally exposes only two normal product choices: USB
