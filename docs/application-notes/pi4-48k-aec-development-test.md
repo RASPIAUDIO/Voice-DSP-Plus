@@ -3,11 +3,11 @@
 Date: 2026-11-12. **Experimental V2 hardware; not a released firmware or an
 installation guide for the currently published Voice DSP+ hardware.**
 
-This note reports an unsuccessful acoustic acceptance test as well as the
-working transport. It does not change the public Raspberry Pi 16 kHz installer,
+This note preserves the unsuccessful first acoustic test and a corrected
+follow-up below. It does not change the public Raspberry Pi 16 kHz installer,
 USB firmware recommendations or previously published validation results.
 
-## Setup and method
+## Initial setup and method
 
 We followed the comparison structure of the [existing AEC proof](../../advanced/aec-proof/README.md):
 voice only, playback echo only, then simultaneous voice and playback, with raw
@@ -43,9 +43,9 @@ or digital clipping. The UMIK recordings confirmed both acoustic sources in the
 mixed takes, with essentially identical room RMS levels in the raw and processed
 conditions. Analog distortion and absolute SPL were not characterized.
 
-## What did not pass
+## What did not pass initially
 
-**Internal-speaker double-talk intelligibility is not validated on this Pi setup.**
+**The initial internal-speaker double-talk test failed.**
 Speech recognition worked similarly with and without processing when speech was
 alone, but failed on the processed mixed recording.
 
@@ -64,13 +64,45 @@ The processed mixed output lost the target sentence despite its presence on UMIK
 The processed voice-plus-beat window was about 11.7 dB below processed voice alone.
 Echo-only attenuation cannot therefore establish success: suppressing the wanted
 voice is not acceptable AEC. The reported AEC convergence flag also remained zero;
-its cause is still under investigation.
+this was investigated in the follow-up below.
 
-## Next step and availability
+## Corrected follow-up, same day
 
-Check reference alignment/convergence and the internal-speaker processing profile,
-then repeat the same fixed-level protocol. Keep the previously accepted external
-speaker and USB configurations separate from this experimental result.
+The Pi host now applies the existing voice-preserving profile to internal
+speakers as well as the external path: NS0.10, NN0.51, ATTNS off, DT10, AGC off,
+and post echo suppression off. Linear AEC remains active. No XMOS firmware image
+or persistent flash change was needed for this host-policy correction.
+
+Paired microphone/reference recordings verified an unclipped reference matching
+the actual mono playback at normalized correlation0.997 on both output paths.
+The existing reference selection and system delay were retained; correlation
+lag alone was not treated as a delay calibration.
+
+| Retained campaign | RAW mixed WER | Processed voice-only WER | Processed mixed WER |
+| --- | ---: | ---: | ---: |
+| Internal speakers, -6 dB | 22.86% | 14.29% | 11.43% |
+| External two-way Full Speaker, -12 dB | 80.00% | 14.29% | 11.43% |
+
+Each campaign contains the same six source/control conditions and simultaneous
+UMIK witness recordings. Realtek was fixed at74% and unmuted. The internal test
+followed70 seconds of adaptation; convergence was observed after about9.4 seconds.
+A partial repeat with an ALSA overrun was rejected and retained as invalid.
+The clean internal repeat recorded to RAM before writing the archive, avoiding
+SD-card writes in the capture path; this is not proof of the overrun's root cause.
+An additional mixed-only external check on the final installed host also passed.
+
+Wanted speech was preserved: processed mixed and voice-only speech windows had
+similar RMS levels. Voice-matched full-chain echo-only reduction was20.76 dB
+internally and40.01 dB externally. These are **not isolated AEC ERLE**: the raw
+and processed paths differ in beamforming, noise suppression and gain as well.
+All retained takes passed digital clipping, callback and ALSA XRUN checks.
+
+This is a successful instrumented bench result, not product-wide qualification.
+The WER reference remains an automatic35-word transcript, not manual ground truth;
+small WER differences reflect recognition variability. Owner listening acceptance,
+analog distortion, calibrated SPL and endurance remain outside this result.
+
+## Availability
 
 Sources, exact readbacks, logs and recordings are archived in the private
 development repository. **No V2 firmware, binary, private source bundle or test
