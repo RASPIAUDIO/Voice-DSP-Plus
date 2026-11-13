@@ -38,6 +38,7 @@ const view = bytes => new DataView(Uint8Array.from(bytes).buffer);
   assert.equal(closed,true);
   const transfers=[];
   let muted=false, reset=false;
+  let fault=null;
   const usb={...target,
     async controlTransferOut(setup,bytes){
       transfers.push({setup,bytes:Array.from(bytes||[])});
@@ -46,15 +47,31 @@ const view = bytes => new DataView(Uint8Array.from(bytes).buffer);
     },
     async controlTransferIn(setup,size){
       if(setup.requestType==='vendor'){
-        if(size===1)return {status:'ok',data:view([0])};
-        const b=new Uint8Array(56);b[0]=2;b[1]=1;b[2]=2;b[3]=2;b[5]=muted?32:0;b[40]=2;b[44]=24;
-        return {status:'ok',data:view(b)};
+        assert.equal(setup.index,0x30);
+        if(size===1){assert.equal(setup.value,17);return {status:'ok',data:view([0])};}
+        assert.equal(setup.value,0x92);
+        assert.equal(size,57,'read includes transport status plus 56-byte payload');
+        const b=new Uint8Array(57);b[1]=2;b[2]=1;b[3]=2;b[4]=2;b[6]=muted?32:0;b[41]=2;b[45]=24;
+        if(fault==='transport')b[0]=3;
+        if(fault==='schema')b[1]=99;
+        if(fault==='ready')b[2]=0;
+        const framed=fault==='unframed'?b.slice(1):b;
+        const padded=new Uint8Array(framed.length+8);padded.set(framed,4);
+        return {status:'ok',data:new DataView(padded.buffer,4,framed.length)};
       }
       return {status:'ok',data:view([0,0,0,0,2,0])};
     },async reset(){reset=true;}};
   context.device=usb;
   run('state.device=device;state.dfuInterfaceNumber=4;state.dfuAltSetting=1;elements.confirmCheckbox.checked=true;');
   context.fetch=async()=>({ok:true,arrayBuffer:async()=>image.buffer});
+  for(const [mode,message] of [['unframed',/56\/57 bytes/],['transport',/transport status 3/],
+    ['schema',/Unsupported V2 audio schema/],['ready',/controller not ready/]]){
+    fault=mode;
+    await assert.rejects(context.flashFirmware(),message);
+    assert.equal(transfers.length,0,'invalid initial state must not mute or start DFU');
+    assert.equal(reset,false);
+  }
+  fault=null;
   await context.flashFirmware();
   assert.deepEqual(transfers[0].bytes,[2,2,24,3], 'mute must preserve route, level and full-speaker flag');
   const blocks=transfers.filter(t=>t.setup.requestType==='class');
@@ -77,5 +94,5 @@ const view = bytes => new DataView(Uint8Array.from(bytes).buffer);
     assert.equal(run('elements.connectButton.disabled'),true);
   });
   assert.equal(run('state.busy'),false);
-  console.log(`PASS: V2 deep link, V1/V2 isolation, PID/serial/type guards, alt1/interface4, failed claim, hash, ${pages} DFU pages, transient mute preserves settings, reset and concurrency`);
+  console.log(`PASS: V2 deep link, V1/V2 isolation, PID/serial/type guards, alt1/interface4, failed claim, hash, framed 57-byte responses, offset views, malformed state rejection, ${pages} DFU pages, transient mute preserves settings, reset and concurrency`);
 })().catch(error=>{console.error(error);process.exitCode=1;});

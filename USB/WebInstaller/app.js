@@ -468,7 +468,7 @@ async function flashFirmware() {
   }
 
   const image = await loadFirmwareImage(firmware);
-  log(`Starting DFU download: ${firmware.mode}, ${image.byteLength} bytes.`);
+  log(`Preparing DFU update: ${firmware.mode}, ${image.byteLength} bytes.`);
 
   if (firmware.hardware === "v2") await stopV2Audio();
   await ensureDfuDownloadMode();
@@ -480,6 +480,7 @@ async function flashFirmware() {
     throw new Error("Expected a page-aligned XMOS DFU upgrade image and 256-byte transfers.");
   }
   const transferSizes = [256];
+  log(`Starting DFU download: ${image.byteLength} bytes.`);
   let lastError = null;
   for (let attempt = 0; attempt < transferSizes.length; attempt += 1) {
     const transferSize = transferSizes[attempt];
@@ -545,12 +546,25 @@ function validateFirmwareTarget(firmware, device) {
   }
 }
 
+async function readV2AudioState() {
+  const reply = await state.device.controlTransferIn({
+    requestType:"vendor", recipient:"device", request:0, value:0x92, index:0x30
+  },57);
+  // XMOS prefixes the 56-byte application payload with a transport status byte.
+  if (reply.status !== "ok" || !reply.data || reply.data.byteLength !== 57)
+    throw new Error(`Cannot read V2 audio state: USB ${reply.status}, ${reply.data?.byteLength ?? 0}/57 bytes; no flash started.`);
+  const status = reply.data.getUint8(0);
+  if (status !== 0) throw new Error(`V2 audio transport status ${status}; no flash started.`);
+  const payload = new DataView(reply.data.buffer, reply.data.byteOffset + 1, 56);
+  if (payload.getUint8(0) !== 2) throw new Error("Unsupported V2 audio schema; no flash started.");
+  if (!payload.getUint8(1)) throw new Error("V2 audio controller not ready; no flash started.");
+  return payload;
+}
+
 async function stopV2Audio() {
   const setup = {requestType:"vendor", recipient:"device", request:0, value:17, index:0x30};
-  const before = await state.device.controlTransferIn({...setup,value:0x92},56);
-  if (before.status !== "ok" || !before.data || before.data.byteLength !== 56 ||
-      before.data.getUint8(0) !== 2 || !before.data.getUint8(1)) throw new Error("Cannot read V2 audio state; no flash started.");
-  const route = before.data.getUint8(2), level = before.data.getUint8(44), flags = before.data.getUint8(40) & 2;
+  const before = await readV2AudioState();
+  const route = before.getUint8(2), level = before.getUint8(44), flags = before.getUint8(40) & 2;
   if (route < 1 || route > 4 || level > 120) throw new Error("Invalid V2 audio state.");
   // Mute is transient. Do not save OFF/-30 dB over the user's persistent settings.
   const write = await state.device.controlTransferOut(setup, new Uint8Array([2,route,level,flags|1]));
@@ -559,11 +573,9 @@ async function stopV2Audio() {
   if (ack.status !== "ok" || !ack.data || ack.data.byteLength !== 1 || ack.data.getUint8(0) !== 0)
     throw new Error("Audio mute command refused; no flash started.");
   for (let i=0;i<40;i++) {
-    const reply = await state.device.controlTransferIn({...setup,value:0x92},56);
-    if (reply.status !== "ok" || !reply.data || reply.data.byteLength !== 56)
-      throw new Error("Cannot verify audio shutdown.");
-    if (reply.data.getUint8(0) === 2 && (reply.data.getUint8(5) & 32) &&
-        reply.data.getUint32(16,true) === reply.data.getUint32(20,true)) {
+    const reply = await readV2AudioState();
+    if ((reply.getUint8(5) & 32) &&
+        reply.getUint32(16,true) === reply.getUint32(20,true)) {
       log("V2 audio muted; output, level and filter unchanged.");
       await sleep(3200); // Let the existing settings journal settle before DFU.
       return;
@@ -586,4 +598,5 @@ elements.confirmCheckbox.addEventListener("change", updateFlashEnabled);
 elements.connectButton.addEventListener("click", () => runSafely(connectDevice));
 elements.flashButton.addEventListener("click", () => runSafely(flashFirmware));
 
+log("Web updater UI 0.8.9-r2");
 runSafely(loadManifest);
