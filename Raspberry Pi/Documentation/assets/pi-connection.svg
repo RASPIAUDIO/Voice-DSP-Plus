@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="270" viewBox="0 0 1200 270" role="img" aria-labelledby="title desc">
+  <title id="title">One supply, one audio board, your Raspberry Pi</title>
+  <desc id="desc">A USB-C PD supply of 65 watts or more, offering 20 volts, connects to Voice DSP+ V2. Its regulated 5-volt header rail powers the Raspberry Pi 4. Do not feed 20 volts to the Pi or connect a second Pi power supply.</desc>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#e96c36"/></marker></defs>
+  <rect width="1200" height="270" rx="20" fill="#f4f2e9"/>
+  <g font-family="Verdana, sans-serif" text-anchor="middle">
+    <rect x="32" y="58" width="280" height="142" rx="16" fill="#ffffff" stroke="#bdcdc3"/>
+    <text x="172" y="101" font-size="17" fill="#46665e">POWER</text>
+    <text x="172" y="141" font-size="27" fill="#123c38">USB-C PD 65 W+</text>
+    <text x="172" y="174" font-size="17" fill="#46665e">20 V profile available</text>
+    <rect x="460" y="58" width="280" height="142" rx="16" fill="#123c38"/>
+    <text x="600" y="101" font-size="17" fill="#9dd4c3">AUDIO + POWER</text>
+    <text x="600" y="141" font-size="28" fill="#ffffff">Voice DSP+ V2</text>
+    <text x="600" y="174" font-size="17" fill="#d5e5dd">Microphones + speaker outputs</text>
+    <rect x="888" y="58" width="280" height="142" rx="16" fill="#ffffff" stroke="#bdcdc3"/>
+    <text x="1028" y="101" font-size="17" fill="#46665e">YOUR APPLICATION</text>
+    <text x="1028" y="141" font-size="28" fill="#123c38">Raspberry Pi 4</text>
+    <text x="1028" y="174" font-size="17" fill="#46665e">64-bit Raspberry Pi OS</text>
+    <path d="M324 135H443" stroke="#e96c36" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="384" y="113" font-size="16" fill="#244e49">USB-C</text>
+    <path d="M752 135H871" stroke="#e96c36" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="812" y="108" font-size="16" fill="#244e49">40-pin header</text>
+    <text x="812" y="170" font-size="16" fill="#244e49">Regulated 5 V</text>
+    <text x="600" y="240" font-size="16" fill="#46665e">Connection overview, not a pinout. Remove ZeroCore S3 before mounting on the Pi.</text>
+  </g>
+</svg>

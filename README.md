@@ -1,88 +1,76 @@
-# RASPIAUDIO Voice DSP+
+![Voice DSP+ V2: USB, Home Assistant and Raspberry Pi](Raspberry%20Pi/Documentation/assets/voice-dsp-guide.svg)
 
-Voice DSP+ is a four-microphone voice interface with built-in audio processing,
-speaker and stereo headphone output, direction-of-arrival LEDs and a user
-button. It can work as a simple USB sound card or as a Raspberry Pi audio HAT.
+# Voice DSP+ V2
 
-[Product page](https://raspiaudio.com/product/voicedsp/) | [Browser firmware updater](https://raspiaudio.com/voicedsp/webflasher/)
+**Give your project a voice. Choose your microphones, speakers and host.**
 
-[![RASPIAUDIO Voice DSP+ product, connectors and audio outputs](docs/images/voice-dsp-plus-product.png)](https://raspiaudio.com/product/voicedsp/)
+Four microphones, onboard voice processing, acoustic echo cancellation, speaker
+outputs and hands-free controls. Build a compact voice interface or a two-way
+speaker system with your own application.
 
-## Start Here: USB
+[Product page](https://raspiaudio.com/product/voicedsp/) |
+[Raspberry Pi guide](Raspberry%20Pi/README.md) |
+[Hardware and microphones](Raspberry%20Pi/Documentation/hardware.md)
 
-USB is the recommended first experience. The board appears as a standard
-48 kHz sound card with two processed microphone channels and stereo playback.
+> **This is the V2 hardware branch.** For the original board, use
+> [main](https://github.com/RASPIAUDIO/Voice-DSP-Plus/tree/main).
+> Do not mix V1 and V2 firmware or pinouts.
 
-1. [Choose the LINE or SQUARE microphone layout](docs/hardware.md#choosing-line-or-square),
-   then install the four-microphone module while power is off.
-2. Connect Voice DSP+ to the computer with USB.
-3. Select `PI AI MIC Assistant Auto` as microphone and speaker. This is the
-   current legacy USB name of the validated Voice DSP+ firmware.
-4. To update the firmware, open the
-   [Voice DSP+ browser updater](https://raspiaudio.com/voicedsp/webflasher/).
+## Choose your setup
 
-No driver is required on current Windows, macOS or Linux systems. The firmware
-automatically detects the microphone geometry at cold boot.
+| Raspberry Pi | USB | Home Assistant |
+| --- | --- | --- |
+| Pi4 audio HAT for your application | Standalone computer sound card | Voice satellite with ZeroCore S3 |
+| 48 kHz processed mono capture and mono program playback | USB release to follow | ESPHome/Assist release to follow |
+| [Sources, installation and controls](Raspberry%20Pi/README.md) | [USB section](USB/README.md) | [Home Assistant section](Home%20Assistant/README.md) |
 
-| SQUARE: voices can come from all around | LINE: users are in front |
-| --- | --- |
-| [![SQUARE microphone layout](docs/images/microphones-square.svg)](docs/hardware.md#square-layout) | [![LINE microphone layout](docs/images/microphones-line.svg)](docs/hardware.md#line-layout) |
+**Ready now:** Raspberry Pi installer, paired firmware, Linux sources, desktop
+controls and guides. [Download the Pi kit](Raspberry%20Pi/Firmware/README.md).
+USB and Home Assistant packaging will follow.
 
-[USB firmware and technical details](firmware/usb-48k-auto/README.md)
+## Raspberry Pi: familiar desktop controls
 
-## Raspberry Pi
+After installing a complete kit, use the taskbar speaker/microphone icons for
+volume and mute, and **Voice DSP+ Output** for **Internal / External / Full Speaker**.
+The XMOS handles audio processing; the Pi runs your software.
 
-Use Raspberry Pi mode when you want I2S audio and XVF3800 control from Linux.
-The default product mode is 16 kHz voice processing with automatic microphone
-geometry detection.
+> **External and Full Speaker require USB-C PD directly on Voice DSP+.**
+> A 65 W or higher charger is recommended. Voice DSP+ can power the Pi through
+> the header. Power off before rewiring and disconnect the Pi's USB-C supply.
+> **Never power both USB-C inputs at once.**
 
-[![Voice DSP+ Raspberry Pi I2S mode with SQUARE and LINE microphone layouts](docs/images/raspberry-pi-i2s-mode.png)](docs/hardware.md#choosing-line-or-square)
+[Getting started](Raspberry%20Pi/README.md) |
+[AEC, DOA and raw captures](Raspberry%20Pi/Documentation/raspberry-pi-controls.md) |
+[40-pin pinout](Raspberry%20Pi/Documentation/pinout.md)
 
-```bash
-git clone https://github.com/RASPIAUDIO/Voice-DSP-Plus.git
-cd Voice-DSP-Plus
-sudo bash raspberrypi/install.sh
-sudo reboot
+## Make it your own
+
+- **Voice Compact:** small internal speakers and a compact microphone enclosure.
+- **External speaker:** suitable 4 or 8 ohm passive full-range speaker, or an
+  enclosure with its own passive crossover.
+- **Full Speaker:** separate L woofer / R tweeter with a matched active crossover.
+  The supplied 9500 Hz preset is for the tested assembly, not every tweeter.
+- **Microphones:** four onboard square microphones or an external LINE/SQUARE
+  ribbon array detected at startup. Four active microphones, not eight.
+
+## Repository layout
+
+```text
+Raspberry Pi/
+  README.md        Installation and daily use
+  Sources/         Linux controller, installer, desktop UI and tests
+  Firmware/        Installer, paired images and checksums
+  Documentation/   Wiring, pinout, AEC/DOA controls and release scope
+USB/
+  Sources/         Reserved for the USB release
+  Firmware/        Reserved for the USB release
+Home Assistant/
+  Sources/         Reserved for ESPHome and host components
+  Firmware/        Reserved for the paired release
 ```
 
-Quick test after reboot:
-
-The installer starts the speaker output at a safe 10% desktop volume. Raise it
-gradually only after confirming that the Raspberry Pi power supply remains
-stable with the onboard amplifier.
-
-```bash
-speaker-test -D pulse -c 2 -r 16000 -F S32_LE -t sine -f 1000 -l 1
-arecord -D pulse -f S32_LE -r 16000 -c 2 -d 10 ~/voice-dsp-plus.wav
-aplay -D pulse ~/voice-dsp-plus.wav
-```
-
-[Far-field demo: run the pretrained **Hey Jarvis** model locally on the
-Raspberry Pi and get LED plus audible confirmation. The XMOS provides the
-processed audio front end; it does not run the wake-word model.](docs/application-notes/far-field-wake-word-demo.md)
-
-[Raspberry Pi firmware details](firmware/raspberry-pi-16k-auto/README.md)
-
-## Main Features
-
-- Four digital microphones in LINE or SQUARE geometry.
-- Automatic geometry detection at cold boot.
-- Beamforming, acoustic echo cancellation, noise processing and AGC.
-- Two processed microphone channels.
-- Mono differential onboard speaker output.
-- Automatic stereo headphone routing and speaker mute when a jack is inserted.
-- Direction of arrival on an optional 24-pixel WS2812B ring.
-- USB hold-to-dictate shortcut from the onboard button.
-
-## Documentation
-
-- [Hardware and connectors](docs/hardware.md)
-- [Pinout](docs/pinout.md)
-- [Build from source](docs/building-firmware.md)
-- [Application note: far-field wake-word demo](docs/application-notes/far-field-wake-word-demo.md)
-- [Development note: Pi 4 / 48 kHz internal-speaker AEC test (V2, not a release)](docs/application-notes/pi4-48k-aec-development-test.md)
-- [Advanced firmware](advanced/README.md)
-
-The repository intentionally exposes only two normal product choices: USB
-48 kHz AUTO and Raspberry Pi 16 kHz AUTO. Diagnostic and specialist images are
-kept under `advanced/` so the normal setup remains simple.
+The Pi kit is based on the tested Pi4 64-bit Raspberry Pi OS setup. Pi5, other
+kernels and speaker assemblies are not qualified by those tests.
+[Release scope](Raspberry%20Pi/Documentation/release-notes.md) |
+[License and third-party notices](NOTICE.md).
+No credentials, private test recordings or proprietary SDK are included.

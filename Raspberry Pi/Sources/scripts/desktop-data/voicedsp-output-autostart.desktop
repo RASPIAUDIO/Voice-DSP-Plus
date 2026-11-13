@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Voice DSP+ Output
+Comment=Voice DSP+ output selector in the desktop tray
+Exec=/usr/bin/python3 /opt/voicedsp-desktop/output_selector.py --tray
+Icon=audio-card
+Terminal=false
+X-GNOME-Autostart-enabled=true

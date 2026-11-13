@@ -1,16 +1,23 @@
-# Notices
+# Licenses and publication scope
 
-Voice DSP+ hardware integration and product documentation are provided by
-RASPIAUDIO.
+RASPIAUDIO's original source code and documentation in this V2 branch are
+published under [MIT](LICENSE). Third-party notices take precedence for their
+files; MIT does not relicense vendor software.
 
-The firmware is built for XMOS XVF3800/xCORE VocalFusion devices. XMOS and
-third-party components remain subject to their own license terms. The relevant
-XMOS package license is included at
-[`source/LICENSE.xmos-package.rst`](source/LICENSE.xmos-package.rst).
+The PAJ7620U2 initialization table derives from DFRobot's
+[DFRobot_PAJ7620U2](https://github.com/DFRobot/DFRobot_PAJ7620U2), pinned revision
+`57edc1d`. Its [MIT notice](Raspberry%20Pi/Sources/licenses/PAJ-LICENSE.txt) is retained.
 
-This repository does not contain the complete XMOS SDK. The `source/` folder
-contains the exact board-specific source overlay used with the licensed XMOS
-release `xvf3800_source_external_241029_121941`.
+The portable host/UI files use the historical `esphome::voicedsp_v2` namespace.
+The Pi controller has no ESPHome framework dependency. USB/Home Assistant
+releases will receive their own dependency notices when published.
 
-Prebuilt firmware images in this repository are intended only for compatible
-RASPIAUDIO Voice DSP+ hardware containing the supported XMOS device.
+XMOS XVF3800 firmware uses proprietary VocalFusion/BeClear components.
+The [vendor package licence](Raspberry%20Pi/Firmware/LICENSE.xmos-package.rst)
+remains applicable to those components. Firmware is provided for compatible
+RASPIAUDIO hardware containing the supported licensed XMOS device. The MIT
+license covers our original host/integration code, not proprietary DSP libraries.
+The complete XMOS SDK is not mirrored here.
+
+V2 starts from the existing public main history. Older public artifacts in that
+history are not part of, or valid substitutes for, this V2 release.

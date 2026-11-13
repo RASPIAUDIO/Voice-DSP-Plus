@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Voice DSP+ Output
+Comment=Select Internal, External or Full Speaker
+Exec=/usr/bin/python3 /opt/voicedsp-desktop/output_selector.py
+Icon=audio-card
+Terminal=false
+Categories=AudioVideo;Audio;Settings;
+StartupNotify=true

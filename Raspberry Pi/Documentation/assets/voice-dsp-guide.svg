@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">Voice DSP+ V2. One audio platform. Three ways to build.</title>
+  <desc id="desc">USB for your computer, Home Assistant with ZeroCore S3, and Raspberry Pi for your own applications.</desc>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#b9c9c3"/></pattern>
+  </defs>
+  <rect width="1200" height="400" rx="24" fill="#f4f2e9"/>
+  <rect x="800" width="400" height="400" fill="url(#grid)"/>
+  <path d="M1125 0V400" stroke="#dadfd5"/>
+  <rect x="48" y="40" width="8" height="28" rx="4" fill="#e96c36"/>
+  <text x="72" y="61" font-family="Verdana, sans-serif" font-size="18" letter-spacing="3" fill="#244e49">RASPIAUDIO / GET STARTED</text>
+  <text x="48" y="142" font-family="Georgia, serif" font-size="64" fill="#123c38">Voice DSP+ V2</text>
+  <text x="50" y="185" font-family="Verdana, sans-serif" font-size="24" fill="#345751">One audio platform. Three ways to build.</text>
+  <g font-family="Verdana, sans-serif">
+    <rect x="48" y="235" width="344" height="116" rx="16" fill="#123c38"/>
+    <text x="72" y="274" font-size="14" letter-spacing="2" fill="#9dd4c3">01 / CONNECT</text>
+    <text x="72" y="315" font-size="27" fill="#ffffff">USB audio</text>
+    <rect x="408" y="235" width="344" height="116" rx="16" fill="#123c38"/>
+    <text x="432" y="274" font-size="14" letter-spacing="2" fill="#9dd4c3">02 / TALK</text>
+    <text x="432" y="315" font-size="27" fill="#ffffff">Home Assistant</text>
+    <rect x="768" y="235" width="384" height="116" rx="16" fill="#e96c36"/>
+    <text x="792" y="274" font-size="14" letter-spacing="2" fill="#192c27">03 / CREATE</text>
+    <text x="792" y="315" font-size="27" fill="#192c27">Raspberry Pi</text>
+  </g>
+  <g transform="translate(1000 110)" fill="none" stroke="#244e49" stroke-width="3">
+    <circle r="64" opacity="0.2"/><circle r="45" opacity="0.4"/><circle r="25"/>
+    <path d="M-78 0H-35M35 0H78M0-78V-35M0 35V78"/>
+    <circle r="7" fill="#e96c36" stroke="none"/>
+  </g>
+</svg>

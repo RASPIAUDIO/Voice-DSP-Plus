@@ -1,0 +1,63 @@
+/dts-v1/;
+/plugin/;
+
+/* Modern Raspberry Pi kernels expose i2s_clk_producer on Pi 4 and Pi 5.
+ * No codec I2C node: the separate V2 host service owns DAC/PCAL/HUSB writes.
+ * This describes the existing V2 interface, not a hardware modification.
+ */
+/ {
+    compatible = "brcm,bcm2835";
+    fragment@0 {
+        target = <&i2s_clk_producer>;
+        __overlay__ { status = "okay"; };
+    };
+    fragment@1 {
+        target-path = "/";
+        __overlay__ {
+            vdsp_v2_tx: voicedsp-v2-transmitter {
+                compatible = "linux,spdif-dit";
+                #sound-dai-cells = <0>;
+                status = "okay";
+            };
+            vdsp_v2_rx: voicedsp-v2-receiver {
+                compatible = "linux,spdif-dir";
+                #sound-dai-cells = <0>;
+                status = "okay";
+            };
+        };
+    };
+    fragment@2 {
+        target = <&sound>;
+        __overlay__ {
+            compatible = "simple-audio-card";
+            simple-audio-card,name = "VoiceDSP V2 I2S";
+            #address-cells = <1>;
+            #size-cells = <0>;
+            status = "okay";
+            simple-audio-card,dai-link@0 {
+                reg = <0>;
+                format = "i2s";
+                bitclock-master = <&vdsp_v2_playback_cpu>;
+                frame-master = <&vdsp_v2_playback_cpu>;
+                vdsp_v2_playback_cpu: cpu {
+                    sound-dai = <&i2s_clk_producer>;
+                    dai-tdm-slot-num = <2>;
+                    dai-tdm-slot-width = <32>;
+                };
+                codec { sound-dai = <&vdsp_v2_tx>; };
+            };
+            simple-audio-card,dai-link@1 {
+                reg = <1>;
+                format = "i2s";
+                bitclock-master = <&vdsp_v2_capture_cpu>;
+                frame-master = <&vdsp_v2_capture_cpu>;
+                vdsp_v2_capture_cpu: cpu {
+                    sound-dai = <&i2s_clk_producer>;
+                    dai-tdm-slot-num = <2>;
+                    dai-tdm-slot-width = <32>;
+                };
+                codec { sound-dai = <&vdsp_v2_rx>; };
+            };
+        };
+    };
+};

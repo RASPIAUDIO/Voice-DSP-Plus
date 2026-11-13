@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "kit_version": "2026.11.13-desktop-r8",
+  "checkpoint_tag": "v2-pi4-aec-validated-20261112",
+  "scope": "Pi4 48k I2S internal and Full Speaker bench; not whole-product qualification",
+  "default_profile": 4,
+  "legacy_internal_profile": 6,
+  "asr_output": 0,
+  "system_delay": -32,
+  "processed_mux": [8, 0, 8, 1],
+  "startup": {"route": 1, "volume_db": -30, "gestures_enabled": true},
+  "full_speaker": {"cutoff_hz": 9500, "woofer_trim_db": 0, "tweeter_trim_db": -6},
+  "parameter_names": [
+    "SHF_BYPASS", "AEC_FAR_EXTGAIN", "AEC_AECCONVERGED", "AEC_AECPATHCHANGE",
+    "PP_MIN_NS", "PP_MIN_NN", "PP_ATTNS_MODE", "PP_ECHOONOFF",
+    "PP_NLATTENONOFF", "PP_NLAEC_MODE", "PP_DTSENSITIVE", "PP_GAMMA_E",
+    "PP_GAMMA_ETAIL", "PP_GAMMA_ENL", "PP_AGCONOFF", "PP_AGCGAIN",
+    "PP_LIMITONOFF", "PP_LIMITPLIMIT", "AUDIO_MGR_MIC_GAIN", "AUDIO_MGR_REF_GAIN",
+    "I2S_DAC_DSP_ENABLE", "PP_AGCMAXGAIN", "PP_AGCDESIREDLEVEL", "AEC_NUM_MICS"
+  ],
+  "expected_parameter_words": [
+    0, 3250585600, null, null, 1036831949, 1057132380, 0, 0,
+    1, 0, 10, 1065353216, 1065353216, 1066192077, 0, 1084227584,
+    1, 1055957975, 1092616192, 1069547520, 1, 1123680256, 999519420, 4
+  ],
+  "dynamic_parameters": ["AEC_AECCONVERGED", "AEC_AECPATHCHANGE"],
+  "note": "Words are exact 32-bit host-control readbacks. null means dynamic state, not a fixed setting. Acoustic convergence is not an installation criterion."
+}
