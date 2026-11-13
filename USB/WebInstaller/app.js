@@ -40,6 +40,7 @@ const elements = {
   connectButton: document.querySelector("#connectButton"),
   flashButton: document.querySelector("#flashButton"),
   confirmCheckbox: document.querySelector("#confirmCheckbox"),
+  forceCheckbox: document.querySelector("#forceCheckbox"),
   deviceStatus: document.querySelector("#deviceStatus"),
   progress: document.querySelector("#progress"),
   progressText: document.querySelector("#progressText"),
@@ -71,6 +72,7 @@ function updateFlashEnabled() {
   elements.connectButton.disabled = state.busy;
   elements.firmwareSelect.disabled = state.busy;
   elements.confirmCheckbox.disabled = state.busy;
+  elements.forceCheckbox.disabled = state.busy;
   elements.flashButton.disabled = !(
     !state.busy && compatible &&
     elements.confirmCheckbox.checked
@@ -163,7 +165,10 @@ function findDfuAlternate(device) {
     }
   }
 
-  if (fallback && selectedFirmware()?.hardware !== "v2") return fallback;
+  if (fallback && (elements.forceCheckbox.checked || selectedFirmware()?.hardware !== "v2")) return fallback;
+  if (/^VDSP2-FACTORY-RAM/.test(device.serialNumber || "")) {
+    throw new Error("Factory RAM tester has no DFU upgrade interface. Force mode cannot add one. Power off, remove the ZeroCore factory loader, then boot the permanent USB firmware; a blank board needs SPI or XTAG provisioning.");
+  }
   throw new Error(
     `No DFU interface found. Expected interface ${expected.interfaceNumber}, alt ${expected.altSetting}.`,
   );
@@ -185,7 +190,13 @@ async function openDfuDevice(device) {
     await device.selectConfiguration(1);
   }
 
-  const dfu = findDfuAlternate(device);
+  let dfu;
+  try {
+    dfu = findDfuAlternate(device);
+  } catch (error) {
+    await device.close();
+    throw error;
+  }
   await device.claimInterface(dfu.interfaceNumber);
   try {
     await device.selectAlternateInterface(dfu.interfaceNumber, dfu.alternateSetting);
@@ -463,14 +474,22 @@ async function flashFirmware() {
   if (!firmware) throw new Error("No firmware selected.");
   if (!state.device) throw new Error("No Voice DSP+ device connected.");
   validateFirmwareTarget(firmware, state.device);
-  if (state.dfuAltSetting !== 1 || (firmware.hardware === "v2" && state.dfuInterfaceNumber !== 4)) {
+  const force = elements.forceCheckbox.checked;
+  if (state.dfuAltSetting !== 1 || (!force && firmware.hardware === "v2" && state.dfuInterfaceNumber !== 4)) {
     throw new Error("Not connected to the correct DFU upgrade interface. Reconnect the board.");
   }
 
   const image = await loadFirmwareImage(firmware);
   log(`Preparing DFU update: ${firmware.mode}, ${image.byteLength} bytes.`);
 
-  if (firmware.hardware === "v2") await stopV2Audio();
+  if (force) {
+    log("FORCED INSTALL: V1/V2 identity and audio-health checks bypassed. Playback must already be stopped. SHA256 and DFU upgrade checks remain active.");
+    // Only send the V2 mute command to a runtime known to implement it.
+    if (/^VDSP2-USBMONO/.test(state.device.serialNumber || "")) {
+      try { await stopV2Audio(); }
+      catch (error) { log(`WARN: continuing forced install without verified audio mute: ${error.message}`); }
+    }
+  } else if (firmware.hardware === "v2") await stopV2Audio();
   await ensureDfuDownloadMode();
 
   // XMOS's writer programs one 256-byte page per block; smaller chunks are
@@ -530,12 +549,12 @@ async function runSafely(action) {
 function validateFirmwareTarget(firmware, device) {
   if (!firmware) throw new Error("Select the firmware matching your hardware first.");
   const isV2 = /^VDSP2-/.test(device.serialNumber || "");
-  if (firmware.hardware === "v2") {
+  if (!elements.forceCheckbox.checked && firmware.hardware === "v2") {
     if (!isV2 || !(firmware.serialPrefixes || []).some(prefix => device.serialNumber.startsWith(prefix))) {
       throw new Error("This firmware requires a recognized Voice DSP+ V2 USB identity. Do not install it on V1.");
     }
     if (device.productId !== Number.parseInt(firmware.productId, 16)) throw new Error("V2 USB product mismatch.");
-  } else if (isV2) {
+  } else if (!elements.forceCheckbox.checked && isV2) {
     throw new Error("Legacy V1 firmware cannot be installed on the connected V2.");
   }
   if (device.vendorId !== Number.parseInt(firmware.vendorId || state.manifest.vendorId, 16)) {
@@ -624,8 +643,9 @@ if (navigator.usb) navigator.usb.addEventListener("disconnect", (event) => {
 
 elements.firmwareSelect.addEventListener("change", updateFirmwareDetails);
 elements.confirmCheckbox.addEventListener("change", updateFlashEnabled);
+elements.forceCheckbox.addEventListener("change", updateFlashEnabled);
 elements.connectButton.addEventListener("click", () => runSafely(connectDevice));
 elements.flashButton.addEventListener("click", () => runSafely(flashFirmware));
 
-log("Web updater UI 0.8.9-r3");
+log("Web updater UI 0.8.9-r4 (force install)");
 runSafely(loadManifest);

@@ -34,12 +34,21 @@
       </section>
 
       <section class="panel">
+        <h2>USB recovery without Home Assistant</h2>
+        <p>Running the factory RAM tester, or missing the USB update interface?
+          Use <a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=USBRecovery" target="_blank" rel="noopener"><strong>ZeroCore S3 / Voice DSP+ V2 USB Recovery (Beta)</strong></a>.
+          It temporarily loads USB firmware through SPI. Then return here to install the persistent USB upgrade.</p>
+        <p class="details">No Home Assistant, Wi-Fi or XTAG. V2 only. Replaces the ESP32 application;
+          does not itself write XMOS QSPI. Blank/corrupt QSPI still requires factory provisioning.</p>
+      </section>
+
+      <section class="panel">
         <h2>1. Choose a USB mode</h2>
         <label for="firmwareSelect">Voice DSP+ firmware</label>
         <select id="firmwareSelect"></select>
         <p id="firmwareDetails" class="details"></p>
         <p class="details"><strong>V2 and V1 firmware are not interchangeable.</strong>
-          V2 requires an existing VDSP2-USBMONO USB identity. A blank board or an
+          Normal installation checks the VDSP2-USBMONO USB identity. Force mode bypasses this check. A blank board or an
           I2S-only board needs initial provisioning, not this USB updater.
           <a href="https://github.com/RASPIAUDIO/Voice-DSP-Plus/blob/V2/USB/Firmware/README.md">V2 installation and recovery guide</a></p>
       </section>
@@ -50,6 +59,13 @@
           Stop all audio playback and close audio/control apps. Connect the XMOS USB data port, keep it powered during the update, then
           choose the XMOS device in the browser picker.
         </p>
+        <label class="confirm">
+          <input id="forceCheckbox" type="checkbox">
+          Force installation: ignore V1/V2 identity and audio-state checks.
+          A wrong firmware can require SPI or XTAG recovery. Stop playback first.
+        </label>
+        <p class="details">Select force mode before connecting if identity detection fails.
+          A working DFU upgrade interface is still required; the RAM factory tester does not provide one.</p>
         <button id="connectButton" type="button">Connect Voice DSP+</button>
         <p id="deviceStatus" class="details">No device connected.</p>
       </section>
@@ -82,6 +98,6 @@
         </ul>
       </section>
     </main>
-    <script src="app-v2-089-r3.js" type="module"></script>
+    <script src="app-v2-089-r4.js" type="module"></script>
   </body>
 </html>

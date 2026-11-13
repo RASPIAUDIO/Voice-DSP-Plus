@@ -11,7 +11,9 @@ original accepted binaries; no acoustic parameters were changed for publication.
 [Open the V2 web updater](https://raspiaudio.com/voicedsp/webflasher/?firmware=v2-usb-mono-48k)
 in desktop Chrome/Edge. **0.8.9-r4** is preselected. Stop all audio and control
 apps, connect the XMOS USB data port, confirm the hardware and click Install.
-The updater checks size/SHA256 and refuses V1/V2 cross-flashing. It temporarily
+The updater checks size/SHA256 and normally refuses V1/V2 cross-flashing. Its
+explicit force option bypasses identity/audio-health gates, not the need for DFU.
+In normal mode it temporarily
 mutes V2 without replacing the saved output, level or crossover settings.
 Check the output and volume before resuming playback after reboot.
 
@@ -43,6 +45,13 @@ The [web updater source](../WebInstaller/README.md) is versioned alongside this 
 A blank XMOS or I2S-only firmware cannot receive USB DFU until a USB boot image
 is running. Initial provisioning needs a compatible ZeroCore SPI loader or XTAG.
 The ordinary Home Assistant image is **not** a USB provisioner.
+
+For a V2 with an existing compatible QSPI factory layout, use
+[ZeroCore S3 / Voice DSP+ USB Recovery (Beta)](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=USBRecovery)
+to restore the USB runtime without Home Assistant. Install the ESP32 recovery
+app, cold-start both boards, then use this USB updater for the persistent
+upgrade. Remove ZeroCore after powering off to verify standalone boot.
+This RAM bridge does not program a blank/corrupt QSPI factory layout.
 
 | File | Purpose |
 | --- | --- |

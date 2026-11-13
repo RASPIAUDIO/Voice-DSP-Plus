@@ -6,7 +6,7 @@ This directory versions the production UI; firmware bytes live in `../Firmware`.
 Deployment mapping:
 
 - `index.html` and `styles.css` at `/voicedsp/webflasher/`.
-- `app.js` deployed as `app-v2-089-r3.js`.
+- `app.js` deployed as `app-v2-089-r4.js`.
 - `firmwares.json` deployed as `firmwares-v2-089.json`.
 - `../Firmware/voicedsp-v2-usb-mono-0.8.9.dfu_upgrade.bin` under `firmware/`.
 - Existing V1 `../public/...` paths remain untouched on the server.
@@ -22,6 +22,17 @@ their audio applications before starting. Blank/I2S-only boards are not USB DFU
 targets. Never replace the audio driver or flash a factory file through this UI.
 
 Run `node test.cjs` for simulated checks, without a browser or connected hardware.
+
+UI revision r4 adds an explicit **Force installation** checkbox before Connect.
+It bypasses V1/V2 serial/PID compatibility and audio-health gating, and accepts
+an advertised DFU upgrade alternate 1 on a different interface number. It tries
+the non-persistent mute only on recognized USBMONO runtimes; failure is logged
+but does not block forced installation. Stop playback manually beforehand.
+SHA256, size, XMOS vendor, upgrade-image type, 256-byte pages and the actual DFU
+upgrade interface remain required. No factory-partition fallback is attempted.
+Factory RAM testers without DFU cannot be updated in a browser, even in force
+mode: power off and boot the permanent USB firmware without the ZeroCore tester,
+or provision through SPI/XTAG if no compatible permanent firmware exists.
 
 UI revision r2 fixes the XMOS vendor response framing: one transport-status byte
 followed by 56 audio-state bytes, matching `../Sources/tools/usb_mono_control.py`.
