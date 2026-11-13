@@ -557,13 +557,23 @@ async function readV2AudioState() {
   if (status !== 0) throw new Error(`V2 audio transport status ${status}; no flash started.`);
   const payload = new DataView(reply.data.buffer, reply.data.byteOffset + 1, 56);
   if (payload.getUint8(0) !== 2) throw new Error("Unsupported V2 audio schema; no flash started.");
-  if (!payload.getUint8(1)) throw new Error("V2 audio controller not ready; no flash started.");
   return payload;
+}
+
+function describeV2Audio(s) {
+  return `initialized=${s.getUint8(1)}, route=${s.getUint8(3)}, flags=0x${s.getUint8(5).toString(16)}, error=${s.getInt32(12,true)}, epochs=${s.getUint32(16,true)}/${s.getUint32(20,true)}, uptime=${s.getUint32(24,true)}`;
+}
+
+function checkV2AudioHealth(s) {
+  if (!(s.getUint8(5) & 1) || (s.getUint8(5) & 16) || s.getInt32(12,true) !== 0)
+    throw new Error(`V2 audio hardware state requires diagnosis (${describeV2Audio(s)}); no flash started.`);
 }
 
 async function stopV2Audio() {
   const setup = {requestType:"vendor", recipient:"device", request:0, value:17, index:0x30};
   const before = await readV2AudioState();
+  log(`V2 audio: ${describeV2Audio(before)}`);
+  checkV2AudioHealth(before);
   const route = before.getUint8(2), level = before.getUint8(44), flags = before.getUint8(40) & 2;
   if (route < 1 || route > 4 || level > 120) throw new Error("Invalid V2 audio state.");
   // Mute is transient. Do not save OFF/-30 dB over the user's persistent settings.
@@ -572,17 +582,36 @@ async function stopV2Audio() {
   const ack = await state.device.controlTransferIn(setup,1);
   if (ack.status !== "ok" || !ack.data || ack.data.byteLength !== 1 || ack.data.getUint8(0) !== 0)
     throw new Error("Audio mute command refused; no flash started.");
+  let idleSample = null;
+  let reply = before;
   for (let i=0;i<40;i++) {
-    const reply = await readV2AudioState();
-    if ((reply.getUint8(5) & 32) &&
+    reply = await readV2AudioState();
+    checkV2AudioHealth(reply);
+    if (reply.getUint8(1) && (reply.getUint8(5) & 32) &&
         reply.getUint32(16,true) === reply.getUint32(20,true)) {
       log("V2 audio muted; output, level and filter unchanged.");
       await sleep(3200); // Let the existing settings journal settle before DFU.
       return;
     }
+    // Before USB clocks start, runtime deliberately leaves the codec uninitialized
+    // and applied_epoch at UINT32_MAX. Confirm a live, inactive, muted runtime
+    // with our mute request latched instead of requiring audio initialization.
+    const idle = !reply.getUint8(1) && reply.getUint8(3) === 0 &&
+      (reply.getUint8(5) & 32) && (reply.getUint8(40) & 1) &&
+      reply.getUint8(2) === route && reply.getUint8(44) === level &&
+      (reply.getUint8(40) & 2) === flags &&
+      reply.getUint32(16,true) !== before.getUint32(16,true);
+    if (idle && idleSample &&
+        reply.getUint32(16,true) === idleSample.getUint32(16,true) &&
+        reply.getUint32(24,true) !== idleSample.getUint32(24,true)) {
+      log("V2 audio idle before initialization; inactive output and latched mute verified.");
+      await sleep(3200);
+      return;
+    }
+    idleSample = idle ? reply : null;
     await sleep(50);
   }
-  throw new Error("Audio mute did not apply; no flash started.");
+  throw new Error(`Audio mute not verified (${describeV2Audio(reply)}); no flash started.`);
 }
 
 if (navigator.usb) navigator.usb.addEventListener("disconnect", (event) => {
@@ -598,5 +627,5 @@ elements.confirmCheckbox.addEventListener("change", updateFlashEnabled);
 elements.connectButton.addEventListener("click", () => runSafely(connectDevice));
 elements.flashButton.addEventListener("click", () => runSafely(flashFirmware));
 
-log("Web updater UI 0.8.9-r2");
+log("Web updater UI 0.8.9-r3");
 runSafely(loadManifest);

@@ -39,6 +39,7 @@ const view = bytes => new DataView(Uint8Array.from(bytes).buffer);
   const transfers=[];
   let muted=false, reset=false;
   let fault=null;
+  let idleMode=null, reads=0;
   const usb={...target,
     async controlTransferOut(setup,bytes){
       transfers.push({setup,bytes:Array.from(bytes||[])});
@@ -51,10 +52,25 @@ const view = bytes => new DataView(Uint8Array.from(bytes).buffer);
         if(size===1){assert.equal(setup.value,17);return {status:'ok',data:view([0])};}
         assert.equal(setup.value,0x92);
         assert.equal(size,57,'read includes transport status plus 56-byte payload');
-        const b=new Uint8Array(57);b[1]=2;b[2]=1;b[3]=2;b[4]=2;b[6]=muted?32:0;b[41]=2;b[45]=24;
+        const b=new Uint8Array(57);b[1]=2;b[2]=1;b[3]=2;b[4]=2;b[6]=1|(muted?32:0);b[41]=muted?3:2;b[45]=24;
+        const fields=new DataView(b.buffer);
+        fields.setUint32(17,muted?1:0,true);
+        fields.setUint32(21,muted?1:0,true);
+        fields.setUint32(25,++reads*20,true);
+        if(idleMode){
+          b[2]=0;b[4]=0;b[6]=33;
+          fields.setUint32(21,0xffffffff,true);
+          if(idleMode==='stalled')fields.setUint32(25,100,true);
+          if(idleMode==='active')b[4]=3;
+          if(idleMode==='not-muted')b[6]=1;
+          if(idleMode==='not-latched')b[41]=2;
+          if(idleMode==='no-new-epoch')fields.setUint32(17,0,true);
+        }
         if(fault==='transport')b[0]=3;
         if(fault==='schema')b[1]=99;
-        if(fault==='ready')b[2]=0;
+        if(fault==='hardware')b[6]|=16;
+        if(fault==='io')b[6]=0;
+        if(fault==='error')fields.setInt32(13,-10,true);
         const framed=fault==='unframed'?b.slice(1):b;
         const padded=new Uint8Array(framed.length+8);padded.set(framed,4);
         return {status:'ok',data:new DataView(padded.buffer,4,framed.length)};
@@ -65,7 +81,8 @@ const view = bytes => new DataView(Uint8Array.from(bytes).buffer);
   run('state.device=device;state.dfuInterfaceNumber=4;state.dfuAltSetting=1;elements.confirmCheckbox.checked=true;');
   context.fetch=async()=>({ok:true,arrayBuffer:async()=>image.buffer});
   for(const [mode,message] of [['unframed',/56\/57 bytes/],['transport',/transport status 3/],
-    ['schema',/Unsupported V2 audio schema/],['ready',/controller not ready/]]){
+    ['schema',/Unsupported V2 audio schema/],['hardware',/requires diagnosis/],
+    ['io',/requires diagnosis/],['error',/requires diagnosis/]]){
     fault=mode;
     await assert.rejects(context.flashFirmware(),message);
     assert.equal(transfers.length,0,'invalid initial state must not mute or start DFU');
@@ -94,5 +111,17 @@ const view = bytes => new DataView(Uint8Array.from(bytes).buffer);
     assert.equal(run('elements.connectButton.disabled'),true);
   });
   assert.equal(run('state.busy'),false);
+  for(const mode of ['stalled','active','not-muted','not-latched','no-new-epoch']){
+    idleMode=mode;muted=false;reset=false;transfers.length=0;
+    await assert.rejects(context.flashFirmware(),/Audio mute not verified/);
+    assert.equal(transfers.filter(t=>t.setup.requestType==='class').length,0);
+    assert.equal(reset,false);
+  }
+  idleMode='healthy';muted=false;reset=false;transfers.length=0;
+  await context.flashFirmware();
+  assert.deepEqual(transfers[0].bytes,[2,2,24,3]);
+  assert.equal(transfers.filter(t=>t.setup.requestType==='class').length,pages+1);
+  assert.equal(reset,true);
+  console.log('PASS: healthy idle codec accepted; hardware faults, invalid I/O, errors, stalled runtime, active output and missing mute/epoch rejected before DFU');
   console.log(`PASS: V2 deep link, V1/V2 isolation, PID/serial/type guards, alt1/interface4, failed claim, hash, framed 57-byte responses, offset views, malformed state rejection, ${pages} DFU pages, transient mute preserves settings, reset and concurrency`);
 })().catch(error=>{console.error(error);process.exitCode=1;});
