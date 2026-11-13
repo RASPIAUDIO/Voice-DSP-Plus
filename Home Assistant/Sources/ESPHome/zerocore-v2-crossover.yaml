@@ -1,0 +1,91 @@
+---
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - script.execute: v2_apply_crossover
+
+select:
+  - platform: template
+    id: v2_speaker_profile
+    name: Full Speaker - Filter Profile
+    optimistic: true
+    restore_value: true
+    initial_option: Full Speaker 2-way
+    options: [Full Speaker 2-way, Woofer measurement only, Tweeter measurement only, External full range, Diagnostic Left only, Diagnostic Right only]
+
+number:
+  - platform: template
+    id: v2_crossover_hz
+    name: Full Speaker - Crossover
+    icon: mdi:chart-bell-curve
+    unit_of_measurement: Hz
+    min_value: 6000
+    max_value: 10000
+    step: 250
+    initial_value: 8500
+    optimistic: true
+    restore_value: true
+    mode: slider
+  - platform: template
+    id: v2_woofer_trim
+    name: Full Speaker - Woofer Trim
+    icon: mdi:speaker
+    unit_of_measurement: dB
+    min_value: -24
+    max_value: 0
+    step: 1
+    initial_value: -6
+    optimistic: true
+    restore_value: true
+    mode: slider
+  - platform: template
+    id: v2_tweeter_trim
+    name: Full Speaker - Tweeter Trim
+    icon: mdi:speaker-wireless
+    unit_of_measurement: dB
+    min_value: -24
+    max_value: 0
+    step: 1
+    initial_value: -12
+    optimistic: true
+    restore_value: true
+    mode: slider
+
+button:
+  - platform: template
+    name: Full Speaker - Apply When Idle
+    on_press:
+      - script.execute: v2_apply_crossover
+
+text_sensor:
+  - platform: template
+    name: Full Speaker - Applied Filter
+    entity_category: diagnostic
+    update_interval: 1s
+    lambda: return id(v2_control).crossover_diagnostics();
+
+script:
+  - id: v2_apply_crossover
+    mode: single
+    then:
+      - lambda: |-
+          if (id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING ||
+              id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING ||
+              id(v2_assist).is_running() || id(v2_audio_test_busy)) {
+            ESP_LOGW("v2_crossover", "Refuse filter change during playback/Assist/test; stop first");
+            return;
+          }
+          const auto option=id(v2_speaker_profile).current_option();
+          const int mode=option=="Full Speaker 2-way"?1:option=="Woofer measurement only"?2:
+                         option=="Tweeter measurement only"?3:option=="Diagnostic Left only"?4:
+                         option=="Diagnostic Right only"?5:0;
+          if (!std::isfinite(id(v2_crossover_hz).state) ||
+              !std::isfinite(id(v2_woofer_trim).state) || !std::isfinite(id(v2_tweeter_trim).state)) return;
+          if (!id(v2_control).configure_crossover(mode, int(id(v2_crossover_hz).state),
+              int(id(v2_woofer_trim).state), int(id(v2_tweeter_trim).state))) return;
+          if (id(v2_output_route).current_option()=="External speaker" && id(v2_control).can_request_audio()) {
+            auto mono=id(v2_channel).make_call(); mono.set_option("Both mono"); mono.perform();
+            const float db=id(v2_external_level_db).state;
+            if (std::isfinite(db) && db>=-60 && db<=0) id(v2_control).request_external_level(int(db));
+          }

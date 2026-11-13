@@ -1,0 +1,6 @@
+---
+packages:
+  power: !include zerocore-v2-power-diagnostics.yaml
+esphome:
+  project:
+    version: 0.6.38-gesture-directions.20261110

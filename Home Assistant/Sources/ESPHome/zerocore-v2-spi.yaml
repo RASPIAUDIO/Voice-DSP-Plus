@@ -1,0 +1,18 @@
+---
+packages:
+  accepted_audio: !include zerocore-v2-aec.yaml
+esphome:
+  name: voicedsp-v2-ee5330
+  friendly_name: VoiceDSP V2 EE5330
+  project:
+    version: 0.6.53-spi-bootstrap.20261111
+text_sensor:
+  - platform: template
+    name: XMOS SPI Boot
+    update_interval: 2s
+    lambda: |-
+      const int state = id(v2_control).spi_boot_status();
+      if (state < 0) return std::string("ERROR - audio inhibited");
+      if (state == 0) return std::string("Waiting");
+      if (state == 1) return std::string("Loading RAM - QSPI unchanged");
+      return id(v2_control).ready() ? std::string("Ready - automatic SPI RAM boot") : std::string("Image sent - waiting for controller");

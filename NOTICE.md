@@ -9,8 +9,10 @@ The PAJ7620U2 initialization table derives from DFRobot's
 `57edc1d`. Its [MIT notice](Raspberry%20Pi/Sources/licenses/PAJ-LICENSE.txt) is retained.
 
 The portable host/UI files use the historical `esphome::voicedsp_v2` namespace.
-The Pi controller has no ESPHome framework dependency. USB/Home Assistant
-releases will receive their own dependency notices when published.
+The Pi controller has no ESPHome framework dependency. USB and Home Assistant
+dependency versions, source provenance and retained notices are listed in
+[UPSTREAM.md](UPSTREAM.md). ESPHome-derived runtime components retain their
+GPL-3.0 notices; they are not relicensed under MIT.
 
 XMOS XVF3800 firmware uses proprietary VocalFusion/BeClear components.
 The [vendor package licence](Raspberry%20Pi/Firmware/LICENSE.xmos-package.rst)

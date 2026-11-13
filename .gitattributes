@@ -5,6 +5,8 @@
 *.zip -text
 *.sha256 text eol=lf
 *.wav -text
+*.flac -text
+*.tflite -text
 *.sh text eol=lf
 *.py text eol=lf
 *.md text eol=lf

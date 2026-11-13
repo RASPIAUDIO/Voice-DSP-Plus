@@ -1,0 +1,13 @@
+{
+  "name": "Voice DSP+ V2 + ZeroCore S3",
+  "version": "0.6.61",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {"path": "voicedsp-v2-0.6.61.factory.bin", "offset": 0}
+      ]
+    }
+  ]
+}

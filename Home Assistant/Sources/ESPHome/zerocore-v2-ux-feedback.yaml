@@ -1,0 +1,143 @@
+---
+packages:
+  baseline: !include zerocore-v2-gesture-directions.yaml
+esphome:
+  project:
+    version: 0.6.43-ui-recovery.20261110
+  on_boot:
+    priority: -100
+    then:
+      - script.execute: v2_startup_feedback
+
+globals:
+  - {id: v2_ui_phase, type: int, initial_value: '0'}
+  - {id: v2_ui_phase_ms, type: uint32_t, initial_value: '0'}
+  - {id: v2_ui_transient, type: int, initial_value: '-1'}
+  - {id: v2_ui_transient_ms, type: uint32_t, initial_value: '0'}
+  - {id: v2_ui_last_sent, type: int, initial_value: '-1'}
+  - {id: v2_ui_session, type: uint32_t, initial_value: '0'}
+  - {id: v2_ui_ha_connected, type: bool, initial_value: 'false'}
+  - {id: v2_startup_done, type: bool, initial_value: 'false'}
+  - {id: v2_startup_owns_route, type: bool, initial_value: 'false'}
+
+switch:
+  - platform: template
+    id: v2_startup_sound_enabled
+    name: Startup Sound
+    icon: mdi:music-note
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+interval:
+  - interval: 100ms
+    then:
+      - script.execute: v2_refresh_feedback
+
+button:
+  - platform: template
+    name: Test Startup Feedback
+    entity_category: diagnostic
+    on_press:
+      - script.execute: v2_startup_feedback
+
+script:
+  - id: v2_feedback_transient
+    parameters:
+      state: int
+    then:
+      - lambda: |-
+          id(v2_ui_transient) = state;
+          id(v2_ui_transient_ms) = millis();
+      - script.execute: v2_refresh_feedback
+
+  - id: v2_refresh_feedback
+    then:
+      - lambda: |-
+          if (id(v2_control).update_requested()) return;
+          const auto ui = id(v2_control).xmos_ui_snapshot();
+          if (!ui.available) { id(v2_ui_last_sent) = -1; return; }
+          const uint32_t now = millis();
+          if (id(v2_ui_transient) >= 0 && now - id(v2_ui_transient_ms) >= 1200U)
+            id(v2_ui_transient) = -1;
+          // End/error callbacks can be missed after a disconnect: never retain a
+          // listening/thinking/replying display when Assist is no longer running.
+          if (id(v2_ui_phase) >= 4 && now - id(v2_ui_phase_ms) > 3000U &&
+              !id(v2_assist).is_running()) id(v2_ui_phase) = 0;
+          int wanted = id(v2_ui_phase);
+          if (!id(v2_ui_ha_connected)) wanted = 4;
+          if (!id(v2_startup_done)) wanted = 4;
+          if (id(v2_ui_transient) >= 0) wanted = id(v2_ui_transient);
+          // Privacy mute and speaker mute are different, but both retain red marks.
+          if (id(v2_mic_mute).state || id(v2_player).is_muted()) wanted = 9;
+          if (wanted != id(v2_ui_last_sent) || ui.session_cookie != id(v2_ui_session)) {
+            id(v2_control).request_xmos_ui_state(wanted);
+            id(v2_ui_last_sent) = wanted;
+            id(v2_ui_session) = ui.session_cookie;
+            ESP_LOGI("v2_feedback", "LED requested=%d speaker_muted=%d", wanted, id(v2_player).is_muted());
+          }
+
+  - id: v2_startup_feedback
+    mode: single
+    then:
+      - wait_until:
+          condition:
+            lambda: return id(v2_control).ready() && millis() >= 5000U;
+          timeout: 25s
+      - if:
+          condition:
+            lambda: |-
+              return id(v2_control).ready() && !id(v2_control).update_requested() &&
+                  id(v2_output_route).current_option() == "OFF" &&
+                  !id(v2_audio_test_busy) &&
+                  id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE &&
+                  !id(v2_assist).is_running() && !id(v2_dispatch_wake).is_running() &&
+                  !id(v2_timer_ringing).state;
+          then:
+            - lambda: |-
+                id(v2_startup_owns_route) = true;
+                id(v2_audio_test_busy) = true;
+                // Start internally at unity; never enable the external amplifier.
+                id(v2_control).request_internal_level(-6);
+            - wait_until:
+                condition:
+                  lambda: |-
+                    return !id(v2_startup_owns_route) || (id(v2_control).ready() &&
+                        id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS);
+                timeout: 5s
+            - delay: 300ms
+            - if:
+                condition:
+                  lambda: |-
+                    return id(v2_startup_sound_enabled).state && id(v2_ui_sounds_enabled).state &&
+                        id(v2_startup_owns_route) && id(v2_control).ready() &&
+                        !id(v2_control).update_requested() &&
+                        id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS &&
+                        !id(v2_player).is_muted() && !id(v2_assist).is_running() &&
+                        !id(v2_dispatch_wake).is_running() && !id(v2_timer_ringing).state &&
+                        id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE;
+                then:
+                  - lambda: |-
+                      // Archived CC0 rising cue, padded and normalized to -3 dBFS peak.
+                      id(v2_player).play_file(id(v2_startup_sound), true, false);
+                      id(v2_sound_count)++;
+                      ESP_LOGI("v2_feedback", "Startup cue internal 0dB, file -3dBFS peak");
+                  - delay: 1500ms
+            - lambda: |-
+                if (id(v2_startup_owns_route) && !id(v2_control).update_requested()) {
+                  id(v2_startup_owns_route) = false;
+                  if (id(v2_control).ready() &&
+                      id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS) {
+                    auto route = id(v2_output_route).make_call();
+                    route.set_option("Internal stereo");
+                    route.perform();
+                  } else id(v2_control).request(VDSP_AUDIO_OFF);
+                }
+                id(v2_startup_owns_route) = false;
+                id(v2_audio_test_busy) = false;
+      - lambda: id(v2_startup_done) = true;
+      - script.execute: v2_refresh_feedback
+
+media_player:
+  - id: !extend v2_player
+    files:
+      - {id: v2_startup_sound, file: assets/ui-sounds/startup_audible.wav}

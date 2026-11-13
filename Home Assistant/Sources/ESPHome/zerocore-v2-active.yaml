@@ -1,0 +1,249 @@
+---
+# Base package; build the release through zerocore-v2-web.yaml.
+# V2 I2S48 only. The local component loads the pinned XMOS SPI RAM image.
+# QSPI is unchanged. Provision Wi-Fi via Improv serial.
+esphome:
+  name: voicedsp-v2-active-dev
+  friendly_name: VoiceDSP V2 Active Development
+  min_version: 2026.8.1
+  project:
+    name: RASPIAUDIO.VoiceDSP-V2
+    version: 0.6.0-dev.20261007
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: ESP32S3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+    # Retained V1 core_board.yaml memory/cache settings for concurrent audio/inference.
+    sdkconfig_options:
+      CONFIG_SPIRAM_RODATA: "y"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB: "y"
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+  level: INFO
+  hardware_uart: USB_SERIAL_JTAG
+
+wifi:
+  reboot_timeout: 0s
+  ap:
+    ssid: VoiceDSP V2 Setup
+    password: voicedsp-setup
+
+improv_serial:
+captive_portal:
+
+ota:
+  - platform: esphome
+    on_begin:
+      - voice_assistant.stop:
+      - micro_wake_word.stop:
+      - media_player.stop: v2_player
+      - lambda: |-
+          // OTA_STARTED is synchronous and precedes backend.begin/flash writes.
+          // Do not replace this with an asynchronous automation delay/wait.
+          if (!id(v2_control).prepare_update()) {
+            ESP_LOGE("v2_update", "I2C worker did not stop; aborting update by safe reboot");
+            App.safe_reboot();
+          }
+    on_error:
+      - lambda: |-
+          // A failed upload leaves the worker quiesced. Boot the retained image.
+          if (id(v2_control).update_requested()) App.safe_reboot();
+
+api:
+  reboot_timeout: 0s
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [voicedsp_v2, i2s_audio, voice_dsp_i2s_microphone]
+
+# Open-drain software I2C worker owns GPIO5/6. No i2c: scan/recovery.
+voicedsp_v2:
+  id: v2_control
+  clock_speaker: v2_i2s_speaker
+  paired_xmos_0_6_installed: true
+
+i2s_audio:
+  - id: v2_i2s
+    i2s_lrclk_pin: GPIO7
+    i2s_bclk_pin: GPIO8
+    i2s_mode: primary
+    access_mode: duplex
+    # GPIO16 MCLK deliberately unconfigured.
+
+microphone:
+  - platform: voice_dsp_i2s_microphone
+    id: v2_mics
+    i2s_audio_id: v2_i2s
+    i2s_din_pin: GPIO15
+    adc_type: external
+    channel: stereo
+    sample_rate: 48000
+    bits_per_sample: 32bit
+    pdm: false
+    correct_dc_offset: false
+
+speaker:
+  - platform: i2s_audio
+    id: v2_i2s_speaker
+    i2s_audio_id: v2_i2s
+    i2s_dout_pin: GPIO9
+    dac_type: external
+    channel: stereo
+    sample_rate: 48000
+    bits_per_sample: 32bit
+    timeout: never
+    buffer_duration: 100ms
+  - platform: mixer
+    id: v2_mixer
+    output_speaker: v2_i2s_speaker
+    num_channels: 2
+    source_speakers:
+      - id: v2_announcement_input
+        timeout: never
+      - id: v2_media_input
+        timeout: never
+  - platform: resampler
+    id: v2_announcement_resampler
+    output_speaker: v2_announcement_input
+    sample_rate: 48000
+    bits_per_sample: 16
+  - platform: resampler
+    id: v2_media_resampler
+    output_speaker: v2_media_input
+    sample_rate: 48000
+    bits_per_sample: 16
+
+media_player:
+  - platform: speaker
+    id: v2_player
+    name: VoiceDSP V2 Player
+    volume_initial: 0.4
+    announcement_pipeline:
+      speaker: v2_announcement_resampler
+      format: FLAC
+      sample_rate: 48000
+      num_channels: 1
+    media_pipeline:
+      speaker: v2_media_resampler
+      format: FLAC
+      sample_rate: 48000
+      num_channels: 2
+
+micro_wake_word:
+  id: v2_wake
+  microphone:
+    microphone: v2_mics
+    channels: 0
+    gain_factor: 1
+  models:
+    - model: assets/hey_jarvis.json
+      id: v2_jarvis
+    - model: assets/stop.json
+      id: v2_stop_word
+      internal: true
+  vad:
+    model: assets/vad.json
+  stop_after_detection: false
+  on_wake_word_detected:
+    - script.execute:
+        id: v2_dispatch_wake
+        word: !lambda return wake_word;
+
+voice_assistant:
+  id: v2_assist
+  microphone:
+    microphone: v2_mics
+    channels: 0
+    gain_factor: 1
+  media_player: v2_player
+  micro_wake_word: v2_wake
+  use_wake_word: false
+  noise_suppression_level: 0
+  auto_gain: 0dBFS
+  volume_multiplier: 1
+  on_client_disconnected:
+    - voice_assistant.stop:
+    - micro_wake_word.stop:
+
+# Keep capture gated by verified XMOS runtime/session. No automatic HP enable.
+interval:
+  - interval: 2s
+    then:
+      - if:
+          condition:
+            and:
+              - lambda: return id(v2_control).ready() && !id(v2_mic_mute).state;
+              - voice_assistant.connected:
+          then:
+            - if:
+                condition:
+                  and:
+                    - not:
+                        voice_assistant.is_running:
+                    - not:
+                        micro_wake_word.is_running:
+                then:
+                  - micro_wake_word.start:
+          else:
+            - voice_assistant.stop:
+            - micro_wake_word.stop:
+
+button:
+  - platform: template
+    name: Audio OFF
+    on_press:
+      - lambda: id(v2_control).request(VDSP_AUDIO_OFF);
+  - platform: template
+    name: LINE output minus 30 dB
+    on_press:
+      - lambda: id(v2_control).request(VDSP_AUDIO_LINE);
+  - platform: template
+    name: Internal HP guarded minus 36 dB
+    on_press:
+      - lambda: id(v2_control).request_internal_level(-36);
+
+text_sensor:
+  - platform: template
+    name: Microphone Geometry
+    update_interval: 1s
+    lambda: |-
+      if (!id(v2_control).ready()) return std::string("Unavailable");
+      switch (id(v2_control).snapshot().microphone) {
+        case 1: return std::string("Internal SQUARE");
+        case 2: return std::string("External SQUARE");
+        case 3: return std::string("External LINE");
+        default: return std::string("Unknown");
+      }
+  - platform: template
+    name: V2 hardware and power state
+    entity_category: diagnostic
+    update_interval: 1s
+    lambda: return id(v2_control).diagnostics();
+  - platform: template
+    name: Software qualification
+    entity_category: diagnostic
+    update_interval: 60s
+    lambda: return std::string("RECEPTION CANDIDATE - integration under test");
+
+binary_sensor:
+  - platform: template
+    name: Audio Controller Ready
+    entity_category: diagnostic
+    lambda: return id(v2_control).ready();
+  - platform: template
+    name: Jack Connected
+    lambda: |-
+      if (!id(v2_control).ready()) return {};
+      return (id(v2_control).snapshot().port0 & 0x20u) != 0;

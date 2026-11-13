@@ -1,0 +1,148 @@
+---
+# Adapted from archived V1 speaker-media-product.yaml timer_ringing.
+# No route, gain, volume or unmute commands: timers respect the chosen output.
+media_player:
+  - id: !extend v2_player
+    files:
+      - {id: v2_timer_sound, file: assets/ui-sounds/timer_finished.wav}
+
+voice_assistant:
+  on_timer_finished:
+    - switch.turn_on: v2_timer_ringing
+
+globals:
+  - {id: v2_timer_audio_owned, type: bool, initial_value: 'false'}
+
+switch:
+  - platform: template
+    id: v2_timer_ringing
+    internal: true
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - if:
+          condition:
+            lambda: |-
+              return id(v2_control).ready() && !id(v2_audio_test_busy) &&
+                  id(v2_control).snapshot().route != VDSP_AUDIO_OFF &&
+                  !id(v2_player).is_muted();
+          then:
+            - script.execute: v2_ring_timer
+          else:
+            - logger.log: "V2_TIMER suppressed: output unavailable, muted or bench active"
+            - switch.turn_off: v2_timer_ringing
+    on_turn_off:
+      - script.stop: v2_ring_timer
+      - if:
+          condition:
+            lambda: return id(v2_timer_audio_owned);
+          then:
+            - lambda: id(v2_timer_audio_owned) = false;
+            - media_player.repeat_off:
+                id: v2_player
+                announcement: true
+            - lambda: id(v2_player).set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 0);
+            - media_player.stop:
+                id: v2_player
+                announcement: true
+            - if:
+                condition:
+                  not:
+                    voice_assistant.is_running:
+                then:
+                  - mixer_speaker.apply_ducking:
+                      id: v2_media_input
+                      decibel_reduction: 0
+                      duration: 1s
+
+script:
+  - id: v2_ring_timer
+    mode: single
+    then:
+      - lambda: id(v2_timer_audio_owned) = true;
+      - voice_assistant.stop:
+      - media_player.stop:
+          id: v2_player
+          announcement: true
+      - mixer_speaker.apply_ducking:
+          id: v2_media_input
+          decibel_reduction: 20
+          duration: 0ms
+      - media_player.repeat_one:
+          id: v2_player
+          announcement: true
+      - lambda: id(v2_player).set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 500);
+      - lambda: id(v2_player).play_file(id(v2_timer_sound), true, false);
+      - delay: 15min
+      - switch.turn_off: v2_timer_ringing
+  - id: v2_test_timer
+    mode: single
+    then:
+      - delay: 5s
+      - if:
+          condition:
+            lambda: |-
+              // DAC bounds the test; 50% software volume adds about -25 dB.
+              // The immutable timer asset peaks below the 0.25 bench ceiling.
+              return !id(v2_timer_ringing).state && id(v2_control).ready() &&
+                  !id(v2_audio_test_busy) && !id(v2_assist).is_running() &&
+                  id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE &&
+                  id(v2_control).snapshot().route == VDSP_AUDIO_HT326 &&
+                  std::isfinite(id(v2_external_level_db).state) &&
+                  id(v2_external_level_db).state >= -60.0f &&
+                  id(v2_external_level_db).state <= -27.0f &&
+                  id(v2_assist).get_timers().empty() &&
+                  std::isfinite(id(v2_player).volume) &&
+                  id(v2_player).volume > 0.0f && id(v2_player).volume <= 1.0f &&
+                  !id(v2_player).is_muted();
+          then:
+            - switch.turn_on: v2_timer_ringing
+            - delay: 5s
+            - switch.turn_off: v2_timer_ringing
+          else:
+            - logger.log: "V2_TIMER test refused: require idle external -60..-27dB, player 1..100%, no Assist/timer/bench"
+
+button:
+  - platform: template
+    name: Stop Timer Ringing
+    on_press:
+      - script.stop: v2_test_timer
+      - if:
+          condition:
+            switch.is_on: v2_timer_ringing
+          then:
+            - switch.turn_off: v2_timer_ringing
+  - platform: template
+    name: Test Timer 5 Seconds
+    entity_category: diagnostic
+    on_press:
+      - script.execute: v2_test_timer
+
+binary_sensor:
+  - platform: template
+    name: Timer Ringing
+    lambda: return id(v2_timer_ringing).state;
+
+sensor:
+  - platform: template
+    name: Next Timer Remaining
+    unit_of_measurement: s
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      uint32_t remaining = UINT32_MAX;
+      for (const auto &timer : id(v2_assist).get_timers())
+        if (timer.is_active && timer.seconds_left < remaining) remaining = timer.seconds_left;
+      return remaining == UINT32_MAX ? 0.0f : static_cast<float>(remaining);
+
+interval:
+  - interval: 250ms
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(v2_timer_ringing).state &&
+                  (!id(v2_control).ready() || id(v2_player).is_muted() ||
+                   id(v2_audio_test_busy) || id(v2_control).snapshot().route == VDSP_AUDIO_OFF);
+          then:
+            - switch.turn_off: v2_timer_ringing

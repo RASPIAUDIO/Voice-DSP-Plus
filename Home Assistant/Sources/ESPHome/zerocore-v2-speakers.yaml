@@ -1,0 +1,198 @@
+---
+packages:
+  controls: !include zerocore-v2-product.yaml
+esphome:
+  project:
+    version: 0.6.7-internal-stereo.20261109
+
+globals:
+  - id: v2_test_previous_volume
+    type: float
+    initial_value: '0.5f'
+  - id: v2_test_previous_mute
+    type: bool
+    initial_value: 'false'
+  - id: v2_audio_test_busy
+    type: bool
+    initial_value: 'false'
+
+number:
+  - platform: template
+    id: v2_internal_level_db
+    name: Internal Speaker Level
+    icon: mdi:speaker-multiple
+    unit_of_measurement: dB
+    min_value: -60
+    max_value: 0
+    step: 3
+    initial_value: -6
+    restore_value: false
+    optimistic: true
+    mode: slider
+    on_value:
+      - lambda: |-
+          if (id(v2_output_route).current_option() == "Internal stereo" &&
+              id(v2_control).ready() && !id(v2_audio_test_busy) &&
+              std::isfinite(x) && x >= -60.0f && x <= 0.0f)
+            id(v2_control).request_internal_level((int)x);
+  - platform: template
+    id: v2_external_level_db
+    name: External Speaker Level
+    icon: mdi:speaker
+    unit_of_measurement: dB
+    min_value: -60
+    # External output capped at unity; supply/amp clipping is still possible.
+    max_value: 0
+    step: 3
+    initial_value: -30
+    restore_value: false
+    optimistic: true
+    mode: slider
+    on_value:
+      - lambda: |-
+          if (id(v2_output_route).current_option() == "External speaker" &&
+              id(v2_control).ready() && !id(v2_audio_test_busy) &&
+              std::isfinite(x) && x >= -60.0f && x <= 0.0f)
+            id(v2_control).request_external_level((int)x);
+
+select:
+  - platform: template
+    id: v2_output_route
+    name: Audio Output
+    icon: mdi:audio-input-stereo-minijack
+    optimistic: true
+    restore_value: false
+    initial_option: "OFF"
+    options: ["OFF", "Internal stereo", "External speaker", "LINE OUT stereo"]
+    on_value:
+      - lambda: |-
+          // A manual route selection cancels the temporary boot cue ownership.
+          if (id(v2_startup_owns_route)) {
+            auto stop = id(v2_player).make_call();
+            stop.set_command(media_player::MEDIA_PLAYER_COMMAND_STOP);
+            stop.perform();
+            id(v2_startup_owns_route) = false;
+          }
+          if (x == "OFF") {
+            id(v2_control).request(VDSP_AUDIO_OFF);
+            return;
+          }
+          if (!id(v2_control).can_request_audio()) return;
+          if (x == "External speaker") {
+            // BeClear currently has ONE reference. Mono reaches both the DAC
+            // and XMOS before their paths split, unlike a post-DAC downmix.
+            auto mono = id(v2_channel).make_call();
+            mono.set_option("Both mono");
+            mono.perform();
+            const float db = id(v2_external_level_db).state;
+            if (std::isfinite(db) && db >= -60.0f && db <= 0.0f)
+              id(v2_control).request_external_level((int)db);
+            return;
+          }
+          const auto wanted = x == "Internal stereo" ?
+              VDSP_AUDIO_DAC_SPEAKERS : VDSP_AUDIO_LINE;
+          auto stereo = id(v2_channel).make_call();
+          stereo.set_option("Stereo");
+          stereo.perform();
+          // Internal slider also applies when reselecting the same route for a test.
+          if (wanted == VDSP_AUDIO_DAC_SPEAKERS) {
+            const float db = id(v2_internal_level_db).state;
+            if (std::isfinite(db) && db >= -60.0f && db <= 0.0f)
+              id(v2_control).request_internal_level((int)db);
+          } else if (id(v2_control).snapshot().route != wanted) {
+            id(v2_control).request(wanted, 36);
+          }
+
+text_sensor:
+  - platform: template
+    name: Active Audio Output
+    icon: mdi:speaker
+    update_interval: 500ms
+    lambda: |-
+      if (!id(v2_control).ready()) return std::string("Controller unavailable");
+      switch (id(v2_control).snapshot().route) {
+        case VDSP_AUDIO_OFF: return std::string("OFF");
+        case VDSP_AUDIO_DAC_SPEAKERS: return std::string("Internal stereo");
+        case VDSP_AUDIO_HT326: return std::string("External speaker");
+        case VDSP_AUDIO_LINE: return std::string("LINE OUT stereo");
+        default: return std::string("Route not confirmed");
+      }
+
+media_player:
+  - id: !extend v2_player
+    files:
+      - id: v2_internal_stereo_test_file
+        file: assets/internal-stereo-test.flac
+
+button:
+  - platform: template
+    name: Test Internal Speakers Left then Right
+    on_press:
+      - script.execute: v2_internal_stereo_test
+
+script:
+  - id: v2_internal_stereo_test
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: return id(v2_control).ready() && !id(v2_audio_test_busy);
+          then:
+            - lambda: |-
+                id(v2_audio_test_busy) = true;
+                id(v2_test_previous_volume) = id(v2_player).volume;
+                id(v2_test_previous_mute) = id(v2_player).is_muted();
+            - media_player.stop: v2_player
+            - delay: 100ms
+            - wait_until:
+                condition:
+                  lambda: return id(v2_player).state != media_player::MEDIA_PLAYER_STATE_PLAYING;
+                timeout: 3s
+            - select.set:
+                id: v2_output_route
+                option: Internal stereo
+            - wait_until:
+                condition:
+                  lambda: return id(v2_control).ready() && id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS;
+                timeout: 5s
+            - if:
+                condition:
+                  lambda: return id(v2_control).ready() && id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS;
+                then:
+                  - media_player.volume_set:
+                      id: v2_player
+                      # Player 100% avoids the nonlinear software attenuation.
+                      # The finite test file peaks at 0.25; DAC uses the internal slider.
+                      volume: 100%
+                  - media_player.unmute: v2_player
+                  - wait_until:
+                      condition:
+                        lambda: return id(v2_player).volume >= 0.99f && !id(v2_player).is_muted();
+                      timeout: 3s
+                  - if:
+                      condition:
+                        lambda: return id(v2_player).volume >= 0.99f && !id(v2_player).is_muted() && id(v2_control).ready() && id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS;
+                      then:
+                        - media_player.speaker.play_on_device_media_file:
+                            id: v2_player
+                            media_file: v2_internal_stereo_test_file
+                            announcement: false
+                        - wait_until:
+                            condition:
+                              lambda: return id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING;
+                            timeout: 5s
+                        - wait_until:
+                            condition:
+                              lambda: return id(v2_player).state != media_player::MEDIA_PLAYER_STATE_PLAYING;
+                            timeout: 10s
+                  - media_player.stop: v2_player
+                  - media_player.volume_set:
+                      id: v2_player
+                      volume: !lambda return id(v2_test_previous_volume);
+                  - delay: 100ms
+                  - if:
+                      condition:
+                        lambda: return id(v2_test_previous_mute);
+                      then:
+                        - media_player.mute: v2_player
+            - lambda: id(v2_audio_test_busy) = false;

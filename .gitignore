@@ -1,5 +1,7 @@
 *.log
 *.wav
+!Home Assistant/Sources/ESPHome/assets/ui-sounds/*.wav
+.esphome/
 *.tmp
 .DS_Store
 Thumbs.db

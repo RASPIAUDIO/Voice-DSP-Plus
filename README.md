@@ -9,6 +9,8 @@ outputs and hands-free controls. Build a compact voice interface or a two-way
 speaker system with your own application.
 
 [Product page](https://raspiaudio.com/product/voicedsp/) |
+[USB guide](USB/README.md) |
+[Home Assistant guide](Home%20Assistant/README.md) |
 [Raspberry Pi guide](Raspberry%20Pi/README.md) |
 [Hardware and microphones](Raspberry%20Pi/Documentation/hardware.md)
 
@@ -18,15 +20,34 @@ speaker system with your own application.
 
 ## Choose your setup
 
-| Raspberry Pi | USB | Home Assistant |
+| USB | Home Assistant | Raspberry Pi |
 | --- | --- | --- |
-| Pi4 audio HAT for your application | Standalone computer sound card | Voice satellite with ZeroCore S3 |
-| 48 kHz processed mono capture and mono program playback | USB release to follow | ESPHome/Assist release to follow |
-| [Sources, installation and controls](Raspberry%20Pi/README.md) | [USB section](USB/README.md) | [Home Assistant section](Home%20Assistant/README.md) |
+| Standalone computer sound card | Voice satellite with ZeroCore S3 | Pi4 audio HAT for your application |
+| 48 kHz mono input/output, Windows volume, gestures and buttons | Local wake word, Assist, music and on-device settings | 48 kHz audio, desktop controls and your Linux software |
+| **0.8.9-r4** | **0.6.61** | **48 kHz installer kit** |
+| [Get started](USB/README.md) | [Get started](Home%20Assistant/README.md) | [Get started](Raspberry%20Pi/README.md) |
+| [Firmware](USB/Firmware/README.md) / [Sources](USB/Sources/README.md) | [Firmware](Home%20Assistant/Firmware/README.md) / [Sources](Home%20Assistant/Sources/README.md) | [Firmware](Raspberry%20Pi/Firmware/README.md) / [Sources](Raspberry%20Pi/Sources/README.md) |
 
-**Ready now:** Raspberry Pi installer, paired firmware, Linux sources, desktop
-controls and guides. [Download the Pi kit](Raspberry%20Pi/Firmware/README.md).
-USB and Home Assistant packaging will follow.
+**Three ways to use the same audio hardware.** Each folder includes its own
+installation guide, matching binaries, sources and checksums. USB and Home
+Assistant downloads are the original validated checkpoints, not new tuning.
+Choose the correct mode: their XMOS images are not interchangeable.
+
+## USB: one cable, familiar controls
+
+Connect the XMOS USB data port, select Voice DSP+ as microphone and speaker,
+and launch your voice application. Buttons and gestures follow Windows volume
+and mute. Hold DOWN for four seconds to switch internal/external speakers;
+the last output and volume survive a power cycle. [USB guide](USB/README.md).
+
+## Home Assistant: a connected voice satellite
+
+Add **ZeroCore S3**, install the ESP32 factory image through its USB port, and
+configure Wi-Fi. The ESP32 loads its matching XMOS image automatically, without
+XTAG. **Voice Compact / Full Speaker / Custom**, audio controls, gestures and
+diagnostics appear on the device page; no custom dashboard is required.
+Wake word runs locally on ESP32; AEC runs on XMOS; Home Assistant handles the
+conversation pipeline. [Home Assistant guide](Home%20Assistant/README.md).
 
 ## Raspberry Pi: familiar desktop controls
 
@@ -56,17 +77,19 @@ The XMOS handles audio processing; the Pi runs your software.
 ## Repository layout
 
 ```text
+USB/
+  README.md        Plug-and-play audio, buttons, gestures and persistence
+  Sources/         USB integration, host control, tests and XMOS source changes
+  Firmware/        USB update, factory, RAM and XE images with checksums
+Home Assistant/
+  README.md        Installation, Assist, product modes and daily controls
+  Sources/         ESPHome YAML, components, assets and XMOS source changes
+  Firmware/        ESP32 factory/OTA and matching XMOS image with checksums
 Raspberry Pi/
   README.md        Installation and daily use
   Sources/         Linux controller, installer, desktop UI and tests
   Firmware/        Installer, paired images and checksums
   Documentation/   Wiring, pinout, AEC/DOA controls and release scope
-USB/
-  Sources/         Reserved for the USB release
-  Firmware/        Reserved for the USB release
-Home Assistant/
-  Sources/         Reserved for ESPHome and host components
-  Firmware/        Reserved for the paired release
 ```
 
 The Pi kit is based on the tested Pi4 64-bit Raspberry Pi OS setup. Pi5, other

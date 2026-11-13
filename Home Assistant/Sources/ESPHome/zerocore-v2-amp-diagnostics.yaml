@@ -1,0 +1,51 @@
+---
+# U1 HT326 pin 2 -> AMP_SD_N -> U13 PCAL6416 P0.7 (input only).
+# A LOW also means intentional shutdown: qualify it with P0.4 AMP_CTRL1.
+# Read existing sole-worker snapshots; never create another I2C owner.
+binary_sensor:
+  - platform: template
+    id: v2_external_amp_fault
+    name: External Amplifier - Fault or Unexpected Shutdown
+    entity_category: diagnostic
+    device_class: problem
+
+interval:
+  - interval: 250ms
+    then:
+      - lambda: |-
+          if (!id(v2_control).io_diagnostic_fresh()) {
+            if (id(v2_external_amp_fault).has_state())
+              id(v2_external_amp_fault).invalidate_state();
+            return;
+          }
+          const auto s = id(v2_control).snapshot();
+          const bool enabled = (s.port0 & VDSP_V2_AMP_ENABLE) != 0;
+          const bool fault = enabled && s.amp_fault;
+          if (!id(v2_external_amp_fault).has_state() ||
+              id(v2_external_amp_fault).state != fault)
+            ESP_LOGI("v2_amp", "AMP_STATUS enable=%u sd_n=%u fault_or_shutdown=%u",
+                     enabled, !s.amp_fault, fault);
+          id(v2_external_amp_fault).publish_state(fault);
+
+text_sensor:
+  - platform: template
+    name: External Amplifier - SD FAULT State
+    entity_category: diagnostic
+    update_interval: 500ms
+    lambda: |-
+      if (!id(v2_control).io_diagnostic_fresh()) return std::string("Unavailable");
+      const auto s = id(v2_control).snapshot();
+      if (!(s.port0 & VDSP_V2_AMP_ENABLE)) return std::string("Amplifier disabled");
+      if (s.amp_fault) return std::string("SD/FAULT low - fault or unexpected shutdown");
+      return std::string("Enabled - SD/FAULT high");
+  - platform: template
+    name: External Amplifier - Raw Pins
+    entity_category: diagnostic
+    update_interval: 1s
+    lambda: |-
+      if (!id(v2_control).io_diagnostic_fresh()) return std::string("Unavailable");
+      const auto s = id(v2_control).snapshot();
+      char text[64];
+      snprintf(text, sizeof(text), "P0=0x%02X ENABLE=%u SD_N=%u", s.port0,
+               !!(s.port0 & VDSP_V2_AMP_ENABLE), !s.amp_fault);
+      return std::string(text);

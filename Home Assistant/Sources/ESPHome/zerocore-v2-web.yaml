@@ -1,0 +1,14 @@
+---
+packages:
+  product_modes: !include zerocore-v2-modes.yaml
+  capture: !include zerocore-v2-crossover-bench.yaml
+  crossover: !include zerocore-v2-crossover.yaml
+  amp_diagnostics: !include zerocore-v2-amp-diagnostics.yaml
+  spi: !include zerocore-v2-spi.yaml
+  firmware_menu: !include zerocore-v2-firmware-menu.yaml
+esphome:
+  name: voicedsp-v2
+  name_add_mac_suffix: true
+  friendly_name: Voice DSP+ V2
+  project:
+    version: 0.6.61-absolute-levels.20261111
