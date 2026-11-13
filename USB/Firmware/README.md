@@ -8,6 +8,13 @@ original accepted binaries; no acoustic parameters were changed for publication.
 
 ## Existing USB board
 
+[Open the V2 web updater](https://raspiaudio.com/voicedsp/webflasher/?firmware=v2-usb-mono-48k)
+in desktop Chrome/Edge. **0.8.9-r4** is preselected. Stop all audio and control
+apps, connect the XMOS USB data port, confirm the hardware and click Install.
+The updater checks size/SHA256 and refuses V1/V2 cross-flashing. It temporarily
+mutes V2 without replacing the saved output, level or crossover settings.
+Check the output and volume before resuming playback after reboot.
+
 Stop playback first. The board must already enumerate with compatible V2 USB
 DFU firmware. Use the **upgrade** on **interface 4 / alternate 1**, never the
 factory file. This preserves the factory fallback and settings area.
@@ -28,9 +35,8 @@ dfu-util -d 20b1:4fc7 -S CURRENT_SERIAL -i 4 -a 1 -e
 Keep power connected until completion. Check the output and volume before playing.
 Expected release `0089`, serial `VDSP2-USBMONO-089-DEV`.
 
-The [USB web flasher](https://raspiaudio.com/voicedsp/webflasher/) is a separate
-deployment. This Git release does not update its catalog. Use that site only
-when it explicitly offers this V2 version; do not select a V1 image.
+The V1 choices remain in a separate group. Do not select them for a V2 board.
+The [web updater source](../WebInstaller/README.md) is versioned alongside this release.
 
 ## Blank board / recovery
 

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Voice DSP+ Web Firmware Updater</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">RASPIAUDIO VOICE DSP+</p>
+        <h1>Update Voice DSP+ in your browser</h1>
+        <p>
+          Choose your hardware generation, stop playback, then update in Chrome
+          or Edge. V2 USB mono 48 kHz: validated release <strong>0.8.9-r4</strong>.
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="home-assistant-heading">
+        <h2 id="home-assistant-heading">Home Assistant with ZeroCore S3 + Voice DSP+</h2>
+        <p>
+          Looking for the XMOS voice assistant? Install the ESP32 application
+          from the RASPIAUDIO App Store. ZeroCore S3 then manages the XMOS audio
+          firmware automatically. Connect the ZeroCore S3 USB port, not the XMOS USB port.
+        </p>
+        <p>
+          <a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=VoiceDSPV2" target="_blank" rel="noopener">
+            Install V2 Home Assistant 0.6.61 on ZeroCore S3
+          </a>
+        </p>
+        <p><a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=HomeAssistant">Original V1 Home Assistant installer</a></p>
+        <p class="details">For standalone USB audio without an ESP32, use the updater below.</p>
+      </section>
+
+      <section class="panel">
+        <h2>1. Choose a USB mode</h2>
+        <label for="firmwareSelect">Voice DSP+ firmware</label>
+        <select id="firmwareSelect"></select>
+        <p id="firmwareDetails" class="details"></p>
+        <p class="details"><strong>V2 and V1 firmware are not interchangeable.</strong>
+          V2 requires an existing VDSP2-USBMONO USB identity. A blank board or an
+          I2S-only board needs initial provisioning, not this USB updater.
+          <a href="https://github.com/RASPIAUDIO/Voice-DSP-Plus/blob/V2/USB/Firmware/README.md">V2 installation and recovery guide</a></p>
+      </section>
+
+      <section id="connectPanel" class="panel">
+        <h2>2. Connect Voice DSP+</h2>
+        <p>
+          Stop all audio playback and close audio/control apps. Connect the XMOS USB data port, keep it powered during the update, then
+          choose the XMOS device in the browser picker.
+        </p>
+        <button id="connectButton" type="button">Connect Voice DSP+</button>
+        <p id="deviceStatus" class="details">No device connected.</p>
+      </section>
+
+      <section id="flashPanel" class="panel">
+        <h2>3. Install firmware</h2>
+        <label class="confirm">
+          <input id="confirmCheckbox" type="checkbox">
+          I understand that unplugging the board during flashing can leave the
+          firmware incomplete. I have stopped playback and selected the correct hardware generation.
+        </label>
+        <button id="flashButton" type="button" disabled>Install Selected Firmware</button>
+        <progress id="progress" value="0" max="100"></progress>
+        <p id="progressText" class="details">Waiting.</p>
+      </section>
+
+      <section class="panel log-panel">
+        <h2>Log</h2>
+        <pre id="log"></pre>
+      </section>
+
+      <section class="notes">
+        <h2>Compatibility Notes</h2>
+        <ul>
+          <li>Use Chrome or Chromium from HTTPS, or from <code>localhost</code> during development.</li>
+          <li>If Windows refuses access to the DFU interface, use the documented <code>dfu-util</code> fallback.</li>
+          <li>If the failed shortcut firmware cannot be recovered by WebUSB, first use the <a href="../rescue/pi-ai-mic-dfu-rescue-4fba-windows.zip">Windows DFU rescue ZIP</a>.</li>
+          <li>If that rescue sees <code>20B1:4FBA</code> but fails with <code>Cannot set alternate interface: LIBUSB_ERROR_IO</code>, USB recovery is probably broken by that test firmware. A <a href="../rescue/pi-ai-mic-dfu-rescue-4fba-factory-alt0-windows.zip">factory alt 0 diagnostic ZIP</a> is archived, but the reliable recovery path is Raspberry Pi SPI boot or XTAG.</li>
+          <li>This page flashes the public <code>*_dfu_upgrade.bin</code> images only.</li>
+        </ul>
+      </section>
+    </main>
+    <script src="app-v2-089.js" type="module"></script>
+  </body>
+</html>

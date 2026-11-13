@@ -4,6 +4,7 @@
 answers and hands-free controls to Home Assistant. Use your own speakers or
 the corresponding Voice Compact / Full Speaker assembly.
 
+[Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) |
 [Download 0.6.61](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
 [All three setups](../README.md)
 
@@ -12,9 +13,9 @@ the corresponding Voice Compact / Full Speaker assembly.
 1. With power off, mount **RASPIAUDIO ZeroCore S3** on **Voice DSP+ V2**.
    You need Home Assistant, 2.4 GHz Wi-Fi and a USB data cable. Remove any Pi.
 2. Connect the **ZeroCore USB data port**, not the XMOS port, to your computer.
-3. Download the [factory image](Firmware/voicedsp-v2-0.6.61.factory.bin).
-   Open [ESPHome Web](https://web.esphome.io/) in Chrome/Edge, connect, choose
-   Install, then select this file. An erased install removes saved settings.
+3. Open [RASPIAUDIO Apps: V2 installer](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2)
+   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.61** is preselected.
+   Connect and Install. An erased install removes saved settings.
 4. Configure Wi-Fi using serial Improv through the installer. Alternatively use
    the fallback **VoiceDSP V2 Setup** access point (password `voicedsp-setup`).
    This particular image does not advertise BLE Improv.
@@ -22,9 +23,9 @@ the corresponding Voice Compact / Full Speaker assembly.
    Ready** and **XMOS firmware status: Ready**, select your Assist pipeline, then
    try **Hey Jarvis**. Start with a low playback volume.
 
-[RASPIAUDIO Apps](https://apps.raspiaudio.com/) is another installation entry point.
-Its catalog is deployed separately: verify **V2 0.6.61** before using it. The
-downloadable factory file above is the exact release in this branch.
+Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.61.factory.bin)
+and select it in [ESPHome Web](https://web.esphome.io/). The web installer and
+this download use identical accepted binaries.
 
 ## Everything on the device page
 
@@ -76,9 +77,10 @@ Do not substitute the standalone USB firmware for the paired I2S image.
 
 **Reload embedded XMOS firmware** restarts the paired boot. **XMOS loading
 progress**, **XMOS firmware status** and **Embedded XMOS image SHA256** report it.
-The update entity and Beta Firmware selector retain existing remote catalog
-URLs; this Git publication does not promote those channels. Use the
-[manual OTA instructions](Firmware/README.md) for this exact version.
+The update entity and Beta Firmware selector both currently offer this validated
+0.6.61 release. Press **Check firmware updates**, then install explicitly;
+periodic checks do not update the device automatically. Alternatively use the
+[manual OTA instructions](Firmware/README.md).
 
 If the controller remains unavailable, stop audio and remove all power for ten
 seconds. Do not add a second I2C owner or repeatedly reload a blocked bus.

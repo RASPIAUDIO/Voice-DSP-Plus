@@ -4,12 +4,15 @@
 microphone channel and one playback channel, both at **48 kHz**. Four physical
 microphones feed the XMOS processor; your computer runs your voice application.
 
+[Install USB V2](https://raspiaudio.com/voicedsp/webflasher/?firmware=v2-usb-mono-48k) |
 [Download firmware](Firmware/README.md) | [Sources](Sources/README.md) |
 [All three setups](../README.md)
 
 ## Get started
 
 1. Use a **Voice DSP+ V2** with the matching [USB firmware](Firmware/README.md).
+   For an existing USB-enabled V2, [open the updater](https://raspiaudio.com/voicedsp/webflasher/?firmware=v2-usb-mono-48k),
+   stop playback, connect and install the preselected **0.8.9-r4** image.
 2. Connect its **XMOS USB data port** to your computer with a data cable.
 3. Select **Voice DSP+ V2 USB Mono 48k DEV** as both input and output in your app.
    The retained `DEV` name identifies the tested binary.
