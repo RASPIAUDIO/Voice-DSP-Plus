@@ -30,8 +30,9 @@ speaker system with your own application.
 | [Install USB V2 in your browser](https://raspiaudio.com/voicedsp/webflasher/?firmware=v2-usb-mono-48k) | [Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) | [Install on Raspberry Pi](Raspberry%20Pi/README.md) |
 
 **Three ways to use the same audio hardware.** Each folder includes its own
-installation guide, matching binaries, sources and checksums. USB and Home
-Assistant downloads are the original validated checkpoints, not new tuning.
+installation guide, matching binaries, sources and checksums. Each guide records
+the release's verification scope and remaining physical tests. The Home Assistant
+timer-gesture update preserves the previously accepted acoustic settings.
 Choose the correct mode: their XMOS images are not interchangeable.
 Use desktop Chrome/Edge for the web installers. USB updater: connect the **XMOS**
 data port of an already USB-enabled V2. Home Assistant: connect **ZeroCore S3**.
