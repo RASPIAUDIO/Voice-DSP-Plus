@@ -18,11 +18,11 @@ wifi:
 media_player:
   - id: !extend v2_player
     files:
-      - {id: v2_wake_sound, file: assets/ui-sounds/wake_word_triggered.wav}
-      - {id: v2_mute_on_sound, file: assets/ui-sounds/mute_switch_on.wav}
-      - {id: v2_mute_off_sound, file: assets/ui-sounds/mute_switch_off.wav}
-      - {id: v2_jack_in_sound, file: assets/ui-sounds/jack_connected.wav}
-      - {id: v2_jack_out_sound, file: assets/ui-sounds/jack_disconnected.wav}
+      - {id: v2_wake_sound, file: assets/voice-pe/wake_word_triggered.flac}
+      - {id: v2_mute_on_sound, file: assets/voice-pe/mute_switch_on.flac}
+      - {id: v2_mute_off_sound, file: assets/voice-pe/mute_switch_off.flac}
+      - {id: v2_jack_in_sound, file: assets/voice-pe/jack_connected.flac}
+      - {id: v2_jack_out_sound, file: assets/voice-pe/jack_disconnected.flac}
 
 switch:
   - platform: template
@@ -110,8 +110,9 @@ script:
           condition:
             lambda: |-
               // Never unmute, enable an output or change volume for a UI sound.
-              if (cue < 0 || cue > 4 || millis() < 5000U ||
+              if (cue < 0 || cue > 5 || millis() < 5000U ||
                   !id(v2_ui_sounds_enabled).state || !id(v2_control).ready() ||
+                  id(v2_mode_busy) || id(v2_control).update_requested() ||
                   id(v2_audio_test_busy) || id(v2_timer_ringing).state || id(v2_player).is_muted() ||
                   id(v2_control).snapshot().route == VDSP_AUDIO_OFF ||
                   id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING ||
@@ -124,11 +125,21 @@ script:
                 duration: 0ms
             - lambda: |-
                 audio::AudioFile *sounds[] = {id(v2_wake_sound), id(v2_mute_on_sound),
-                    id(v2_mute_off_sound), id(v2_jack_in_sound), id(v2_jack_out_sound)};
+                    id(v2_mute_off_sound), id(v2_jack_in_sound), id(v2_jack_out_sound),
+                    id(v2_startup_sound)};
                 id(v2_player).play_file(sounds[cue], true, false);
                 id(v2_sound_count)++;
-                ESP_LOGI("v2_feedback", "cue=%d queued; route and volume unchanged", cue);
-            - delay: 350ms
+                ESP_LOGI("v2_feedback", "VoicePE cue=%d route=%u volume=%.3f", cue,
+                    unsigned(id(v2_control).snapshot().route), id(v2_player).volume);
+            # Wait through the actual asset, not the old 350 ms synthetic beep.
+            - wait_until:
+                condition:
+                  lambda: return id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING;
+                timeout: 1500ms
+            - wait_until:
+                condition:
+                  lambda: return id(v2_player).state != media_player::MEDIA_PLAYER_STATE_ANNOUNCING;
+                timeout: 5s
             - if:
                 condition:
                   lambda: |-
@@ -149,6 +160,10 @@ script:
           id(v2_refresh_feedback).execute();
 
 binary_sensor:
+  - platform: template
+    name: Audio Feedback Busy
+    entity_category: diagnostic
+    lambda: return id(v2_ui_sound).is_running() || id(v2_startup_feedback).is_running();
   - platform: template
     name: XMOS UI Extension Available
     entity_category: diagnostic

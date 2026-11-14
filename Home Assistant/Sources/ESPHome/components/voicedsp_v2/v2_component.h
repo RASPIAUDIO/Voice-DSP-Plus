@@ -11,6 +11,7 @@
 #include "voicedsp_v2_host_bus.h"
 #include "voicedsp_v2_equalizer.h"
 #include "v2_ui_runtime.h"
+#include "v2_aec_route_policy.h"
 #include "voicedsp_v2_gesture.h"
 
 namespace esphome::voicedsp_v2 {
@@ -80,12 +81,16 @@ class VoiceDSPV2 : public Component {
   void request_aec_raw(bool raw) { aec_request_.store(UiRuntime::next_request(aec_request_.load(), raw?1:0)); }
   void request_aec_probe(unsigned mode) { if(mode<=5) aec_request_.store(UiRuntime::next_request(aec_request_.load(), mode)); }
   void request_aec_profile(unsigned profile) { if(profile<=6) profile_request_.store(UiRuntime::next_request(profile_request_.load(), profile)); }
-  void request_aec_product_mode(bool external) {
-    unsigned wanted=external?4:6;
-    if(aec_default_.exchange(wanted)!=wanted) profile_request_.store(0);
+  void request_aec_product_mode(bool external, bool internal=false) {
+    const unsigned route=aec_route_key(external,internal);
+    const unsigned wanted=aec_route_profile(route);
+    const bool route_changed=aec_product_route_.exchange(route)!=route;
+    // Clear temporary diagnostics on route changes even when both defaults are 4.
+    if(aec_default_.exchange(wanted)!=wanted || route_changed) profile_request_.store(0);
   }
   void request_xmos_ui_state(unsigned state);
   void request_xmos_ui_progress(unsigned progress);
+  void request_xmos_led_style(uint8_t brightness, uint8_t red, uint8_t green, uint8_t blue);
   UiSnapshot xmos_ui_snapshot() const;
   std::string xmos_ui_diagnostics() const;
 
@@ -144,7 +149,8 @@ class VoiceDSPV2 : public Component {
   void request_crossover_output_(const HostCommand &);
   UiRuntime ui_runtime_{};
   std::atomic<uint32_t> aec_request_{}, profile_request_{}, aec_default_{};
-  std::atomic<uint32_t> ui_requests_[3]{}; // main-loop intent, worker consumption
+  std::atomic<unsigned> aec_product_route_{};
+  std::atomic<uint32_t> ui_requests_[7]{}; // main-loop intent, worker consumption
   void poll_xmos_ui_();
 
   vdsp_v2_gesture gesture_{};

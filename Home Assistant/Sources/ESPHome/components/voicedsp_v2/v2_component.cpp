@@ -127,13 +127,20 @@ void VoiceDSPV2::request_xmos_mute(bool muted) {
 }
 
 void VoiceDSPV2::request_xmos_ui_state(unsigned state) {
-  if (shutdown_.load() || state > 14) return;
+  if (shutdown_.load() || state > 15) return;
   ui_requests_[1].store(UiRuntime::next_request(ui_requests_[1].load(), static_cast<uint8_t>(state)));
 }
 
 void VoiceDSPV2::request_xmos_ui_progress(unsigned progress) {
   if (shutdown_.load() || progress > 100) return;
   ui_requests_[2].store(UiRuntime::next_request(ui_requests_[2].load(), static_cast<uint8_t>(progress)));
+}
+
+void VoiceDSPV2::request_xmos_led_style(uint8_t brightness, uint8_t red, uint8_t green, uint8_t blue) {
+  if (shutdown_.load()) return;
+  const uint8_t values[] = {brightness, red, green, blue};
+  for (unsigned i = 0; i < 4; ++i)
+    ui_requests_[i + 3].store(UiRuntime::next_request(ui_requests_[i + 3].load(), values[i]));
 }
 
 UiSnapshot VoiceDSPV2::xmos_ui_snapshot() const {
@@ -148,16 +155,18 @@ UiSnapshot VoiceDSPV2::xmos_ui_snapshot() const {
 
 std::string VoiceDSPV2::xmos_ui_diagnostics() const {
   const auto value = xmos_ui_snapshot();
-  char message[180];
-  std::snprintf(message, sizeof(message), "cap=%d cookie=%lu mute_ack=%d muted=%d ui_ack=%d ui=%u progress_ack=%d progress=%u rms=%d err=%d",
+  char message[250];
+  std::snprintf(message, sizeof(message), "cap=%d cookie=%lu mute_ack=%d muted=%d ui_ack=%d ui=%u progress_ack=%d progress=%u rms=%d err=%d style=%d led=%u,%u,%u,%u",
       value.available, static_cast<unsigned long>(value.session_cookie), value.mute_valid, value.muted,
       value.state_valid, static_cast<unsigned>(value.state), value.progress_valid,
-      static_cast<unsigned>(value.progress), value.levels_valid, value.error);
+      static_cast<unsigned>(value.progress), value.levels_valid, value.error, value.style_available,
+      unsigned(value.style[0]), unsigned(value.style[1]), unsigned(value.style[2]), unsigned(value.style[3]));
   return message;
 }
 
 void VoiceDSPV2::poll_xmos_ui_() {
-  const uint32_t requests[] = {ui_requests_[0].load(), ui_requests_[1].load(), ui_requests_[2].load()};
+  uint32_t requests[7];
+  for (unsigned i = 0; i < 7; ++i) requests[i] = ui_requests_[i].load();
   ui_runtime_.step(host_, requests, aec_request_.load(), profile_request_.load(), aec_default_.load());
 }
 

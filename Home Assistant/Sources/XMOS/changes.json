@@ -5,12 +5,12 @@
   "patches": {
     "sources/app_xvf3800/autogeneration/yaml_files/control_commands/application_cmds.yaml": {
       "base_sha256": "8339db944bd8d217c43dbc75a119747df446bf7309e2c501f74dd3d40be73597",
-      "sha256": "113addcd90605ce491335b86dc05e2e3c1d1ef9e8188860aada7952195113e01",
+      "sha256": "437d34f4ecbd0cf0c54d0d5864b4c8716b923e881311557a13e6f716770fb494",
       "edits": [
         {
           "start": 61,
           "end": 61,
-          "text": "\n    - cmd: V2_HOST_BOOT\n      number_of_values: 16\n      type: CMD_READ_ONLY\n      help: Validated host bootstrap record, including array and session cookie.\n      value_type: TYPE_UINT8\n      hidden: false\n    - cmd: V2_HOST_CLOCK\n      number_of_values: 8\n      type: CMD_READ_ONLY\n      help: I2S frame count and RTOS ticks, little endian uint32 each. Not a clock frequency measurement.\n      value_type: TYPE_UINT8\n      hidden: false\n    - cmd: MIC_MUTE\n      index: 11\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      value_ranges:\n          value0: [0 .. 1]\n      help: Software zero of processed microphone output; clocks and raw diagnostics remain active.\n      hidden: false\n    - cmd: MIC_RAW_LEVELS\n      index: 13\n      number_of_values: 4\n      type: CMD_READ_ONLY\n      value_type: TYPE_FLOAT\n      help: Full-frame RMS for physical D0 through D3 before in-place AEC processing.\n      hidden: false\n    - cmd: UI_STATE\n      index: 14\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      value_ranges:\n          value0: [0 .. 14]\n      help: Voice DSP UI state; zero returns to DOA. Probe V2_UI_CAPS before use.\n      hidden: false\n    - cmd: UI_PROGRESS\n      index: 15\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      value_ranges:\n          value0: [0 .. 100]\n      help: UI progress percentage; no firmware updater is implemented.\n      hidden: false\n    - cmd: V2_UI_CAPS\n      index: 16\n      number_of_values: 8\n      type: CMD_READ_ONLY\n      value_type: TYPE_UINT8\n      help: Fixed V2UI revision 1 flags 15 LED count 24 reserved 0; not firmware-version negotiation.\n      hidden: false\n"
+          "text": "\n    - cmd: V2_HOST_BOOT\n      number_of_values: 16\n      type: CMD_READ_ONLY\n      help: Validated host bootstrap record, including array and session cookie.\n      value_type: TYPE_UINT8\n      hidden: false\n    - cmd: V2_HOST_CLOCK\n      number_of_values: 8\n      type: CMD_READ_ONLY\n      help: I2S frame count and RTOS ticks, little endian uint32 each. Not a clock frequency measurement.\n      value_type: TYPE_UINT8\n      hidden: false\n    - cmd: MIC_MUTE\n      index: 11\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      value_ranges:\n          value0: [0 .. 1]\n      help: Software zero of processed microphone output; clocks and raw diagnostics remain active.\n      hidden: false\n    - cmd: MIC_RAW_LEVELS\n      index: 13\n      number_of_values: 4\n      type: CMD_READ_ONLY\n      value_type: TYPE_FLOAT\n      help: Full-frame RMS for physical D0 through D3 before in-place AEC processing.\n      hidden: false\n    - cmd: UI_STATE\n      index: 14\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      value_ranges:\n          value0: [0 .. 15]\n      help: Voice DSP UI state; zero returns to DOA. Probe V2_UI_CAPS before use.\n      hidden: false\n    - cmd: UI_PROGRESS\n      index: 15\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      value_ranges:\n          value0: [0 .. 100]\n      help: UI progress percentage; no firmware updater is implemented.\n      hidden: false\n    - cmd: V2_UI_CAPS\n      index: 16\n      number_of_values: 8\n      type: CMD_READ_ONLY\n      value_type: TYPE_UINT8\n      help: V2UI revision 2 flags 31 LED count 24; LED style and volume display supported.\n      hidden: false\n    - cmd: UI_BRIGHTNESS\n      index: 17\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      help: Global LED scale 0 to 255; critical indicators retain minimum visibility.\n      hidden: false\n    - cmd: UI_RED\n      index: 18\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      help: User LED color red 0 to 255.\n      hidden: false\n    - cmd: UI_GREEN\n      index: 19\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      help: User LED color green 0 to 255.\n      hidden: false\n    - cmd: UI_BLUE\n      index: 20\n      number_of_values: 1\n      type: CMD_READ_WRITE\n      value_type: TYPE_UINT8\n      help: User LED color blue 0 to 255.\n      hidden: false\n"
         }
       ]
     },
@@ -612,7 +612,7 @@
     },
     "sources/modules/fwk_xvf/modules/xvf/src/control_plane/application_servicer.c": {
       "base_sha256": "ff7447075be71ce61c02afc20c8f7d74483fe70f379f3f391b9487391a3f28af",
-      "sha256": "46a480136712d5f4a82db52cab64384a5dc7a9d9a206568a435f1f28965a84bb",
+      "sha256": "b13c7ecb586ef3d715177b0f619b6404e8045cf86a743b28aeeb74c8954bfc6f",
       "edits": [
         {
           "start": 16,
@@ -622,12 +622,17 @@
         {
           "start": 78,
           "end": 78,
-          "text": "#if ON_TILE(1)\n        case APPLICATION_SERVICER_RESID_MIC_MUTE:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            payload[0] = pi_ai_mic_get_mic_mute() ? 1 : 0;\n            break;\n        case APPLICATION_SERVICER_RESID_UI_STATE:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            payload[0] = pi_ai_mic_ui_get_state();\n            break;\n        case APPLICATION_SERVICER_RESID_UI_PROGRESS:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            payload[0] = pi_ai_mic_ui_get_progress();\n            break;\n        case APPLICATION_SERVICER_RESID_MIC_RAW_LEVELS: {\n            float levels[4];\n            if (payload_len != sizeof(levels)) return CONTROL_BAD_COMMAND;\n            if (!pi_ai_mic_read_raw_mic_levels(levels)) return SERVICER_COMMAND_RETRY;\n            /* SDK payload follows one status byte and need not be float-aligned. */\n            memcpy(payload, levels, sizeof(levels));\n            break;\n        }\n        case APPLICATION_SERVICER_RESID_V2_UI_CAPS: {\n            static const uint8_t caps[8] = {'V', '2', 'U', 'I', 1, 15, 24, 0};\n            if (payload_len != sizeof(caps)) return CONTROL_BAD_COMMAND;\n            memcpy(payload, caps, sizeof(caps));\n            break;\n        }\n#endif\n        case APPLICATION_SERVICER_RESID_V2_HOST_BOOT:\n            if (payload_len != VDSP_HOST_BOOT_SIZE) return CONTROL_ERROR;\n            memcpy(payload,vdsp_v2_host_record,VDSP_HOST_BOOT_SIZE);\n            break;\n        case APPLICATION_SERVICER_RESID_V2_HOST_CLOCK: {\n            if (payload_len != 8) return CONTROL_ERROR;\n            uint32_t frames = vdsp_v2_host_i2s_frames;\n            uint32_t ticks = xTaskGetTickCount();\n            for (unsigned i=0;i<4;++i) { payload[i]=(uint8_t)(frames>>(8*i)); payload[i+4]=(uint8_t)(ticks>>(8*i)); }\n            break;\n        }\n"
+          "text": "#if ON_TILE(1)\n        case APPLICATION_SERVICER_RESID_MIC_MUTE:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            payload[0] = pi_ai_mic_get_mic_mute() ? 1 : 0;\n            break;\n        case APPLICATION_SERVICER_RESID_UI_STATE:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            payload[0] = pi_ai_mic_ui_get_state();\n            break;\n        case APPLICATION_SERVICER_RESID_UI_PROGRESS:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            payload[0] = pi_ai_mic_ui_get_progress();\n            break;\n        case APPLICATION_SERVICER_RESID_MIC_RAW_LEVELS: {\n            float levels[4];\n            if (payload_len != sizeof(levels)) return CONTROL_BAD_COMMAND;\n            if (!pi_ai_mic_read_raw_mic_levels(levels)) return SERVICER_COMMAND_RETRY;\n            /* SDK payload follows one status byte and need not be float-aligned. */\n            memcpy(payload, levels, sizeof(levels));\n            break;\n        }\n        case APPLICATION_SERVICER_RESID_UI_BRIGHTNESS:\n        case APPLICATION_SERVICER_RESID_UI_RED:\n        case APPLICATION_SERVICER_RESID_UI_GREEN:\n        case APPLICATION_SERVICER_RESID_UI_BLUE:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            payload[0] = pi_ai_mic_ui_get_style(cmd_id - APPLICATION_SERVICER_RESID_UI_BRIGHTNESS);\n            break;\n        case APPLICATION_SERVICER_RESID_V2_UI_CAPS: {\n            static const uint8_t caps[8] = {'V', '2', 'U', 'I', 2, 31, 24, 0};\n            if (payload_len != sizeof(caps)) return CONTROL_BAD_COMMAND;\n            memcpy(payload, caps, sizeof(caps));\n            break;\n        }\n#endif\n        case APPLICATION_SERVICER_RESID_V2_HOST_BOOT:\n            if (payload_len != VDSP_HOST_BOOT_SIZE) return CONTROL_ERROR;\n            memcpy(payload,vdsp_v2_host_record,VDSP_HOST_BOOT_SIZE);\n            break;\n        case APPLICATION_SERVICER_RESID_V2_HOST_CLOCK: {\n            if (payload_len != 8) return CONTROL_ERROR;\n            uint32_t frames = vdsp_v2_host_i2s_frames;\n            uint32_t ticks = xTaskGetTickCount();\n            for (unsigned i=0;i<4;++i) { payload[i]=(uint8_t)(frames>>(8*i)); payload[i+4]=(uint8_t)(ticks>>(8*i)); }\n            break;\n        }\n"
+        },
+        {
+          "start": 143,
+          "end": 144,
+          "text": "// UI controls are volatile; they never write QSPI or alter DSP parameters.\n"
         },
         {
           "start": 153,
           "end": 153,
-          "text": "#if ON_TILE(1)\n        case APPLICATION_SERVICER_RESID_MIC_MUTE:\n            if (payload_len != 1 || payload[0] > 1) return CONTROL_BAD_COMMAND;\n            pi_ai_mic_set_mic_mute(payload[0] != 0);\n            break;\n        case APPLICATION_SERVICER_RESID_UI_STATE:\n            if (payload_len != 1 || payload[0] >= PI_AI_MIC_UI_STATE_COUNT) return CONTROL_BAD_COMMAND;\n            pi_ai_mic_ui_set_state(payload[0]);\n            break;\n        case APPLICATION_SERVICER_RESID_UI_PROGRESS:\n            if (payload_len != 1 || payload[0] > 100) return CONTROL_BAD_COMMAND;\n            pi_ai_mic_ui_set_progress(payload[0]);\n            break;\n#endif\n"
+          "text": "#if ON_TILE(1)\n        case APPLICATION_SERVICER_RESID_MIC_MUTE:\n            if (payload_len != 1 || payload[0] > 1) return CONTROL_BAD_COMMAND;\n            pi_ai_mic_set_mic_mute(payload[0] != 0);\n            break;\n        case APPLICATION_SERVICER_RESID_UI_STATE:\n            if (payload_len != 1 || payload[0] >= PI_AI_MIC_UI_STATE_COUNT) return CONTROL_BAD_COMMAND;\n            pi_ai_mic_ui_set_state(payload[0]);\n            break;\n        case APPLICATION_SERVICER_RESID_UI_PROGRESS:\n            if (payload_len != 1 || payload[0] > 100) return CONTROL_BAD_COMMAND;\n            pi_ai_mic_ui_set_progress(payload[0]);\n            break;\n        case APPLICATION_SERVICER_RESID_UI_BRIGHTNESS:\n        case APPLICATION_SERVICER_RESID_UI_RED:\n        case APPLICATION_SERVICER_RESID_UI_GREEN:\n        case APPLICATION_SERVICER_RESID_UI_BLUE:\n            if (payload_len != 1) return CONTROL_BAD_COMMAND;\n            pi_ai_mic_ui_set_style(cmd_id - APPLICATION_SERVICER_RESID_UI_BRIGHTNESS, payload[0]);\n            break;\n#endif\n"
         }
       ]
     },
@@ -1780,9 +1785,10 @@
     "sources/app_xvf3800/src/pi_ai_mic_i2c_scan.h": "d5a3eac716354cff9383bf505240959c72c7390105a84d7f51cc9166160c109a",
     "sources/app_xvf3800/src/user_config/pi_ai_mic_hw.c": "7365adfb55cce53afd4c3a9da433eb462e40c76186ed69e8e2c06bed4efd28c6",
     "sources/app_xvf3800/src/user_config/pi_ai_mic_hw.h": "82b32e1424bab1d296c8fb9c5a2c61fb1558e39888eb8604712d21cc07d85f15",
-    "sources/app_xvf3800/src/user_config/pi_ai_mic_neopixel.c": "c034ea8ad6f95463a120e1fe92db81d9aae5f2ec862322f520f7544182b14049",
-    "sources/app_xvf3800/src/user_config/pi_ai_mic_neopixel.h": "baa4c342fc38cfbc76e74f1b828c8c1bedde49e963334c3b3015c669724358c6",
+    "sources/app_xvf3800/src/user_config/pi_ai_mic_neopixel.c": "e0c22a8deee9f2ed2c728bc4c78dc929136fd9aab12f0ecba5643f6a3d7c1884",
+    "sources/app_xvf3800/src/user_config/pi_ai_mic_neopixel.h": "a02f91ac19efe9235fc3688c33203eb295ceb3045c26589b56347ef0fd5aa375",
     "sources/app_xvf3800/src/user_config/v2_doa_display.h": "5553d30e355823a02728b7930b1b201401fb86c57c619dcf3f9bdcf463d695c6",
+    "sources/app_xvf3800/src/user_config/v2_led_style.h": "2b7586e47c38b0be5ffab857ed3a9303bb47c09db0327b479fbae02b66236298",
     "sources/app_xvf3800/src/user_config/voicedsp_v2_attributes.h": "98620808ae44caf3134346a31956f05be1069e33d38588eae1908a61bb2feaee",
     "sources/app_xvf3800/src/user_config/voicedsp_v2_control.c": "20d7cd23a6d1090d83dc08a771760a943a6c3340eda6e249d2eb8a5de9a24854",
     "sources/app_xvf3800/src/user_config/voicedsp_v2_control.h": "66e636e37146c1da0714cb94fe8d8c828fc5674b7c18c22f351db59cc545e0ee",
@@ -1793,6 +1799,17 @@
     "sources/app_xvf3800/src/user_config/voicedsp_v2_host_boot.inc": "b506d2effa33757f510c6bd56c6186aa728bc1f7a7d229548f58906a88bbea83",
     "sources/app_xvf3800/src/user_config/voicedsp_v2_i2c.c": "ee24362eb0603f536e89483187d894ed73121fe48ca38cfb315f605acfc9bd6e",
     "sources/app_xvf3800/src/user_config/voicedsp_v2_i2c.h": "5bb5e87610432770af43e7521b2cbbfddc329aad4cd8bf630c4c35d404f7e120",
-    "sources/app_xvf3800/v2_capture.cmake": "bd8451af2734daa9e51ed07a5df6c54c525b1fd92620bf035b374809441c6864"
+    "sources/app_xvf3800/v2_capture.cmake": "bd8451af2734daa9e51ed07a5df6c54c525b1fd92620bf035b374809441c6864",
+    "sources/doc/autogenerated/aec_cmds.csv": "4f2e48ec12256d466f5782f46fa90b74ea42dce7e7d0d71f4115abee142f74f7",
+    "sources/doc/autogenerated/application_cmds.csv": "0f540d5224151fd5c0766d815d787b8a98941189d0b3fc85a73aa09dea0afc0e",
+    "sources/doc/autogenerated/audio_cmds.csv": "183790781bc5f5c6f37fbe312434fec245a9b7aecd43f42eb495e15971d7fffb",
+    "sources/doc/autogenerated/dfu_cmds.csv": "161fa88578d29cdb86d78de2fbc4a9b79a13f725333acd256ff8d2f411f200a8",
+    "sources/doc/autogenerated/hid_task_cmds.csv": "161fa88578d29cdb86d78de2fbc4a9b79a13f725333acd256ff8d2f411f200a8",
+    "sources/doc/autogenerated/io_config_cmds.csv": "1da2bf1e6ee8838007203783e2599c448891347967a692a0034b88ee3ee91660",
+    "sources/doc/autogenerated/io_expander_cmds.csv": "161fa88578d29cdb86d78de2fbc4a9b79a13f725333acd256ff8d2f411f200a8",
+    "sources/doc/autogenerated/pll_cmds.csv": "c21259e1691f2e3d87351345638d8217a4dd639f36c4e0446cbc85cd3ab1b11d",
+    "sources/doc/autogenerated/pp_cmds.csv": "2c11efd751cb26b0dcc30257e9f43aa8ee81ebc119ef12dfa9b91d60d2d10e59",
+    "sources/doc/autogenerated/usb_buffer_cmds.csv": "546fbba75adc7c058b401d7d8ac04a01747d527ec932b0e6fbb6e27e12dacd8e",
+    "sources/package_root/build_xvf3800.ps1": "df516afc2417c18067fb72b677c36d4348a04d76ff02776ba7b26e27568dee49"
   }
 }

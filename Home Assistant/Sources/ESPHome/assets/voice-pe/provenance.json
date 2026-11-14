@@ -1,0 +1,44 @@
+[
+  {
+    "file": "center_button_long_press.flac",
+    "source": "https://raw.githubusercontent.com/esphome/home-assistant-voice-pe/c16a4d010f39b06e6b14ef9aea85e2f5f280e20a/sounds/center_button_long_press.flac",
+    "sha256": "7eb8baa6de8ed087bdea04fa23d989e5c4459120338f98929d4e8a20207f1f50",
+    "bytes": 40578
+  },
+  {
+    "file": "jack_connected.flac",
+    "source": "https://raw.githubusercontent.com/esphome/home-assistant-voice-pe/c16a4d010f39b06e6b14ef9aea85e2f5f280e20a/sounds/jack_connected.flac",
+    "sha256": "59aeab603814a68acb6d9bca676a820858734fbd6c6725f68e0d708020e58be9",
+    "bytes": 45593
+  },
+  {
+    "file": "jack_disconnected.flac",
+    "source": "https://raw.githubusercontent.com/esphome/home-assistant-voice-pe/c16a4d010f39b06e6b14ef9aea85e2f5f280e20a/sounds/jack_disconnected.flac",
+    "sha256": "800be63f0f16b277c46b664f0896b87e0195d8cc9a927a7cdd6795036058dc44",
+    "bytes": 40601
+  },
+  {
+    "file": "mute_switch_off.flac",
+    "source": "https://raw.githubusercontent.com/esphome/home-assistant-voice-pe/c16a4d010f39b06e6b14ef9aea85e2f5f280e20a/sounds/mute_switch_off.flac",
+    "sha256": "b0ce950b316ad35ece4ffcba7a7978b1bb701f7f527d69e2d273e06a751642cc",
+    "bytes": 80061
+  },
+  {
+    "file": "mute_switch_on.flac",
+    "source": "https://raw.githubusercontent.com/esphome/home-assistant-voice-pe/c16a4d010f39b06e6b14ef9aea85e2f5f280e20a/sounds/mute_switch_on.flac",
+    "sha256": "536f3daa7e41ae0789f9309b42a980eb6cccb36a16f1b92d79112129579b9fde",
+    "bytes": 34995
+  },
+  {
+    "file": "timer_finished.flac",
+    "source": "https://raw.githubusercontent.com/esphome/home-assistant-voice-pe/c16a4d010f39b06e6b14ef9aea85e2f5f280e20a/sounds/timer_finished.flac",
+    "sha256": "e9ddba38c4a993fd5a218ec7d04d7a2824b995a9dbb6cb0d8599d7a0ac6a56ee",
+    "bytes": 87093
+  },
+  {
+    "file": "wake_word_triggered.flac",
+    "source": "https://raw.githubusercontent.com/esphome/home-assistant-voice-pe/c16a4d010f39b06e6b14ef9aea85e2f5f280e20a/sounds/wake_word_triggered.flac",
+    "sha256": "5c26cad33931670f2b62db5d2ed35c562b162e819ade38e646680065ad1b055f",
+    "bytes": 16782
+  }
+]

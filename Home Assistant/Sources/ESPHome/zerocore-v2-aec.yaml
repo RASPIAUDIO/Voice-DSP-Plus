@@ -17,7 +17,9 @@ interval:
       - lambda: |-
           id(v2_control).request_aec_product_mode(
               id(v2_control).ready() &&
-              id(v2_control).snapshot().route == VDSP_AUDIO_HT326);
+              id(v2_control).snapshot().route == VDSP_AUDIO_HT326,
+              id(v2_control).ready() &&
+              id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS);
 binary_sensor:
   - platform: template
     name: External AEC Mono Reference

@@ -91,9 +91,11 @@ select:
           }
           const auto wanted = x == "Internal stereo" ?
               VDSP_AUDIO_DAC_SPEAKERS : VDSP_AUDIO_LINE;
-          auto stereo = id(v2_channel).make_call();
-          stereo.set_option("Stereo");
-          stereo.perform();
+          auto channel = id(v2_channel).make_call();
+          channel.set_option(vdsp_modes::channel(vdsp_modes::playback_channel(
+              wanted == VDSP_AUDIO_DAC_SPEAKERS ? 1 : 3, 0,
+              id(v2_internal_playback).current_option() == "Stereo - AEC may be degraded")));
+          channel.perform();
           // Internal slider also applies when reselecting the same route for a test.
           if (wanted == VDSP_AUDIO_DAC_SPEAKERS) {
             const float db = id(v2_internal_level_db).state;
@@ -112,7 +114,9 @@ text_sensor:
       if (!id(v2_control).ready()) return std::string("Controller unavailable");
       switch (id(v2_control).snapshot().route) {
         case VDSP_AUDIO_OFF: return std::string("OFF");
-        case VDSP_AUDIO_DAC_SPEAKERS: return std::string("Internal stereo");
+        case VDSP_AUDIO_DAC_SPEAKERS:
+          return std::string(id(v2_channel).current_option() == "Stereo" ?
+              "Internal speakers (stereo; AEC may be degraded)" : "Internal speakers (mono)");
         case VDSP_AUDIO_HT326: return std::string("External speaker");
         case VDSP_AUDIO_LINE: return std::string("LINE OUT stereo");
         default: return std::string("Route not confirmed");

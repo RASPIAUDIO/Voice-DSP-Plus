@@ -5,6 +5,7 @@
 
 #include "app_conf.h"
 #include "v2_doa_display.h"
+#include "v2_led_style.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -29,6 +30,17 @@ static volatile uint32_t latest_doa_seq = 0;
 static volatile uint8_t latest_ui_state = PI_AI_MIC_UI_INIT;
 static volatile uint8_t latest_ui_progress = 0;
 static volatile bool latest_mic_mute = false;
+static volatile uint8_t latest_ui_style[4] = {255, 0, 191, 255};
+
+void pi_ai_mic_ui_set_style(unsigned index, uint8_t value)
+{
+    if (index < 4) latest_ui_style[index] = value;
+}
+
+uint8_t pi_ai_mic_ui_get_style(unsigned index)
+{
+    return index < 4 ? latest_ui_style[index] : 0;
+}
 
 void pi_ai_mic_ui_set_state(uint8_t state)
 {
@@ -174,8 +186,14 @@ typedef struct {
 } ws2812_pixel_t;
 
 static void ws2812_send_frame(port_t port, hwtimer_t timer,
-                              const ws2812_pixel_t *pixels, unsigned count)
+                              ws2812_pixel_t *pixels, unsigned count)
 {
+    const uint8_t color[3] = {latest_ui_style[1], latest_ui_style[2], latest_ui_style[3]};
+    const unsigned brightness = latest_ui_style[0];
+    const unsigned state = latest_ui_state;
+    for (unsigned led = 0; led < count; ++led)
+        v2_led_style_pixel(state, brightness, color,
+            &pixels[led].red, &pixels[led].green, &pixels[led].blue);
     uint32_t interrupt_state = interrupt_state_get();
 
     interrupt_mask_all();
@@ -321,11 +339,7 @@ static void render_ring(port_t port, hwtimer_t timer)
 
     /* Hold brightness as well as direction during short speech gaps. */
 
-    uint32_t interrupt_state = interrupt_state_get();
-    interrupt_mask_all();
-
-    port_sync(port);
-    port_timestamp_t time = port_get_trigger_time(port) + 100u;
+    ws2812_pixel_t pixels[PI_AI_MIC_DOA_NEOPIXEL_LED_COUNT] = {0};
 
     for (int led = 0; led < PI_AI_MIC_DOA_NEOPIXEL_LED_COUNT; led++) {
         uint8_t red = 0;
@@ -346,11 +360,11 @@ static void render_ring(port_t port, hwtimer_t timer)
             }
         }
 
-        ws2812_send_rgb(port, &time, red, green, blue);
+        pixels[led].red = red;
+        pixels[led].green = green;
+        pixels[led].blue = blue;
     }
-
-    interrupt_restore(interrupt_state);
-    hwtimer_delay(timer, WS2812_RESET_TICKS);
+    ws2812_send_frame(port, timer, pixels, PI_AI_MIC_DOA_NEOPIXEL_LED_COUNT);
 }
 
 static void render_ui_frame(port_t port, hwtimer_t timer,
@@ -374,6 +388,13 @@ static void render_ui_frame(port_t port, hwtimer_t timer,
         unsigned level;
 
         switch (state) {
+            case PI_AI_MIC_UI_VOLUME:
+                if (led < progress_leds) {
+                    red = clamp_u8(brightness);
+                    green = clamp_u8(brightness);
+                    blue = clamp_u8(brightness);
+                }
+                break;
             case PI_AI_MIC_UI_INIT:
                 if (led == slow_pos) {
                     green = clamp_u8(brightness);

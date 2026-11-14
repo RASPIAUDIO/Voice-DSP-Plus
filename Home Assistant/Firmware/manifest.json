@@ -1,13 +1,24 @@
 {
-  "name": "Voice DSP+ V2 + ZeroCore S3",
-  "version": "0.6.61",
+  "name": "RASPIAUDIO ZeroCore S3 Voice DSP+ V2",
+  "version": "0.6.68-paj-recovery.20261114",
+  "home_assistant_domain": "esphome",
   "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 120,
   "builds": [
     {
       "chipFamily": "ESP32-S3",
       "parts": [
-        {"path": "voicedsp-v2-0.6.61.factory.bin", "offset": 0}
-      ]
+        {
+          "path": "voicedsp-v2-0.6.68.factory.bin",
+          "offset": 0
+        }
+      ],
+      "ota": {
+        "path": "voicedsp-v2-0.6.68.ota.bin",
+        "md5": "9de282148042cee9ee2e87ffff92931c",
+        "summary": "PAJ recovery validated with repeated gestures. Wake-word selection, Action, LED controls, Voice PE sounds and timer effects. Accepted mono AEC retained. Stop playback before updating.",
+        "release_url": "https://github.com/RASPIAUDIO/Voice-DSP-Plus/blob/V2/Home%20Assistant/README.md"
+      }
     }
   ]
 }

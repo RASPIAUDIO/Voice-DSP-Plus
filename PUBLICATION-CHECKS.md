@@ -1,5 +1,21 @@
 # USB and Home Assistant publication checks
 
+## Home Assistant update: 2026-11-14
+
+0.6.68 replaces the HA download only; USB and Raspberry Pi remain unchanged.
+The installed factory/OTA hashes match the downloads and Apps manifests.
+Public ESPHome configuration validates; XMOS source reconstruction verifies
+against the licensed SDK archive. No SDK library sources or private recordings
+are included. Voice PE sound attribution and model licenses are retained.
+
+Owner accepted repeated PAJ gestures: 16 events and four mute/unmute cycles over
+two minutes, no I2C errors or unavailable reports. Native tests inject NACKs and
+verify bounded recovery and stale-event rejection. Existing AEC/filter settings
+are preserved. Alternate wake words and response Stop await acoustic testing;
+no new long-duration reliability or AEC qualification is claimed.
+
+## Earlier publication
+
 Publication prepared on **2026-11-13**. This packages accepted releases; it does
 not introduce a new firmware build or claim additional hardware qualification.
 
@@ -20,7 +36,8 @@ not introduce a new firmware build or claim additional hardware qualification.
 access. Source rebuild requirements are in each `Sources/README.md`; no new
 ESP32/XMOS cross-compilation or acoustic session was performed for publication.
 
-Only original tones and models are included, not private room/voice recordings.
+The initial release included original tones/models; the current HA update adds
+attributed Voice PE sounds, never private room/voice recordings.
 The Raspberry Pi kit and the public `main` branch are not changed.
 
 ## Web installer deployment

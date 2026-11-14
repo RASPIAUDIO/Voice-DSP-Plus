@@ -54,6 +54,18 @@ switch:
 
 select:
   - platform: template
+    id: v2_internal_playback
+    name: Internal Speaker Playback
+    icon: mdi:speaker-multiple
+    optimistic: true
+    restore_value: true
+    initial_option: Mono - Recommended for AEC
+    options:
+      - Mono - Recommended for AEC
+      - Stereo - AEC may be degraded
+    on_value:
+      - script.execute: v2_apply_channel
+  - platform: template
     id: v2_sensitivity
     name: Wake Word Sensitivity
     icon: mdi:ear-hearing
@@ -69,15 +81,15 @@ select:
     icon: mdi:stop-circle-outline
     optimistic: true
     restore_value: true
-    initial_option: Music
-    options: [Disabled, Music, "Timers only", "Music and timers"]
+    initial_option: Music and responses
+    options: [Disabled, Music, "Timers only", "Music and timers", "Responses only", "Music and responses", "Music, timers and responses"]
   - platform: template
     id: v2_channel
     name: Speaker Channel
     icon: mdi:surround-sound
     optimistic: true
     restore_value: true
-    initial_option: Stereo
+    initial_option: Both mono
     options: [Stereo, Both mono, Left, Right]
     on_value:
       - script.execute: v2_apply_channel
@@ -112,7 +124,7 @@ button:
     on_press:
       - script.execute:
           id: v2_dispatch_wake
-          word: hey jarvis
+          word: !lambda return id(v2_wake_choice).current_option();
 
 # Event entities remain exposed for custom Home Assistant automations.
 voicedsp_v2_buttons:
@@ -143,9 +155,7 @@ voicedsp_v2_buttons:
           condition:
             lambda: return !id(v2_mode_busy) && event_type == "short_press";
           then:
-            - script.execute:
-                id: v2_dispatch_wake
-                word: hey jarvis
+            - script.execute: v2_action_button
 voicedsp_v2_gestures:
   gesture:
     on_event:
@@ -160,11 +170,14 @@ interval:
       - lambda: |-
           const auto mode = id(v2_stop_mode).current_option();
           const bool timer = id(v2_timer_ringing).state &&
-              (mode == "Timers only" || mode == "Music and timers");
-          const bool music = (mode == "Music" || mode == "Music and timers") &&
+              (mode == "Timers only" || mode == "Music and timers" || mode == "Music, timers and responses");
+          const bool music = (mode == "Music" || mode == "Music and timers" || mode == "Music and responses" || mode == "Music, timers and responses") &&
               id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING &&
               !id(v2_assist).is_running();
-          const bool enabled = (timer || music) && !id(v2_mic_mute).state;
+          const bool response = (mode == "Responses only" || mode == "Music and responses" || mode == "Music, timers and responses") &&
+              id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING &&
+              id(v2_tts_pending) && millis() - id(v2_tts_started_ms) >= 1000U;
+          const bool enabled = (timer || music || response) && !id(v2_mic_mute).state;
           if (enabled != id(v2_stop_word).is_enabled()) {
             if (enabled) id(v2_stop_word).enable();
             else id(v2_stop_word).disable();
@@ -184,10 +197,16 @@ script:
       - lambda: |-
           // Jack always stays stereo. Both uses (L+R)/2, never an unclipped sum.
           const auto option = id(v2_channel).current_option();
-          if (id(v2_output_route).current_option() == "External speaker" && option != "Both mono") {
-            auto mono = id(v2_channel).make_call();
-            mono.set_option("Both mono");
-            mono.perform();
+          const auto route = id(v2_output_route).current_option();
+          const bool stereo = id(v2_internal_playback).current_option() == "Stereo - AEC may be degraded";
+          const int r = route == "Internal stereo" ? 1 : route == "External speaker" ? 2 :
+              route == "LINE OUT stereo" ? 3 : 0;
+          const int c = option == "Both mono" ? 1 : option == "Left" ? 2 : option == "Right" ? 3 : 0;
+          const auto wanted = vdsp_modes::channel(vdsp_modes::playback_channel(r,c,stereo));
+          if (option != wanted) {
+            auto channel = id(v2_channel).make_call();
+            channel.set_option(wanted);
+            channel.perform();
             return;
           }
           const bool jack = (id(v2_control).snapshot().port0 & 0x20u) != 0;
@@ -226,12 +245,7 @@ script:
                   - script.execute: {id: v2_feedback_transient, state: 8}
                   - lambda: id(v2_speaker_cue_before) = id(v2_sound_count);
                   - script.execute: {id: v2_ui_sound, cue: 1}
-                  - if:
-                      condition:
-                        lambda: return id(v2_sound_count) != id(v2_speaker_cue_before);
-                      then:
-                        # Retain the V1 pre-mute cue window, without unmuting to beep.
-                        - delay: 750ms
+                  - script.wait: v2_ui_sound
                   - media_player.mute: v2_player
                   - wait_until:
                       condition:
@@ -254,13 +268,19 @@ script:
       gesture: string
     then:
       - lambda: |-
+          ESP_LOGI("v2_gesture_action", "event=%s enabled=%d ready=%d mode_busy=%d muted=%d",
+              gesture.c_str(), id(v2_gesture_actions).state, id(v2_control).ready(),
+              id(v2_mode_busy), id(v2_player).is_muted());
           if (id(v2_mode_busy) || !id(v2_gesture_actions).state || !id(v2_control).ready()) return;
           // Only the six established gestures act; combined/wave/circles stay diagnostic.
           const bool reliable = gesture == "sensor_left" || gesture == "sensor_right" ||
               gesture == "sensor_up" || gesture == "sensor_down" ||
               gesture == "sensor_forward" || gesture == "sensor_backward";
           if (!reliable) return;
-          if (id(v2_have_mute_transition) && millis() - id(v2_mute_transition_ms) < 1000U) return;
+          if (id(v2_have_mute_transition) && millis() - id(v2_mute_transition_ms) < 1000U) {
+            ESP_LOGI("v2_gesture_action", "ignored: one-second mute cooldown");
+            return;
+          }
           if (id(v2_player).is_muted() || gesture == "sensor_forward") {
             id(v2_toggle_speaker).execute();
             return;
@@ -287,12 +307,23 @@ script:
                   lambda: |-
                     if (id(v2_timer_ringing).state && !id(v2_mic_mute).state &&
                         (id(v2_stop_mode).current_option() == "Timers only" ||
-                         id(v2_stop_mode).current_option() == "Music and timers")) {
+                         id(v2_stop_mode).current_option() == "Music and timers" ||
+                         id(v2_stop_mode).current_option() == "Music, timers and responses")) {
                       id(v2_timer_ringing).turn_off();
                       return false; // Do not stop the underlying music.
                     }
+                    if (!id(v2_mic_mute).state && id(v2_tts_pending) &&
+                        (id(v2_stop_mode).current_option() == "Responses only" ||
+                         id(v2_stop_mode).current_option() == "Music and responses" ||
+                         id(v2_stop_mode).current_option() == "Music, timers and responses") &&
+                        id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING) {
+                      id(v2_interrupt_response).execute();
+                      return false;
+                    }
                     return (id(v2_stop_mode).current_option() == "Music" ||
-                            id(v2_stop_mode).current_option() == "Music and timers") &&
+                            id(v2_stop_mode).current_option() == "Music and timers" ||
+                            id(v2_stop_mode).current_option() == "Music and responses" ||
+                            id(v2_stop_mode).current_option() == "Music, timers and responses") &&
                         !id(v2_mic_mute).state &&
                         id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING &&
                         !id(v2_assist).is_running();
@@ -321,6 +352,7 @@ script:
                       duration: 100ms
                   - script.execute: {id: v2_xmos_phase, phase: 4}
                   - script.execute: {id: v2_ui_sound, cue: 0}
+                  - script.wait: v2_ui_sound
                   - delay: 300ms
                   - if:
                       condition:

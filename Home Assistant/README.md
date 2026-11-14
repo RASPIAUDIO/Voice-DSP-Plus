@@ -5,7 +5,7 @@ answers and hands-free controls to Home Assistant. Use your own speakers or
 the corresponding Voice Compact / Full Speaker assembly.
 
 [Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) |
-[Download 0.6.61](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
+[Download 0.6.68](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
 [All three setups](../README.md)
 
 ## Install in five steps
@@ -14,7 +14,7 @@ the corresponding Voice Compact / Full Speaker assembly.
    You need Home Assistant, 2.4 GHz Wi-Fi and a USB data cable. Remove any Pi.
 2. Connect the **ZeroCore USB data port**, not the XMOS port, to your computer.
 3. Open [RASPIAUDIO Apps: V2 installer](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2)
-   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.61** is preselected.
+   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.68** is preselected.
    Connect and Install. An erased install removes saved settings.
 4. Configure Wi-Fi using serial Improv through the installer. Alternatively use
    the fallback **VoiceDSP V2 Setup** access point (password `voicedsp-setup`).
@@ -23,11 +23,26 @@ the corresponding Voice Compact / Full Speaker assembly.
    Ready** and **XMOS firmware status: Ready**, select your Assist pipeline, then
    try **Hey Jarvis**. Start with a low playback volume.
 
-Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.61.factory.bin)
+Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.68.factory.bin)
 and select it in [ESPHome Web](https://web.esphome.io/). The web installer and
 this download use identical accepted binaries.
 
 ## Everything on the device page
+
+### New in 0.6.68
+
+- **PAJ recovery:** repeated mute/unmute validated; a transient sensor NACK no
+  longer inherits a 30-second wait from previous initialization failures.
+- **Wake Word:** Hey Jarvis (default), Okay Nabu or Hey Mycroft.
+- **Action / right button:** dismiss timer, interrupt Assist, pause music or
+  start listening, according to the current state.
+- **LED Ring:** brightness/color controls and a two-second volume gauge.
+- Voice PE confirmation sounds, timer countdown/alarm animations, and response
+  options under **Stop Word Mode**. Existing mono AEC settings are preserved.
+
+Owner validated repeated gestures; API checks cover controls and timer actions.
+Alternate wake words and spoken Stop during replies still need acoustic testing.
+This is not a new long-duration or AEC performance qualification.
 
 No custom dashboard or admin token is required. Open the ESPHome device in HA.
 

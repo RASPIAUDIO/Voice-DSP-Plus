@@ -19,11 +19,13 @@ See [HA release.json](Home%20Assistant/Firmware/release.json).
 | ESPHome framework and adapted `components/i2s_audio`, `components/voice_dsp_i2s_microphone` | ESPHome 2026.8.1; FutureProofHomes Satellite1-ESPHome base `9a58961438568872f2e27ae4c2aec257ea05f97a` | GPL-3.0 runtime / MIT Python; [GPL text](Home%20Assistant/Sources/licenses/LICENSE.FutureProofHomes) |
 | ESP-IDF and audio dependencies | YAML and `ESPHome/dependencies.lock` pin the accepted dependency versions | Respective upstream licenses retained by the build system |
 | Wake word and VAD assets | Per-model revision and SHA256 in [provenance.json](Home%20Assistant/Sources/ESPHome/assets/provenance.json) | [Apache-2.0](Home%20Assistant/Sources/ESPHome/assets/LICENSE) |
-| Startup, wake, mute, jack and timer sounds | RASPIAUDIO-generated tones, not copied FutureProof recordings | [CC0 declaration](Home%20Assistant/Sources/ESPHome/assets/ui-sounds/README.md) |
+| Active startup, wake, mute, jack and timer sounds | Home Assistant Voice PE; source revision and hashes in asset provenance | [CC BY 4.0 attribution](Home%20Assistant/Sources/ESPHome/assets/voice-pe/LICENSE.md) |
+| Archived synthetic tones | RASPIAUDIO-generated, retained for history | [CC0 declaration](Home%20Assistant/Sources/ESPHome/assets/ui-sounds/README.md) |
 | PAJ7620U2 initialization | DFRobot_PAJ7620U2 `57edc1d` | [MIT](USB/Sources/licenses/PAJ-LICENSE.txt) |
 
-The model provenance file also records an evaluated `okay_nabu` model; this
-release's configured assets are `hey_jarvis`, `stop` and `vad`, not `okay_nabu`.
+Home Assistant 0.6.68 includes selectable Hey Jarvis, Okay Nabu and Hey Mycroft,
+plus Stop and VAD. See [additional model provenance](Home%20Assistant/Sources/ESPHome/assets/WAKE_MODELS.md)
+and the retained model licenses. Only one main wake model is active at a time.
 
 ## XMOS source integration
 

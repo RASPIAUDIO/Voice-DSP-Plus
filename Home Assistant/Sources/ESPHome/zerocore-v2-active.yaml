@@ -150,6 +150,10 @@ micro_wake_word:
   models:
     - model: assets/hey_jarvis.json
       id: v2_jarvis
+    - model: assets/okay_nabu.json
+      id: v2_nabu
+    - model: assets/hey_mycroft.json
+      id: v2_mycroft
     - model: assets/stop.json
       id: v2_stop_word
       internal: true

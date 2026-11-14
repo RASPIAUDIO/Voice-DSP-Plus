@@ -32,16 +32,17 @@ def main():
         for name, digest in patches['new_files'].items():
             assert sha((delta/'overlay'/name).read_bytes()) == digest, name
     ha = ROOT/'Home Assistant'
-    factory = (ha/'Firmware/voicedsp-v2-0.6.61.factory.bin').read_bytes()
-    ota = (ha/'Firmware/voicedsp-v2-0.6.61.ota.bin').read_bytes()
+    version = json.loads((ha/'Firmware/release.json').read_text())['version']
+    factory = (ha/f'Firmware/voicedsp-v2-{version}.factory.bin').read_bytes()
+    ota = (ha/f'Firmware/voicedsp-v2-{version}.ota.bin').read_bytes()
     assert factory[0x10000:] == ota, 'Factory/OTA mismatch'
     xmos = (ha/'Firmware/xmos-i2s48.spi_boot.bin').read_bytes()
     assert (ha/'Sources/ESPHome/components/voicedsp_v2/xmos_spi.bin').read_bytes() == xmos
     assert xmos in ota, 'XMOS image is not embedded in OTA'
     manifest = json.loads((ha/'Firmware/manifest.json').read_text())
-    assert manifest['version'] == '0.6.61'
+    assert manifest['version'].split('-')[0] == version
     part = manifest['builds'][0]['parts'][0]
-    assert part == {'path': 'voicedsp-v2-0.6.61.factory.bin', 'offset': 0}
+    assert part == {'path': f'voicedsp-v2-{version}.factory.bin', 'offset': 0}
     # Check local Markdown links in the new guides, without fetching network links.
     documents = [ROOT/'README.md', ROOT/'NOTICE.md', ROOT/'UPSTREAM.md']
     for mode in ('USB', 'Home Assistant'):

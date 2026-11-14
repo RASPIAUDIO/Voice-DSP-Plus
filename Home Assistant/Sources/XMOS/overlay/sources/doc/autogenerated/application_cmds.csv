@@ -1,0 +1,11 @@
+Command name,Read / Write,Params,Param format,Description
+VERSION ,READ ONLY,3,uint8,"The version number of the firmware. The format is VERSION_MAJOR VERSION_MINOR VERSION_PATCH"
+BLD_MSG ,READ ONLY,50,char,"Retrieve the build message built in to the firmware, normally the build configuration name"
+BLD_HOST ,READ ONLY,30,char,"Retrieve details of the CI build host used to build the firmware"
+BLD_REPO_HASH ,READ ONLY,40,char,"Retrieve the GIT hash of the sw_xvf3800 repo used to build the firmware"
+BLD_MODIFIED ,READ ONLY,6,char,"Show whether or not the current firmware repo has been modified from the official release. Requires use of a GIT repo"
+BOOT_STATUS ,READ ONLY,3,char,"Shows whether or not the firmware has been booted via SPI or JTAG/FLASH"
+REBOOT ,WRITE ONLY,1,uint8,"Set to any value to reboot the chip and reset all parameters to default."
+USB_BIT_DEPTH ,READ / WRITE,2,uint8,"Only relevant for the UA device variant. For the UA device, set or get the USB bit depth IN, OUT to either 16, 24 or 32. Setting will reboot the chip, resetting all other parameters to default. If issued to the INT device, a set is ignored and the device is not rebooted while a get always returns 0 as both IN and OUT bit depths.. Valid range: val0: [16 .. 16] val0: [24 .. 24] val0: [32 .. 32] val1: [16 .. 16] val1: [24 .. 24] val1: [32 .. 32]"
+V2_HOST_BOOT ,READ ONLY,16,uint8,"Validated host bootstrap record, including array and session cookie."
+V2_HOST_CLOCK ,READ ONLY,8,uint8,"I2S frame count and RTOS ticks, little endian uint32 each. Not a clock frequency measurement."

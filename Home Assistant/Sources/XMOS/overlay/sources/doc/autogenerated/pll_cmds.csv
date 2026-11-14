@@ -1,0 +1,2 @@
+Command name,Read / Write,Params,Param format,Description
+PLL_LOCK_STATUS ,READ ONLY,1,int32,"Returns the lock status of the audio PLL used for generating MCLK (for builds where it is used). It may return one of the following - -1 input frequency too low to track; 0 pll output is locked to input; 1 input frequency is too high to track Note that the PLL status is only valid when the external clock source is active (eg. I2S is running for int-dev. See I2S_INACTIVE to check this), or when running in USB Audio adaptive mode (UA)"

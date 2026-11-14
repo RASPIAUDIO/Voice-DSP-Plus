@@ -9,7 +9,9 @@ esphome:
           condition:
             lambda: |-
               const auto a=id(v2_control).xmos_ui_snapshot().aec;
-              return id(v2_startup_done) && id(v2_control).ready() && a.mux_valid && !a.raw;
+              // This boot chain runs before the feedback script; do not wait
+              // for a flag that a later action in the same chain must set.
+              return millis() >= 5000U && id(v2_control).ready() && a.mux_valid && !a.raw;
           timeout: 45s
       - lambda: |-
           if (id(v2_saved_mode)<0 || id(v2_saved_mode)>2) id(v2_saved_mode)=0;
@@ -143,7 +145,8 @@ script:
                 const auto n=id(v2_product_mode).current_option();
                 id(v2_mode_target)=n=="Voice Compact"?0:n=="Full Speaker"?1:2;
                 id(v2_mode_settings)=vdsp_modes::effective(
-                    vdsp_modes::read(id(v2_unity_memory),id(v2_mode_target)),id(v2_mode_target));
+                    vdsp_modes::read(id(v2_unity_memory),id(v2_mode_target)),id(v2_mode_target),
+                    id(v2_internal_playback).current_option()=="Stereo - AEC may be degraded");
                 id(v2_mode_failed)=!vdsp_modes::valid(id(v2_mode_settings));
             - if:
                 condition:

@@ -1,0 +1,13 @@
+Command name,Read / Write,Params,Param format,Description
+GPI_INDEX ,READ / WRITE,1,uint8,"Set/get pin index for next and subsequent GPI reads. Maximum value should be equal to GPIO_NUM_INPUT_PINS. Valid range: val0: [0 .. 1]"
+GPI_EVENT_CONFIG ,READ / WRITE,1,uint8,"Set/get event config for selected pin. Valid range: val0: [0 .. 3]"
+GPI_ACTIVE_LEVEL ,READ / WRITE,1,uint8,"Set/get active level for selected pin"
+GPI_VALUE ,READ ONLY,1,uint8,"Get current logic level of selected GPI pin."
+GPI_EVENT_PENDING ,READ ONLY,1,uint8,"Get whether event was triggered for selected GPI pin. Event flag is cleared for the pin. Interrupt pin is set when all event flags are cleared"
+GPI_VALUE_ALL ,READ ONLY,1,uint32,"Get current logic level of all GPI pins as a bitmap, where GPI index n -> bit n of returned value."
+GPI_EVENT_PENDING_ALL ,READ ONLY,1,uint32,"Get whether event was triggered for all GPI pins as a bitmap, where GPI index n -> bit n of returned value. Event flag is cleared for all GPI pins. Interrupt pin is set."
+GPO_PORT_PIN_INDEX ,READ / WRITE,2,uint32,"GPO port index and pin index that the following commands would be directed to. Valid range: val0: [0 .. 0] val1: [3 .. 7]"
+GPO_PIN_VAL ,WRITE ONLY,3,uint8,"value to write to one pin of a GPO port. Payload specifies port_index, pin_index and value to write to the pin. Valid range: val0: [0 .. 0] val1: [3 .. 7] val2: [0 .. 1]"
+GPO_PIN_ACTIVE_LEVEL ,READ / WRITE,1,uint32,"Active level of the port/pin specified by the GPO_PORT_PIN_INDEX command. 1 = ACTIVE_HIGH, 0 = ACTIVE_LOW. Valid range: val0: [0 .. 1]"
+GPO_PIN_PWM_DUTY ,READ / WRITE,1,uint8,"PWM duty cycle of the pin specified by the GPO_PORT_PIN_INDEX command. Specified as an integer percentage between 0 and 100. Valid range: val0: [0 .. 100]"
+GPO_PIN_FLASH_MASK ,READ / WRITE,1,uint32,"Serial flash mask for the pin specified by the GPO_PORT_PIN_INDEX command. Each bit in the mask specifies the GPO pin state for a 100 ms time period interval"

@@ -41,11 +41,16 @@ inline bool save(Memory &m, int mode, const Settings &s) {
   std::copy(s.begin(), s.end(), m.begin()+mode*7);
   return true;
 }
-inline Settings effective(Settings s, int mode) {
-  if (mode==0) { s[0]=1; s[1]=0; }
+inline int playback_channel(int route, int requested, bool internal_stereo=false) {
+  if (route==1) return internal_stereo ? 0 : 1;
+  if (route==2) return 1; // Full Speaker uses two frequency bands, not stereo.
+  if (route==3) return 0;
+  return requested;
+}
+inline Settings effective(Settings s, int mode, bool internal_stereo=false) {
+  if (mode==0) s[0]=1;
   if (mode==1) s[0]=2;
-  if (s[0]==2) s[1]=1; // Preserve the accepted mono AEC reference.
-  if (s[0]==3) s[1]=0;
+  s[1]=playback_channel(s[0],s[1],internal_stereo);
   return s;
 }
 inline const char *route(int n) {

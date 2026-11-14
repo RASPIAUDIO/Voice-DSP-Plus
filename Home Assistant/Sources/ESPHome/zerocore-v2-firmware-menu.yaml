@@ -95,4 +95,4 @@ text_sensor:
     entity_category: diagnostic
     update_interval: 60s
     lambda: |-
-      return std::string("152334171334c9608783985ee83ed4e3daad94385dd220bc4a5884b4eaa7dc50");
+      return std::string("207b73b9ead1e84769ca4b8b208917ab2c5086fcd809b16edca11e224759c2bc");

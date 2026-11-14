@@ -8,7 +8,7 @@ void Gestures::loop() {
   // ESPHome millis() may use RTOS ticks; snapshots use esp_timer instead.
   const uint32_t now = static_cast<uint32_t>(millis_64());
   const bool available = controller_->ready() && host.error == 0 && s.ready && s.health_valid &&
-      static_cast<uint32_t>(now - s.health_sampled_ms) <= VDSP_GESTURE_STALE_MS;
+      static_cast<uint32_t>(now - s.health_sampled_ms) <= VDSP_GESTURE_HEALTH_STALE_MS;
   const bool event_fresh = available && s.valid &&
       static_cast<uint32_t>(now - s.sampled_ms) <= VDSP_GESTURE_STALE_MS &&
       static_cast<uint32_t>(now - s.event_ms) <= VDSP_GESTURE_STALE_MS;

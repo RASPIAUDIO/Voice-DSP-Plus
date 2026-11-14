@@ -1,0 +1,182 @@
+---
+# Local UX only. No acoustic profile, routing or gain changes.
+globals:
+  - {id: v2_tts_pending, type: bool, initial_value: 'false'}
+  - {id: v2_tts_started_ms, type: uint32_t, initial_value: '0'}
+  - {id: v2_volume_observed, type: float, initial_value: '-1.0f'}
+  - {id: v2_volume_changed_ms, type: uint32_t, initial_value: '0'}
+  - {id: v2_volume_display_active, type: bool, initial_value: 'false'}
+  - {id: v2_wake_selection_applied, type: int, initial_value: '-1'}
+  - {id: v2_led_style_session, type: uint32_t, initial_value: '0'}
+
+select:
+  - platform: template
+    id: v2_wake_choice
+    name: Wake Word
+    icon: mdi:microphone-message
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_option: Hey Jarvis
+    options: [Hey Jarvis, Okay Nabu, Hey Mycroft]
+
+button:
+  - platform: template
+    name: Action
+    icon: mdi:gesture-tap-button
+    on_press:
+      - script.execute: v2_action_button
+
+text_sensor:
+  - platform: template
+    name: Active Wake Word
+    entity_category: diagnostic
+    update_interval: 1s
+    lambda: |-
+      return std::string(id(v2_jarvis).is_enabled() ? "Jarvis " : "") +
+          (id(v2_nabu).is_enabled() ? "Nabu " : "") +
+          (id(v2_mycroft).is_enabled() ? "Mycroft " : "") +
+          (id(v2_stop_word).is_enabled() ? "Stop" : "");
+
+# RGB outputs are virtual. XMOS remains the sole physical LED driver.
+output:
+  - platform: template
+    id: v2_led_r
+    type: float
+    write_action: []
+  - platform: template
+    id: v2_led_g
+    type: float
+    write_action: []
+  - platform: template
+    id: v2_led_b
+    type: float
+    write_action: []
+
+light:
+  - platform: rgb
+    id: v2_led_style
+    name: LED Ring
+    icon: mdi:circle-outline
+    entity_category: config
+    red: v2_led_r
+    green: v2_led_g
+    blue: v2_led_b
+    gamma_correct: 1
+    default_transition_length: 0s
+    restore_mode: RESTORE_DEFAULT_ON
+    initial_state:
+      state: true
+      brightness: 100%
+      red: 0%
+      green: 75%
+      blue: 100%
+    on_state:
+      - script.execute: v2_apply_led_style
+
+voice_assistant:
+  on_start:
+    - lambda: id(v2_tts_pending) = false;
+  on_tts_start:
+    - lambda: |-
+        if (!id(v2_tts_pending)) id(v2_tts_started_ms) = millis();
+        id(v2_tts_pending) = true;
+  on_intent_progress:
+    - lambda: |-
+        if (!x.empty()) {
+          if (!id(v2_tts_pending)) id(v2_tts_started_ms) = millis();
+          id(v2_tts_pending) = true;
+        }
+  on_error:
+    - lambda: id(v2_tts_pending) = false;
+
+interval:
+  - interval: 100ms
+    then:
+      - lambda: |-
+          // Keep only the selected wake model enabled; stop is controlled separately.
+          const auto choice = id(v2_wake_choice).current_option();
+          const int selected = choice == "Okay Nabu" ? 1 : choice == "Hey Mycroft" ? 2 : 0;
+          if (selected != id(v2_wake_selection_applied)) {
+            id(v2_jarvis).disable(); id(v2_nabu).disable(); id(v2_mycroft).disable();
+            if (selected == 0) id(v2_jarvis).enable();
+            else if (selected == 1) id(v2_nabu).enable();
+            else id(v2_mycroft).enable();
+            id(v2_wake_selection_applied) = selected;
+          }
+          const auto sensitivity = id(v2_sensitivity).current_option();
+          id(v2_nabu).set_probability_cutoff(sensitivity == "Slightly sensitive" ? 217 :
+              sensitivity == "Moderately sensitive" ? 176 : 143);
+          id(v2_mycroft).set_probability_cutoff(sensitivity == "Slightly sensitive" ? 253 :
+              sensitivity == "Moderately sensitive" ? 242 : 237);
+          const float volume = id(v2_player).volume;
+          if (std::isfinite(volume) && volume != id(v2_volume_observed)) {
+            if (id(v2_volume_observed) >= 0.0f) {
+              id(v2_volume_changed_ms) = millis();
+              id(v2_volume_display_active) = true;
+            }
+            id(v2_volume_observed) = volume;
+          }
+          if (millis() - id(v2_volume_changed_ms) >= 2000U)
+            id(v2_volume_display_active) = false;
+          if (id(v2_tts_pending) && !id(v2_assist).is_running() &&
+              id(v2_player).state != media_player::MEDIA_PLAYER_STATE_ANNOUNCING &&
+              millis() - id(v2_tts_started_ms) > 2000U) id(v2_tts_pending) = false;
+          const auto ui = id(v2_control).xmos_ui_snapshot();
+          if (ui.style_available && ui.session_cookie != id(v2_led_style_session)) {
+            id(v2_apply_led_style).execute();
+            id(v2_led_style_session) = ui.session_cookie;
+          }
+
+script:
+  - id: v2_apply_led_style
+    then:
+      - lambda: |-
+          const auto &v = id(v2_led_style).current_values;
+          id(v2_control).request_xmos_led_style(
+              v.is_on() ? uint8_t(v.get_brightness() * 255.0f + 0.5f) : 0,
+              uint8_t(v.get_red() * 255.0f + 0.5f),
+              uint8_t(v.get_green() * 255.0f + 0.5f),
+              uint8_t(v.get_blue() * 255.0f + 0.5f));
+  - id: v2_interrupt_response
+    then:
+      - voice_assistant.stop:
+      - media_player.stop:
+          id: v2_player
+          announcement: true
+      - lambda: id(v2_tts_pending) = false;
+      - mixer_speaker.apply_ducking:
+          id: v2_media_input
+          decibel_reduction: 0
+          duration: 300ms
+      - script.execute: {id: v2_xmos_phase, phase: 0}
+  - id: v2_action_button
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: return !id(v2_mode_busy) && !id(v2_control).update_requested();
+          then:
+            - if:
+                condition:
+                  switch.is_on: v2_timer_ringing
+                then:
+                  - switch.turn_off: v2_timer_ringing
+                else:
+                  - if:
+                      condition:
+                        lambda: return id(v2_dispatch_wake).is_running() || id(v2_assist).is_running() || id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING;
+                      then:
+                        - script.stop: v2_dispatch_wake
+                        - script.stop: v2_ui_sound
+                        - script.execute: v2_interrupt_response
+                      else:
+                        - if:
+                            condition:
+                              media_player.is_playing: v2_player
+                            then:
+                              - media_player.pause: v2_player
+                            else:
+                              - script.execute:
+                                  id: v2_dispatch_wake
+                                  word: !lambda return id(v2_wake_choice).current_option();

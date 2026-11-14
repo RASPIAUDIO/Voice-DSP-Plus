@@ -12,6 +12,7 @@ typedef uint32_t (*vdsp_gesture_now)(void *);
 /* Transport may return this ONLY when cancelled before issuing the transaction. */
 enum { VDSP_GESTURE_CANCELLED = -1001 };
 enum { VDSP_GESTURE_STALE_MS = 250 };
+enum { VDSP_GESTURE_HEALTH_STALE_MS = 1000 };
 enum { VDSP_GESTURE_IO_NONE, VDSP_GESTURE_IO_WRITE,
        VDSP_GESTURE_IO_POINTER, VDSP_GESTURE_IO_READ };
 enum { VDSP_GESTURE_FAULT_NONE, VDSP_GESTURE_FAULT_TRANSPORT,
@@ -40,7 +41,8 @@ typedef struct {
     uint32_t phase_ms, last_poll_ms, health_ms, last_event_ms;
     unsigned index;
     int last_result;
-    bool armed, have_event, configured;
+    bool armed, have_event, configured, recovering;
+    unsigned recovery_attempts;
 } vdsp_v2_gesture;
 
 /* Single existing bus owner only. transfer MUST return 0 only for exact lengths

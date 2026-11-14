@@ -3,8 +3,8 @@
 #include <string.h>
 
 enum { WAIT_POWER, WAKE_WAIT, IDENTIFY, CONFIGURE, BANK1, CHECK_ENABLE,
-       BANK0, DRAIN, RUNNING, BACKOFF, FAILED };
-enum { ADDR = 0x73, RETRY_MS = 10000, HEALTH_MS = 1000,
+       BANK0, DRAIN, RUNNING, BACKOFF, FAILED, RECOVER_BANK0, RECOVER_ID };
+enum { ADDR = 0x73, RETRY_MS = 10000, RECOVERY_MS = 30000, HEALTH_MS = 10000,
        COOLDOWN_MS = 650 };
 
 static int transfer_reg(vdsp_v2_gesture *s, uint8_t reg, uint8_t operation,
@@ -49,9 +49,22 @@ static void fail(vdsp_v2_gesture *s, bool terminal)
     s->snapshot.failure_operation = s->snapshot.last_operation;
     s->snapshot.failure_transport_result = s->snapshot.last_transport_result;
     s->snapshot.failure_kind = !terminal ? VDSP_GESTURE_FAULT_TRANSPORT :
-        s->snapshot.stage == IDENTIFY ? VDSP_GESTURE_FAULT_ID : VDSP_GESTURE_FAULT_DISABLED;
+        (s->snapshot.stage == IDENTIFY || s->snapshot.stage == RECOVER_ID) ?
+        VDSP_GESTURE_FAULT_ID : VDSP_GESTURE_FAULT_DISABLED;
     s->snapshot.ready = s->snapshot.valid = false;
     s->snapshot.health_valid = false;
+    s->armed = false;
+    if (!terminal && s->configured && s->last_result == -4 &&
+        ++s->recovery_attempts <= 3) {
+        /* Address/data NACK: re-establish bank and identity before consuming
+         * any flags. Never retry the possibly consumed gesture itself. */
+        s->recovering = true;
+        s->snapshot.stage = RECOVER_BANK0;
+        s->phase_ms = s->now(s->context);
+        return;
+    }
+    if (s->configured) s->snapshot.attempts = 0;
+    s->recovering = false;
     s->configured = s->armed = false;
     s->snapshot.stage = terminal || s->snapshot.attempts >= 3 ? FAILED : BACKOFF;
     s->phase_ms = s->now(s->context);
@@ -76,7 +89,7 @@ void vdsp_v2_gesture_step(vdsp_v2_gesture *s, bool owner_ready, bool irq)
         return;
     }
     if (s->snapshot.health_valid &&
-        (uint32_t)(now - s->snapshot.health_sampled_ms) > VDSP_GESTURE_STALE_MS)
+        (uint32_t)(now - s->snapshot.health_sampled_ms) > VDSP_GESTURE_HEALTH_STALE_MS)
         s->snapshot.health_valid = false;
     if (s->snapshot.valid && (uint32_t)(now - s->snapshot.sampled_ms) > VDSP_GESTURE_STALE_MS) {
         s->snapshot.valid = false;
@@ -130,7 +143,18 @@ void vdsp_v2_gesture_step(vdsp_v2_gesture *s, bool owner_ready, bool irq)
         if (write_reg(s, 0xef, 0)) { fail(s, false); return; }
         mark_health(s, now);
         s->health_ms = s->now(s->context);
-        s->snapshot.stage = s->configured ? RUNNING : DRAIN;
+        s->snapshot.stage = s->configured && !s->recovering ? RUNNING : DRAIN;
+        return;
+    case RECOVER_BANK0:
+        if ((uint32_t)(now - s->phase_ms) < 200) return;
+        if (write_reg(s, 0xef, 0)) { fail(s, false); return; }
+        s->snapshot.stage = RECOVER_ID;
+        return;
+    case RECOVER_ID:
+        if (read_reg(s, 0x00, data, 2)) { fail(s, false); return; }
+        s->snapshot.part_id = (uint16_t)(data[0] | ((uint16_t)data[1] << 8));
+        if (s->snapshot.part_id != 0x7620) { fail(s, true); return; }
+        s->snapshot.stage = BANK1;
         return;
     case BACKOFF:
         if ((uint32_t)(now - s->phase_ms) >= RETRY_MS) {
@@ -139,6 +163,14 @@ void vdsp_v2_gesture_step(vdsp_v2_gesture *s, bool owner_ready, bool irq)
         }
         return;
     case FAILED:
+        /* Never write a configuration table to a device with the wrong ID.
+         * Transport loss or a reset PAJ can recover without restarting audio. */
+        if (s->snapshot.failure_kind != VDSP_GESTURE_FAULT_ID &&
+            (uint32_t)(now - s->phase_ms) >= RECOVERY_MS) {
+            s->snapshot.attempts = 0;
+            s->phase_ms = now;
+            s->snapshot.stage = WAIT_POWER;
+        }
         return;
     default:
         break;
@@ -159,6 +191,8 @@ void vdsp_v2_gesture_step(vdsp_v2_gesture *s, bool owner_ready, bool irq)
     s->snapshot.sampled_ms = now;
     s->snapshot.raw = (uint16_t)(data[0] | ((uint16_t)(data[1] & 1) << 8));
     s->snapshot.ready = s->configured = true;
+    s->recovering = false;
+    s->recovery_attempts = 0;
     mark_health(s, now);
     s->snapshot.stage = RUNNING;
     s->snapshot.valid = (uint32_t)(s->now(s->context) - now) <= VDSP_GESTURE_STALE_MS;

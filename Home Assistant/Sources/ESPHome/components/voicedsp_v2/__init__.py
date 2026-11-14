@@ -72,7 +72,7 @@ async def to_code(config):
     speaker = await cg.get_variable(config["clock_speaker"])
     cg.add(var.set_clock_speaker(speaker))
     image = (Path(__file__).parent / "xmos_spi.bin").read_bytes()
-    expected = "152334171334c9608783985ee83ed4e3daad94385dd220bc4a5884b4eaa7dc50"
+    expected = "207b73b9ead1e84769ca4b8b208917ab2c5086fcd809b16edca11e224759c2bc"
     if hashlib.sha256(image).hexdigest() != expected:
         raise cv.Invalid("Accepted XMOS SPI image hash mismatch")
     data = cg.progmem_array(config["spi_image_id"], tuple(HexInt(b) for b in image))

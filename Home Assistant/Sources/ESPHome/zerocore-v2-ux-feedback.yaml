@@ -15,6 +15,7 @@ globals:
   - {id: v2_ui_transient, type: int, initial_value: '-1'}
   - {id: v2_ui_transient_ms, type: uint32_t, initial_value: '0'}
   - {id: v2_ui_last_sent, type: int, initial_value: '-1'}
+  - {id: v2_ui_progress_sent, type: int, initial_value: '-1'}
   - {id: v2_ui_session, type: uint32_t, initial_value: '0'}
   - {id: v2_ui_ha_connected, type: bool, initial_value: 'false'}
   - {id: v2_startup_done, type: bool, initial_value: 'false'}
@@ -55,7 +56,11 @@ script:
       - lambda: |-
           if (id(v2_control).update_requested()) return;
           const auto ui = id(v2_control).xmos_ui_snapshot();
-          if (!ui.available) { id(v2_ui_last_sent) = -1; return; }
+          if (!ui.available) {
+            id(v2_ui_last_sent) = -1;
+            id(v2_ui_progress_sent) = -1;
+            return;
+          }
           const uint32_t now = millis();
           if (id(v2_ui_transient) >= 0 && now - id(v2_ui_transient_ms) >= 1200U)
             id(v2_ui_transient) = -1;
@@ -67,9 +72,31 @@ script:
           if (!id(v2_ui_ha_connected)) wanted = 4;
           if (!id(v2_startup_done)) wanted = 4;
           if (id(v2_ui_transient) >= 0) wanted = id(v2_ui_transient);
-          // Privacy mute and speaker mute are different, but both retain red marks.
-          if (id(v2_mic_mute).state || id(v2_player).is_muted()) wanted = 9;
-          if (wanted != id(v2_ui_last_sent) || ui.session_cookie != id(v2_ui_session)) {
+          uint32_t remaining = UINT32_MAX, total = 0;
+          for (const auto &timer : id(v2_assist).get_timers()) {
+            if (timer.is_active && timer.seconds_left > 0 && timer.seconds_left < remaining) {
+              remaining = timer.seconds_left;
+              total = timer.total_seconds;
+            }
+          }
+          const auto timer_ui = vdsp_timer_feedback::choose(wanted,
+              id(v2_timer_ringing).state, id(v2_mic_mute).state || id(v2_player).is_muted(),
+              now, remaining != UINT32_MAX, remaining, total);
+          wanted = timer_ui.state;
+          unsigned progress = timer_ui.progress;
+          // Volume replaces idle/countdown only, never mute, Assist or alarms.
+          if (ui.style_available && id(v2_volume_display_active) &&
+              (wanted == 0 || wanted == 12) && !id(v2_timer_ringing).state &&
+              !id(v2_mic_mute).state && !id(v2_player).is_muted()) {
+            wanted = 15;
+            progress = static_cast<unsigned>(std::max(0.0f, std::min(1.0f, id(v2_player).volume)) * 100.0f + 0.5f);
+          }
+          const bool new_session = ui.session_cookie != id(v2_ui_session);
+          if (int(progress) != id(v2_ui_progress_sent) || new_session) {
+            id(v2_control).request_xmos_ui_progress(progress);
+            id(v2_ui_progress_sent) = progress;
+          }
+          if (wanted != id(v2_ui_last_sent) || new_session) {
             id(v2_control).request_xmos_ui_state(wanted);
             id(v2_ui_last_sent) = wanted;
             id(v2_ui_session) = ui.session_cookie;
@@ -83,61 +110,29 @@ script:
           condition:
             lambda: return id(v2_control).ready() && millis() >= 5000U;
           timeout: 25s
+      # Release the product-mode boot gate, then let it restore the selected
+      # route and levels. Feedback must never choose or power an output itself.
+      - lambda: id(v2_startup_done) = true;
+      - wait_until:
+          condition:
+            lambda: return id(v2_active_mode) >= 0 && !id(v2_mode_busy);
+          timeout: 40s
+      - delay: 300ms
       - if:
           condition:
             lambda: |-
-              return id(v2_control).ready() && !id(v2_control).update_requested() &&
-                  id(v2_output_route).current_option() == "OFF" &&
-                  !id(v2_audio_test_busy) &&
+              return id(v2_startup_sound_enabled).state && id(v2_active_mode) >= 0 &&
+                  !id(v2_mode_busy) && id(v2_control).ready() &&
+                  !id(v2_control).update_requested() && !id(v2_audio_test_busy) &&
                   id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE &&
                   !id(v2_assist).is_running() && !id(v2_dispatch_wake).is_running() &&
                   !id(v2_timer_ringing).state;
           then:
-            - lambda: |-
-                id(v2_startup_owns_route) = true;
-                id(v2_audio_test_busy) = true;
-                // Start internally at unity; never enable the external amplifier.
-                id(v2_control).request_internal_level(-6);
-            - wait_until:
-                condition:
-                  lambda: |-
-                    return !id(v2_startup_owns_route) || (id(v2_control).ready() &&
-                        id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS);
-                timeout: 5s
-            - delay: 300ms
-            - if:
-                condition:
-                  lambda: |-
-                    return id(v2_startup_sound_enabled).state && id(v2_ui_sounds_enabled).state &&
-                        id(v2_startup_owns_route) && id(v2_control).ready() &&
-                        !id(v2_control).update_requested() &&
-                        id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS &&
-                        !id(v2_player).is_muted() && !id(v2_assist).is_running() &&
-                        !id(v2_dispatch_wake).is_running() && !id(v2_timer_ringing).state &&
-                        id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE;
-                then:
-                  - lambda: |-
-                      // Archived CC0 rising cue, padded and normalized to -3 dBFS peak.
-                      id(v2_player).play_file(id(v2_startup_sound), true, false);
-                      id(v2_sound_count)++;
-                      ESP_LOGI("v2_feedback", "Startup cue internal 0dB, file -3dBFS peak");
-                  - delay: 1500ms
-            - lambda: |-
-                if (id(v2_startup_owns_route) && !id(v2_control).update_requested()) {
-                  id(v2_startup_owns_route) = false;
-                  if (id(v2_control).ready() &&
-                      id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS) {
-                    auto route = id(v2_output_route).make_call();
-                    route.set_option("Internal stereo");
-                    route.perform();
-                  } else id(v2_control).request(VDSP_AUDIO_OFF);
-                }
-                id(v2_startup_owns_route) = false;
-                id(v2_audio_test_busy) = false;
-      - lambda: id(v2_startup_done) = true;
+            - script.execute: {id: v2_ui_sound, cue: 5}
+            - script.wait: v2_ui_sound
       - script.execute: v2_refresh_feedback
 
 media_player:
   - id: !extend v2_player
     files:
-      - {id: v2_startup_sound, file: assets/ui-sounds/startup_audible.wav}
+      - {id: v2_startup_sound, file: assets/voice-pe/center_button_long_press.flac}

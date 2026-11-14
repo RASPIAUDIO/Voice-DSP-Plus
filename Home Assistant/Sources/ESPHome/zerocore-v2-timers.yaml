@@ -4,7 +4,7 @@
 media_player:
   - id: !extend v2_player
     files:
-      - {id: v2_timer_sound, file: assets/ui-sounds/timer_finished.wav}
+      - {id: v2_timer_sound, file: assets/voice-pe/timer_finished.flac}
 
 voice_assistant:
   on_timer_finished:
@@ -82,15 +82,11 @@ script:
       - if:
           condition:
             lambda: |-
-              // DAC bounds the test; 50% software volume adds about -25 dB.
-              // The immutable timer asset peaks below the 0.25 bench ceiling.
+              // Exercise the selected output without changing its gain or volume.
               return !id(v2_timer_ringing).state && id(v2_control).ready() &&
                   !id(v2_audio_test_busy) && !id(v2_assist).is_running() &&
                   id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE &&
-                  id(v2_control).snapshot().route == VDSP_AUDIO_HT326 &&
-                  std::isfinite(id(v2_external_level_db).state) &&
-                  id(v2_external_level_db).state >= -60.0f &&
-                  id(v2_external_level_db).state <= -27.0f &&
+                  id(v2_control).snapshot().route != VDSP_AUDIO_OFF &&
                   id(v2_assist).get_timers().empty() &&
                   std::isfinite(id(v2_player).volume) &&
                   id(v2_player).volume > 0.0f && id(v2_player).volume <= 1.0f &&
@@ -100,7 +96,7 @@ script:
             - delay: 5s
             - switch.turn_off: v2_timer_ringing
           else:
-            - logger.log: "V2_TIMER test refused: require idle external -60..-27dB, player 1..100%, no Assist/timer/bench"
+            - logger.log: "V2_TIMER test refused: require idle active output, unmuted player, no Assist/timer/bench"
 
 button:
   - platform: template

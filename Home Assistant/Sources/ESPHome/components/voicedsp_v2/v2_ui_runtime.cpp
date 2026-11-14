@@ -5,8 +5,9 @@
 namespace esphome::voicedsp_v2 {
 namespace {
 constexpr uint8_t CAPS[] = {'V', '2', 'U', 'I', 1, 15, 24, 0};
-constexpr uint8_t COMMANDS[] = {11, 14, 15};
-constexpr uint8_t MAXIMUM[] = {1, 14, 100};
+constexpr uint8_t STYLE_CAPS[] = {'V', '2', 'U', 'I', 2, 31, 24, 0};
+constexpr uint8_t COMMANDS[] = {11, 14, 15, 17, 18, 19, 20};
+constexpr uint8_t MAXIMUM[] = {1, 15, 100, 255, 255, 255, 255};
 constexpr int TRANSPORT = -1, SESSION = -2, SIGNATURE = -3, READBACK = -4, LEVELS = -5;
 }
 
@@ -64,7 +65,7 @@ int UiRuntime::write_(vdsp_v2_host &h, uint8_t command, uint8_t value) {
   return status;
 }
 
-void UiRuntime::step(vdsp_v2_host &h, const uint32_t requests[3], uint32_t aec_request, uint32_t profile_request, unsigned aec_default) {
+void UiRuntime::step(vdsp_v2_host &h, const uint32_t requests[7], uint32_t aec_request, uint32_t profile_request, unsigned aec_default) {
   if (!allowed_(h)) { invalidate(SESSION); return; }
   if (!have_record_ || std::memcmp(record_, h.record, sizeof(record_))) {
     std::memcpy(record_, h.record, sizeof(record_));
@@ -95,17 +96,21 @@ void UiRuntime::step(vdsp_v2_host &h, const uint32_t requests[3], uint32_t aec_r
   if (!snapshot_.available) {
     uint8_t caps[8]{};
     const int error = read_(h, 16, caps, sizeof(caps));
-    if (error || std::memcmp(caps, CAPS, sizeof(caps))) { fail_(error ? error : SIGNATURE); return; }
+    const bool style = std::memcmp(caps, STYLE_CAPS, sizeof(caps)) == 0;
+    if (error || (!style && std::memcmp(caps, CAPS, sizeof(caps)))) { fail_(error ? error : SIGNATURE); return; }
     snapshot_.available = true;
+    snapshot_.style_available = style;
     return;
   }
-  bool *valid[] = {&snapshot_.mute_valid, &snapshot_.state_valid, &snapshot_.progress_valid};
-  for (unsigned index = 0; index < 3; ++index) {
+  bool *valid[] = {&snapshot_.mute_valid, &snapshot_.state_valid, &snapshot_.progress_valid,
+      &snapshot_.style_valid[0], &snapshot_.style_valid[1], &snapshot_.style_valid[2], &snapshot_.style_valid[3]};
+  for (unsigned index = 0; index < (snapshot_.style_available ? 7U : 3U); ++index) {
     const uint32_t request = requests[index];
     if (request && blocked_[index] == request) continue;
     if (*valid[index] && snapshot_.acknowledged[index] == request) continue;
     *valid[index] = false;
     const uint8_t desired = static_cast<uint8_t>(request);
+    if (!snapshot_.style_available && index == 1 && desired > 14) continue;
     if (request && desired > MAXIMUM[index]) { fail_(READBACK); return; }
     int error = 0;
     if (request && attempted_[index] != request) {
@@ -118,7 +123,8 @@ void UiRuntime::step(vdsp_v2_host &h, const uint32_t requests[3], uint32_t aec_r
     if (error) { fail_(error); return; }
     if (index == 0) snapshot_.muted = actual != 0;
     else if (index == 1) snapshot_.state = actual;
-    else snapshot_.progress = actual;
+    else if (index == 2) snapshot_.progress = actual;
+    else snapshot_.style[index - 3] = actual;
     if (request && actual != desired) {
       // Ambiguous/failed write: expose the actual value, quarantine this
       // request, and keep other UI commands alive. Only new intent can write.
