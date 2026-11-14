@@ -5,7 +5,7 @@ answers and hands-free controls to Home Assistant. Use your own speakers or
 the corresponding Voice Compact / Full Speaker assembly.
 
 [Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) |
-[Download 0.6.68](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
+[Download 0.6.69](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
 [All three setups](../README.md)
 
 ## Install in five steps
@@ -14,7 +14,7 @@ the corresponding Voice Compact / Full Speaker assembly.
    You need Home Assistant, 2.4 GHz Wi-Fi and a USB data cable. Remove any Pi.
 2. Connect the **ZeroCore USB data port**, not the XMOS port, to your computer.
 3. Open [RASPIAUDIO Apps: V2 installer](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2)
-   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.68** is preselected.
+   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.69** is preselected.
    Connect and Install. An erased install removes saved settings.
 4. Configure Wi-Fi using serial Improv through the installer. Alternatively use
    the fallback **VoiceDSP V2 Setup** access point (password `voicedsp-setup`).
@@ -23,13 +23,22 @@ the corresponding Voice Compact / Full Speaker assembly.
    Ready** and **XMOS firmware status: Ready**, select your Assist pipeline, then
    try **Hey Jarvis**. Start with a low playback volume.
 
-Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.68.factory.bin)
+Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.69.factory.bin)
 and select it in [ESPHome Web](https://web.esphome.io/). The web installer and
-this download use identical accepted binaries.
+this download use identical release binaries.
 
 ## Everything on the device page
 
-### New in 0.6.68
+### New in 0.6.69
+
+**Dismiss a ringing timer with any detected gesture**, including wave or circles.
+Gesture Control must be enabled. The gesture stops only the alarm, not the
+underlying music, and does not change volume or speaker mute. A one-second guard
+prevents hand withdrawal from triggering another action. Countdown timers are
+not cancelled. Native tests and installation checks pass; physical gesture
+dismissal acceptance is still pending. AEC, XMOS and wake models are unchanged.
+
+### Included from 0.6.68
 
 - **PAJ recovery:** repeated mute/unmute validated; a transient sensor NACK no
   longer inherits a 30-second wait from previous initialization failures.
@@ -92,8 +101,8 @@ Do not substitute the standalone USB firmware for the paired I2S image.
 
 **Reload embedded XMOS firmware** restarts the paired boot. **XMOS loading
 progress**, **XMOS firmware status** and **Embedded XMOS image SHA256** report it.
-The update entity and Beta Firmware selector both currently offer this validated
-0.6.61 release. Press **Check firmware updates**, then install explicitly;
+The update entity and Beta Firmware selector both currently offer this
+0.6.69 release. Press **Check firmware updates**, then install explicitly;
 periodic checks do not update the device automatically. Alternatively use the
 [manual OTA instructions](Firmware/README.md).
 

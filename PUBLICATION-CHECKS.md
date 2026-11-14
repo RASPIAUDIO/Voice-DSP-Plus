@@ -1,5 +1,15 @@
 # USB and Home Assistant publication checks
 
+## Home Assistant timer-gesture update: 2026-11-14
+
+0.6.69 changes only the ESP32 gesture action and release version. All ten PAJ
+event names dismiss a ringing timer before normal actions. Native execution of
+the real YAML lambda tests cooldown, neutral/disabled states and usual actions.
+Compilation, OTA and post-boot settings preservation passed. Physical gesture
+dismissal acceptance remains pending. No new AEC/wake qualification is claimed.
+Sources and factory/OTA images match the installed candidate; XMOS, USB and
+Raspberry Pi images remain unchanged. Prior binaries are retained for rollback.
+
 ## Home Assistant update: 2026-11-14
 
 0.6.68 replaces the HA download only; USB and Raspberry Pi remain unchanged.

@@ -1,6 +1,7 @@
 # Home Assistant sources
 
-Source package for **ESPHome 0.6.68**, including the owner-validated PAJ recovery.
+Source package for **ESPHome 0.6.69**, adding gesture dismissal of ringing timers
+and retaining the owner-validated PAJ recovery.
 [Install the original binary](../Firmware/README.md) | [Provenance](../../UPSTREAM.md)
 
 ## ESP32
@@ -28,7 +29,7 @@ automatically an acoustically validated release.
 ## Matching XMOS source
 
 `XMOS/` contains the source changes for the exact I2S/UI image embedded in ESP32,
-including the 0.6.67 LED controls. Version 0.6.68 changes only the ESP32 PAJ driver.
+including the 0.6.67 LED controls. Versions 0.6.68 and 0.6.69 do not change XMOS.
 Use the shared [reconstruction tool](../../USB/Sources/prepare_xmos.py) with your
 licensed XVF3800 3.2.1 archive:
 

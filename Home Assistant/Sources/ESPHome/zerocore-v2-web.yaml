@@ -13,4 +13,4 @@ esphome:
   name_add_mac_suffix: true
   friendly_name: Voice DSP+ V2
   project:
-    version: 0.6.68-paj-recovery.20261114
+    version: 0.6.69-timer-gesture.20261114

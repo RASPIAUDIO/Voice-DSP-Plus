@@ -272,6 +272,17 @@ script:
               gesture.c_str(), id(v2_gesture_actions).state, id(v2_control).ready(),
               id(v2_mode_busy), id(v2_player).is_muted());
           if (id(v2_mode_busy) || !id(v2_gesture_actions).state || !id(v2_control).ready()) return;
+          // A fresh gesture dismisses the alarm before any normal gesture action.
+          if (gesture.empty() || gesture == "none") return;
+          if (id(v2_timer_ringing).state) {
+            id(v2_have_mute_transition) = true;
+            id(v2_mute_transition_ms) = millis();
+            id(v2_test_timer).stop();
+            id(v2_timer_ringing).turn_off();
+            id(v2_refresh_feedback).execute();
+            ESP_LOGI("v2_gesture_action", "timer dismissed by %s", gesture.c_str());
+            return;
+          }
           // Only the six established gestures act; combined/wave/circles stay diagnostic.
           const bool reliable = gesture == "sensor_left" || gesture == "sensor_right" ||
               gesture == "sensor_up" || gesture == "sensor_down" ||
