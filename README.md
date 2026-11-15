@@ -38,6 +38,11 @@ Use desktop Chrome/Edge for the web installers. USB updater: connect the **XMOS*
 data port of an already USB-enabled V2. Home Assistant: connect **ZeroCore S3**.
 Blank XMOS boards need initial provisioning before USB DFU is available.
 
+[All three installer choices](https://apps.raspiaudio.com/#device=VoiceDSP) |
+[Switch USB to host-controlled I2S](https://raspiaudio.com/voicedsp/webflasher/?firmware=v2-i2s-48k)
+([requirements and recovery](USB/Firmware/I2S.md)). Switching to I2S removes USB
+audio and browser updating; the new update path still needs a hardware test.
+
 ## USB: one cable, familiar controls
 
 Connect the XMOS USB data port, select Voice DSP+ as microphone and speaker,

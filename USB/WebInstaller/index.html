@@ -12,8 +12,8 @@
         <p class="eyebrow">RASPIAUDIO VOICE DSP+</p>
         <h1>Update Voice DSP+ in your browser</h1>
         <p>
-          Choose your hardware generation, stop playback, then update in Chrome
-          or Edge. V2 USB mono 48 kHz: validated release <strong>0.8.9-r4</strong>.
+          Choose USB sound card or host-controlled I2S for Voice DSP+ V2.
+          Stop playback, then update in Chrome or Edge. USB release <strong>0.8.9-r4</strong>.
         </p>
       </section>
 
@@ -26,10 +26,9 @@
         </p>
         <p>
           <a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=VoiceDSPV2" target="_blank" rel="noopener">
-            Install V2 Home Assistant 0.6.61 on ZeroCore S3
+            Install V2 Home Assistant 0.6.75 on ZeroCore S3
           </a>
         </p>
-        <p><a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=HomeAssistant">Original V1 Home Assistant installer</a></p>
         <p class="details">For standalone USB audio without an ESP32, use the updater below.</p>
       </section>
 
@@ -43,14 +42,17 @@
       </section>
 
       <section class="panel">
-        <h2>1. Choose a USB mode</h2>
+        <h2>1. Choose USB or I2S firmware</h2>
         <label for="firmwareSelect">Voice DSP+ firmware</label>
         <select id="firmwareSelect"></select>
         <p id="firmwareDetails" class="details"></p>
         <p class="details"><strong>V2 and V1 firmware are not interchangeable.</strong>
           Normal installation checks the VDSP2-USBMONO USB identity. Force mode bypasses this check. A blank board or an
-          I2S-only board needs initial provisioning, not this USB updater.
+          I2S-only board needs USB Recovery or SPI provisioning before using this updater.
           <a href="https://github.com/RASPIAUDIO/Voice-DSP-Plus/blob/V2/USB/Firmware/README.md">V2 installation and recovery guide</a></p>
+        <p class="details"><strong>I2S is not a USB sound card.</strong> Installing I2S removes USB audio and browser updating after reboot.
+          A host must configure I2S audio. Returning to USB requires the ZeroCore recovery loader or Raspberry Pi/SPI.
+          The I2S application is accepted; this new USB-to-I2S update package still needs a hardware installation test.</p>
       </section>
 
       <section id="connectPanel" class="panel">
@@ -98,6 +100,6 @@
         </ul>
       </section>
     </main>
-    <script src="app-v2-089-r4.js" type="module"></script>
+    <script src="app-v2-usb-i2s-r5.js" type="module"></script>
   </body>
 </html>

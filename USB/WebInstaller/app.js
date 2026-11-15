@@ -1,4 +1,4 @@
-const MANIFEST_URL = "firmwares-v2-089.json";
+const MANIFEST_URL = "firmwares-v2-usb-i2s-r5.json";
 const DFU = {
   DETACH: 0,
   DNLOAD: 1,
@@ -116,7 +116,7 @@ async function loadManifest() {
   state.manifest = await response.json();
   state.catalog = [...state.manifest.firmwares];
 
-  const groups = ["v2", "v1"].map((hardware) => {
+  const groups = [...new Set(state.catalog.map(f => f.hardware))].map((hardware) => {
     const group = document.createElement("optgroup");
     group.label = hardware === "v2" ? "Voice DSP+ V2" : "Original Voice DSP+ V1";
     group.append(...state.catalog.filter(f => f.hardware === hardware).map(firmwareOption));
@@ -127,7 +127,7 @@ async function loadManifest() {
   const chosen = state.catalog.find(f => f.mode === requested) || state.catalog.find(f => f.recommended && f.hardware === "v2");
   if (chosen) elements.firmwareSelect.value = chosen.mode;
   updateFirmwareDetails();
-  log(`Loaded ${state.manifest.firmwares.length} USB firmware image(s).`);
+  log(`Loaded ${state.manifest.firmwares.length} V2 firmware image(s).`);
 }
 
 function productFilters() {
@@ -473,6 +473,10 @@ async function flashFirmware() {
   const firmware = selectedFirmware();
   if (!firmware) throw new Error("No firmware selected.");
   if (!state.device) throw new Error("No Voice DSP+ device connected.");
+  if (firmware.outputMode === "i2s" && !window.confirm(
+    "Install I2S firmware? USB audio and browser updating will no longer be available after reboot. " +
+    "Returning to USB requires ZeroCore S3 USB Recovery or Raspberry Pi/SPI provisioning. " +
+    "This USB-to-I2S installation path is not yet hardware-qualified. Continue?")) return;
   validateFirmwareTarget(firmware, state.device);
   const force = elements.forceCheckbox.checked;
   if (state.dfuAltSetting !== 1 || (!force && firmware.hardware === "v2" && state.dfuInterfaceNumber !== 4)) {
@@ -526,7 +530,9 @@ async function flashFirmware() {
   } catch (error) {
     log(`Device reset returned: ${error.message}`);
   }
-  setProgress(100, "Flash command completed. Reconnect the USB audio device if needed.");
+  setProgress(100, firmware.outputMode === "i2s"
+    ? "I2S image sent. USB disappearance is expected; verify startup with your I2S host."
+    : "Flash command completed. Reconnect the USB audio device if needed.");
   log("Flash complete.");
 }
 
@@ -647,5 +653,5 @@ elements.forceCheckbox.addEventListener("change", updateFlashEnabled);
 elements.connectButton.addEventListener("click", () => runSafely(connectDevice));
 elements.flashButton.addEventListener("click", () => runSafely(flashFirmware));
 
-log("Web updater UI 0.8.9-r4 (force install)");
+log("Web updater UI r5 (V2 USB / I2S)");
 runSafely(loadManifest);

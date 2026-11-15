@@ -6,10 +6,16 @@ This directory versions the production UI; firmware bytes live in `../Firmware`.
 Deployment mapping:
 
 - `index.html` and `styles.css` at `/voicedsp/webflasher/`.
-- `app.js` deployed as `app-v2-089-r4.js`.
-- `firmwares.json` deployed as `firmwares-v2-089.json`.
+- `app.js` deployed as `app-v2-usb-i2s-r5.js`.
+- `firmwares.json` deployed as `firmwares-v2-usb-i2s-r5.json`.
 - `../Firmware/voicedsp-v2-usb-mono-0.8.9.dfu_upgrade.bin` under `firmware/`.
-- Existing V1 `../public/...` paths remain untouched on the server.
+- `../Firmware/voicedsp-v2-i2s48-ui2.dfu_upgrade.bin` under `firmware/`.
+- V1 choices are removed from the visible catalog; existing downloads remain archived.
+
+Revision r5 adds the [I2S mode](../Firmware/I2S.md), deep link
+`?firmware=v2-i2s-48k`, with an explicit confirmation of USB disappearance and
+the recovery requirements. The accepted application is unchanged; its new DFU
+package remains hardware-unqualified. A completed transfer is not a boot proof.
 
 Versioned JS/catalog names prevent cached older pages from seeing incompatible
 new metadata. Deploy the image, catalog and JS before atomically replacing the

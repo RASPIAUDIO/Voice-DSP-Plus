@@ -1,72 +1,37 @@
 {
   "schema": 1,
-  "name": "Voice DSP+ V1 / V2 USB firmware catalog",
-  "generatedBy": "Validated V2 release publication 2026-11-13",
+  "name": "Voice DSP+ V2 USB and I2S firmware catalog",
+  "generatedBy": "V2 catalog publication 2026-11-15",
   "vendorId": "0x20B1",
-  "dfu": {
-    "interfaceNumber": 4,
-    "altSetting": 1,
-    "altName": "XMOS DFU Upgrade",
-    "transferSize": 256
-  },
+  "dfu": {"interfaceNumber": 4, "altSetting": 1, "altName": "XMOS DFU Upgrade", "transferSize": 256},
   "firmwares": [
     {
       "mode": "v2-usb-mono-48k",
       "label": "V2 - USB Mono 48 kHz - 0.8.9-r4",
-      "description": "V2 only. Validated mono AEC, automatic microphone geometry, Windows volume, gestures, speaker selection and persistent output/volume. Stop playback before updating.",
-      "vendorId": "0x20B1",
-      "productId": "0x4FC7",
-      "hardware": "v2",
-      "serialPrefixes": [
-        "VDSP2-USBMONO-"
-      ],
-      "imageType": "dfu-upgrade",
-      "rate": "48kHz",
-      "geometry": "internal/square/line auto",
-      "usbMode": "1ch",
+      "description": "USB sound card. Validated mono AEC, automatic microphone geometry, Windows volume, gestures, speaker selection and persistent output/volume. Stop playback before updating.",
+      "vendorId": "0x20B1", "productId": "0x4FC7", "hardware": "v2",
+      "serialPrefixes": ["VDSP2-USBMONO-"], "imageType": "dfu-upgrade",
+      "rate": "48kHz", "geometry": "internal/square/line auto", "usbMode": "1ch",
       "recommended": true,
       "path": "firmware/voicedsp-v2-usb-mono-0.8.9.dfu_upgrade.bin",
       "sha256": "5daf84bd7a7d8e25a6cd175b72412bf3a47844b9b75a4643939e7dfd85c20708",
-      "bytes": 943616,
-      "dfu": {
-        "transferSize": 256
-      },
-      "version": "0.8.9-r4",
-      "hardwareValidated": true
+      "bytes": 943616, "dfu": {"transferSize": 256},
+      "version": "0.8.9-r4", "hardwareValidated": true
     },
     {
-      "mode": "16k-voice-auto",
-      "label": "V1 - USB 2ch 16 kHz Voice Auto",
-      "description": "Voice-first 16 kHz mode. The firmware detects LINE or SQUARE microphone geometry automatically at cold boot.",
-      "folder": "USB_2CH_16kHz_AUTO",
-      "vendorId": "0x20B1",
-      "productId": "0x4FC6",
-      "rate": "16kHz",
-      "geometry": "auto",
-      "usbMode": "2ch",
+      "mode": "v2-i2s-48k",
+      "label": "V2 - I2S 48 kHz - Host-controlled (UI2)",
+      "description": "Switch to the accepted host-controlled I2S application (unchanged HA XMOS image). USB audio and browser updating disappear after reboot. A host must initialize audio. To return to USB, use ZeroCore S3 USB Recovery or Raspberry Pi/SPI provisioning. This new USB-to-I2S update path has not yet been tested on hardware.",
+      "vendorId": "0x20B1", "productId": "0x4FC7", "hardware": "v2",
+      "serialPrefixes": ["VDSP2-USBMONO-"], "imageType": "dfu-upgrade",
+      "rate": "48kHz", "geometry": "internal/square/line auto", "outputMode": "i2s",
       "recommended": false,
-      "path": "../public/USB_2CH_16kHz_AUTO/artifacts/pi_ai_mic_usb_2ch_16khz_auto_geometry_4fc6_2026-07-10_dfu_upgrade.bin",
-      "sha256": "d44d9efa25b3564e546a04ba9cc370eeed3e51d1dbbbd57ed8a91c0a08965e52",
-      "bytes": 931072,
-      "hardware": "v1",
-      "imageType": "dfu-upgrade"
-    },
-    {
-      "mode": "48k-assistant-auto",
-      "label": "V1 - USB 2ch 48 kHz Assistant Auto",
-      "description": "Recommended assistant/chat mode: 48 kHz, automatic LINE/SQUARE geometry, speaker/headphone autorouting, stereo headphone, and user-button hold-to-dictate shortcut.",
-      "folder": "USB_2CH_48kHz_ASSISTANT_AUTO",
-      "vendorId": "0x20B1",
-      "productId": "0x4FC7",
-      "rate": "48kHz",
-      "geometry": "auto",
-      "usbMode": "2ch",
-      "recommended": true,
-      "path": "../public/USB_2CH_48kHz_ASSISTANT_AUTO/artifacts/pi_ai_mic_usb_2ch_48khz_auto_geometry_4fc7_2026-07-10_dfu_upgrade.bin",
-      "sha256": "a5d1f99fd4a62f328dd5176003f942769b9ee605e3ba62aefcfed06279bf9aa8",
-      "bytes": 932352,
-      "hardware": "v1",
-      "imageType": "dfu-upgrade"
+      "path": "firmware/voicedsp-v2-i2s48-ui2.dfu_upgrade.bin",
+      "sha256": "fa53f0ca79355c4a7b322de9b4579bd579a583cca877e9a156129a88bea9a706",
+      "bytes": 861184, "dfu": {"transferSize": 256},
+      "version": "0.6.0-ui2", "hardwareValidated": false,
+      "applicationHardwareValidated": true,
+      "sourceXeSha256": "53b45056dd10988e171b439b9cdc418d3d6876dd3f72ec6a6c9c203e80c6f564"
     }
   ]
 }
