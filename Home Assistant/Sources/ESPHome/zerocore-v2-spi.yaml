@@ -9,6 +9,8 @@ esphome:
 text_sensor:
   - platform: template
     name: XMOS SPI Boot
+    entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 2s
     lambda: |-
       const int state = id(v2_control).spi_boot_status();

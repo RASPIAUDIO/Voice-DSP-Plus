@@ -13,8 +13,9 @@ select:
   - platform: template
     id: v2_wake_choice
     name: Wake Word
-    icon: mdi:microphone-message
     entity_category: config
+    disabled_by_default: false
+    icon: mdi:microphone-message
     optimistic: true
     restore_value: true
     initial_option: Hey Jarvis
@@ -23,6 +24,7 @@ select:
 button:
   - platform: template
     name: Action
+    disabled_by_default: true
     icon: mdi:gesture-tap-button
     on_press:
       - script.execute: v2_action_button
@@ -31,6 +33,7 @@ text_sensor:
   - platform: template
     name: Active Wake Word
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 1s
     lambda: |-
       return std::string(id(v2_jarvis).is_enabled() ? "Jarvis " : "") +
@@ -57,8 +60,9 @@ light:
   - platform: rgb
     id: v2_led_style
     name: LED Ring
-    icon: mdi:circle-outline
     entity_category: config
+    disabled_by_default: false
+    icon: mdi:circle-outline
     red: v2_led_r
     green: v2_led_g
     blue: v2_led_b

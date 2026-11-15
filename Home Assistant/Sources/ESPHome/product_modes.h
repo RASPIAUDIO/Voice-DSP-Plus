@@ -12,16 +12,20 @@ inline constexpr LegacyMemory legacy_defaults{
     2, 1, 0, -24, 9500, 0, -6,
     0, 0, 0, -24, 9500, 0, -6};
 inline constexpr Memory defaults{
-    1, 0, -6, -24, 9500, 0, -6,
-    2, 1, -6, -24, 9500, 0, -6,
-    0, 0, -6, -24, 9500, 0, -6, 61};
+    1, 0, 0, 0, 9500, 0, -6,
+    2, 1, 0, 0, 9500, 0, -6,
+    0, 0, 0, 0, 9500, 0, -6, 74};
 inline constexpr Memory uninitialized{};
 inline void migrate_levels(Memory &current, const LegacyMemory &legacy) {
-  if (current[21] == 61) return;
-  std::copy(legacy.begin(), legacy.end(), current.begin());
-  for (int mode=0; mode<3; ++mode)
-    current[mode*7+2] = std::max(-60, std::min(0, legacy[mode*7+2]-6));
-  current[21] = 61; // Schema and values persist together; repeated boots do not subtract again.
+  if (current[21] == 74) return;
+  if (current[21] != 61)
+    std::copy(legacy.begin(), legacy.end(), current.begin());
+  // Migrate only the two general gains; routes, channel and filter are retained.
+  for (int mode=0; mode<3; ++mode) {
+    current[mode*7+2] = 0;
+    current[mode*7+3] = 0;
+  }
+  current[21] = 74;
 }
 inline bool valid(const Settings &s) {
   return s[0]>=0 && s[0]<=3 && s[1]>=0 && s[1]<=3 &&

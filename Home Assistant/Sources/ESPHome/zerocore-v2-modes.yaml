@@ -17,6 +17,8 @@ esphome:
           if (id(v2_saved_mode)<0 || id(v2_saved_mode)>2) id(v2_saved_mode)=0;
           id(v2_product_mode).publish_state(vdsp_modes::name(id(v2_saved_mode)));
           id(v2_apply_product_mode).execute();
+      - script.wait: v2_apply_product_mode
+      - lambda: id(v2_auto_queue).arm();
 
 globals:
   - id: v2_mode_memory
@@ -57,6 +59,8 @@ select:
   - platform: template
     id: v2_product_mode
     name: Product Mode
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:tune-variant
     optimistic: true
     initial_option: Voice Compact
@@ -65,19 +69,24 @@ select:
 switch:
   - platform: template
     name: Show Advanced Settings
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:tune
     optimistic: true
     restore_mode: ALWAYS_OFF
   - platform: template
     name: Show Diagnostics
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:bug-outline
     optimistic: true
     restore_mode: ALWAYS_OFF
   - platform: template
     id: v2_beta_firmware
     name: Beta Firmware
-    icon: mdi:flask-outline
     entity_category: config
+    disabled_by_default: false
+    icon: mdi:flask-outline
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
@@ -88,11 +97,15 @@ switch:
 button:
   - platform: template
     name: Apply Product Mode
+    entity_category: config
+    disabled_by_default: true
     icon: mdi:check-circle-outline
     on_press:
       - script.execute: v2_apply_product_mode
   - platform: template
     name: Save Mode Settings
+    entity_category: config
+    disabled_by_default: true
     icon: mdi:content-save-outline
     on_press:
       - script.execute: v2_save_mode
@@ -101,10 +114,14 @@ text_sensor:
   - platform: template
     id: v2_mode_status
     name: Product Mode Status
+    entity_category: diagnostic
+    disabled_by_default: true
     icon: mdi:information-outline
     update_interval: never
   - platform: template
     name: Applied Product Mode
+    entity_category: diagnostic
+    disabled_by_default: false
     icon: mdi:speaker-multiple
     update_interval: 1s
     lambda: return std::string(vdsp_modes::name(id(v2_active_mode)));
@@ -123,6 +140,11 @@ script:
           vdsp_modes::Settings s{r=="Internal stereo"?1:r=="External speaker"?2:r=="LINE OUT stereo"?3:0,
               c=="Both mono"?1:c=="Left"?2:c=="Right"?3:0,
               int(vals[0]),int(vals[1]),int(vals[2]),int(vals[3]),int(vals[4])};
+          // Pending filter controls may already describe the next preset.
+          if (id(v2_auto_queue).armed) {
+            const auto f=id(v2_auto_queue).applied_filter;
+            s[4]=f.hz; s[5]=f.woofer; s[6]=f.tweeter;
+          }
           if (vdsp_modes::save(id(v2_unity_memory),id(v2_active_mode),s))
             id(v2_mode_status).publish_state("Settings saved on device");
 
@@ -137,7 +159,8 @@ script:
                   (id(v2_diagnostic_until)==0 || int32_t(id(v2_diagnostic_until)-millis())<=0) &&
                   !id(v2_control).update_requested() && !id(v2_assist).is_running() &&
                   !id(v2_dispatch_wake).is_running() && !id(v2_timer_ringing).state &&
-                  id(v2_player).state==media_player::MEDIA_PLAYER_STATE_IDLE &&
+                  (id(v2_player).state==media_player::MEDIA_PLAYER_STATE_IDLE ||
+                   id(v2_player).state==media_player::MEDIA_PLAYER_STATE_PAUSED) &&
                   a.mux_valid && !a.raw && a.mux[0]==8 && a.mux[1]==0 && a.mux[2]==8 && a.mux[3]==1;
           then:
             - script.execute: v2_save_mode
@@ -169,9 +192,11 @@ script:
                           !id(v2_player).is_muted()) { id(v2_mode_failed)=true; return; }
                       const auto s=id(v2_mode_settings);
                       auto num=[](auto *n,int v){auto c=n->make_call();c.set_value(v);c.perform();};
+                      id(v2_auto_queue).internal_write=true;
                       num(id(v2_internal_level_db),s[2]); num(id(v2_external_level_db),s[3]);
                       num(id(v2_crossover_hz),s[4]); num(id(v2_woofer_trim),s[5]);num(id(v2_tweeter_trim),s[6]);
                       auto p=id(v2_speaker_profile).make_call();p.set_option("Full Speaker 2-way");p.perform();
+                      id(v2_auto_queue).internal_write=false;
                       // All product modes retain the accepted LR4 topology; debug profiles remain separate.
                       if (!id(v2_control).configure_crossover(1,s[4],s[5],s[6])) {
                         id(v2_mode_failed)=true;return;
@@ -197,7 +222,8 @@ script:
                       const bool filter_ok=id(v2_control).crossover_diagnostics().find(
                           "applied=1 mode=1 fc="+std::to_string(s[4])+" L="+std::to_string(s[5])+" R="+std::to_string(s[6])+" ")==0;
                       if (!id(v2_control).ready() || id(v2_control).snapshot().route!=routes[s[0]] ||
-                          id(v2_assist).is_running() || id(v2_player).state!=media_player::MEDIA_PLAYER_STATE_IDLE ||
+                          id(v2_assist).is_running() || (id(v2_player).state!=media_player::MEDIA_PLAYER_STATE_IDLE &&
+                           id(v2_player).state!=media_player::MEDIA_PLAYER_STATE_PAUSED) ||
                           !a.mux_valid || a.raw || a.mux[0]!=8 || a.mux[1]!=0 || a.mux[2]!=8 || a.mux[3]!=1 ||
                           (s[0]==2 && (!filter_ok || !a.profile_valid || a.profile!=4 || a.profile_error)))
                         id(v2_mode_failed)=true;
@@ -209,6 +235,7 @@ script:
                       } else {
                         id(v2_active_mode)=id(v2_mode_target);
                         id(v2_saved_mode)=id(v2_mode_target);
+                        id(v2_auto_queue).applied_filter={1,s[4],s[5],s[6]};
                         vdsp_modes::save(id(v2_unity_memory),id(v2_active_mode),s);
                         if (!id(v2_mode_previous_mute)) {
                           auto m=id(v2_player).make_call();m.set_command(media_player::MEDIA_PLAYER_COMMAND_UNMUTE);m.perform();

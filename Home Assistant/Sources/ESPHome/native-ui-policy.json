@@ -1,0 +1,1085 @@
+{
+  "version": "0.6.75-product-ui.20261115",
+  "base": "0.6.74",
+  "no_renames": false,
+  "no_removed_entities": true,
+  "no_dashboard": true,
+  "no_ha_token": true,
+  "aec_changed": false,
+  "entities": [
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "VoiceDSP V2 Player",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use",
+      "display_name": "Outputs - Volume"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "Audio OFF",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "expert/test; enable in HA when needed",
+      "display_name": "Diagnostic - Audio OFF"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "LINE output minus 30 dB",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - LINE output minus 30 dB"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "Internal HP guarded minus 36 dB",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Internal HP guarded minus 36 dB"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "Microphone Geometry",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "health/status",
+      "display_name": "Inputs - Microphone Geometry"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "V2 hardware and power state",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - V2 hardware and power state"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "Software qualification",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Software qualification"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "Audio Controller Ready",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Audio Controller Ready"
+    },
+    {
+      "file": "zerocore-v2-active.yaml",
+      "name": "Jack Connected",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "health/status",
+      "display_name": "Inputs - Jack Connected"
+    },
+    {
+      "file": "zerocore-v2-aec.yaml",
+      "name": "AEC Profile State",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Profile State"
+    },
+    {
+      "file": "zerocore-v2-aec.yaml",
+      "name": "External AEC Mono Reference",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - External AEC Mono Reference"
+    },
+    {
+      "file": "zerocore-v2-amp-diagnostics.yaml",
+      "name": "External Amplifier - Fault or Unexpected Shutdown",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - External Amplifier - Fault or Unexpected Shutdown"
+    },
+    {
+      "file": "zerocore-v2-amp-diagnostics.yaml",
+      "name": "External Amplifier - SD FAULT State",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - External Amplifier - SD FAULT State"
+    },
+    {
+      "file": "zerocore-v2-amp-diagnostics.yaml",
+      "name": "External Amplifier - Raw Pins",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - External Amplifier - Raw Pins"
+    },
+    {
+      "file": "zerocore-v2-buttons.yaml",
+      "name": "Navigation Up",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Inputs - Navigation Up"
+    },
+    {
+      "file": "zerocore-v2-buttons.yaml",
+      "name": "Navigation Down",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Inputs - Navigation Down"
+    },
+    {
+      "file": "zerocore-v2-buttons.yaml",
+      "name": "Navigation Left",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Inputs - Navigation Left"
+    },
+    {
+      "file": "zerocore-v2-buttons.yaml",
+      "name": "Navigation Right",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Inputs - Navigation Right"
+    },
+    {
+      "file": "zerocore-v2-buttons.yaml",
+      "name": "Navigation Inputs Available",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Navigation Inputs Available"
+    },
+    {
+      "file": "zerocore-v2-controls.yaml",
+      "name": "Wake Word",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Assistant - Wake Word"
+    },
+    {
+      "file": "zerocore-v2-controls.yaml",
+      "name": "Action",
+      "category": null,
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Action"
+    },
+    {
+      "file": "zerocore-v2-controls.yaml",
+      "name": "Active Wake Word",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Active Wake Word"
+    },
+    {
+      "file": "zerocore-v2-controls.yaml",
+      "name": "LED Ring",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - LED Ring"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Capture 90s",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Capture 90s"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Capture Stop",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Capture Stop"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Raw 90s",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Raw 90s"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Restore Processing",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Restore Processing"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Profile Voice Preserve",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Profile Voice Preserve"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Profile V2 Default",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Profile V2 Default"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Profile Original",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Profile Original"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Bench State",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Bench State"
+    },
+    {
+      "file": "zerocore-v2-crossover-bench.yaml",
+      "name": "AEC Runtime Parameters",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - AEC Runtime Parameters"
+    },
+    {
+      "file": "zerocore-v2-crossover.yaml",
+      "name": "Full Speaker - Filter Profile",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - Full Speaker - Filter Profile"
+    },
+    {
+      "file": "zerocore-v2-crossover.yaml",
+      "name": "Full Speaker - Crossover",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - Full Speaker - Crossover"
+    },
+    {
+      "file": "zerocore-v2-crossover.yaml",
+      "name": "Full Speaker - Woofer Trim",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - Full Speaker - Woofer Trim"
+    },
+    {
+      "file": "zerocore-v2-crossover.yaml",
+      "name": "Full Speaker - Tweeter Trim",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - Full Speaker - Tweeter Trim"
+    },
+    {
+      "file": "zerocore-v2-crossover.yaml",
+      "name": "Full Speaker - Apply When Idle",
+      "category": "config",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Outputs - Full Speaker - Apply When Idle"
+    },
+    {
+      "file": "zerocore-v2-crossover.yaml",
+      "name": "Full Speaker - Applied Filter",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Full Speaker - Applied Filter"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Angle 0",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS DOA Angle 0"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Energy 0",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS DOA Energy 0"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Angle 1",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS DOA Angle 1"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Energy 1",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS DOA Energy 1"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Angle 2",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS DOA Angle 2"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Energy 2",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS DOA Energy 2"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Angle 3",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS DOA Angle 3"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Energy 3",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS DOA Energy 3"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Selected 0",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS DOA Selected 0"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Selected 1",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS DOA Selected 1"
+    },
+    {
+      "file": "zerocore-v2-doa.yaml",
+      "name": "XMOS DOA Geometry",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS DOA Geometry"
+    },
+    {
+      "file": "zerocore-v2-external-test.yaml",
+      "name": "Audio Startup Diagnostics",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Audio Startup Diagnostics"
+    },
+    {
+      "file": "zerocore-v2-external-test.yaml",
+      "name": "External Amplifier GPIO State",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - External Amplifier GPIO State"
+    },
+    {
+      "file": "zerocore-v2-external-test.yaml",
+      "name": "Test External Speaker Low Level",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Test External Speaker Low Level"
+    },
+    {
+      "file": "zerocore-v2-firmware-menu.yaml",
+      "name": "ESP32 + XMOS Firmware",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Diagnostic - ESP32 + XMOS Firmware"
+    },
+    {
+      "file": "zerocore-v2-firmware-menu.yaml",
+      "name": "Reload embedded XMOS firmware",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "expert/test; enable in HA when needed",
+      "display_name": "Diagnostic - Reload embedded XMOS firmware"
+    },
+    {
+      "file": "zerocore-v2-firmware-menu.yaml",
+      "name": "Check firmware updates",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Diagnostic - Check firmware updates"
+    },
+    {
+      "file": "zerocore-v2-firmware-menu.yaml",
+      "name": "XMOS loading progress",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "health/status",
+      "display_name": "Diagnostic - XMOS loading progress"
+    },
+    {
+      "file": "zerocore-v2-firmware-menu.yaml",
+      "name": "XMOS firmware status",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "health/status",
+      "display_name": "Diagnostic - XMOS firmware status"
+    },
+    {
+      "file": "zerocore-v2-firmware-menu.yaml",
+      "name": "Embedded XMOS image SHA256",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "expert/test; enable in HA when needed",
+      "display_name": "Diagnostic - Embedded XMOS image SHA256"
+    },
+    {
+      "file": "zerocore-v2-gestures.yaml",
+      "name": "Gesture Sensor Frame",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Inputs - Gesture Sensor Frame"
+    },
+    {
+      "file": "zerocore-v2-gestures.yaml",
+      "name": "Gesture Inputs Available",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Gesture Inputs Available"
+    },
+    {
+      "file": "zerocore-v2-gestures.yaml",
+      "name": "Gesture Raw Diagnostics",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Gesture Raw Diagnostics"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Product Mode",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - Product Mode"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Show Advanced Settings",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Show Advanced Settings"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Show Diagnostics",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Show Diagnostics"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Beta Firmware",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Diagnostic - Beta Firmware"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Apply Product Mode",
+      "category": "config",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Apply Product Mode"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Save Mode Settings",
+      "category": "config",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Save Mode Settings"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Product Mode Status",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Product Mode Status"
+    },
+    {
+      "file": "zerocore-v2-modes.yaml",
+      "name": "Applied Product Mode",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "health/status",
+      "display_name": "Diagnostic - Applied Product Mode"
+    },
+    {
+      "file": "zerocore-v2-power-bypass.yaml",
+      "name": "Power policy",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Power policy"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - PD Reading Valid",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Power - PD Reading Valid"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - Power Good",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Power - Power Good"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - USB Type",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use; native category without HA configuration",
+      "display_name": "USB-C - PD Contract"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - USB-C Orientation",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Power - USB-C Orientation"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - HUSB238 Registers",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Power - HUSB238 Registers"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - Read Diagnostics",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Power - Read Diagnostics"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - PD Contract Voltage",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use; native category without HA configuration",
+      "display_name": "USB-C - PD Voltage"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - PD Contract Current",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use; native category without HA configuration",
+      "display_name": "USB-C - PD Current"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - PD Contract Power",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use; native category without HA configuration",
+      "display_name": "USB-C - PD Power"
+    },
+    {
+      "file": "zerocore-v2-power-diagnostics.yaml",
+      "name": "Power - Advertised USB 5V Current",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Power - Advertised USB 5V Current"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Mute Microphone",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use",
+      "display_name": "Inputs - Mute Microphone"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Gesture Control",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Inputs - Gesture Control"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Internal Speaker Playback",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - Internal Speaker Playback"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Wake Word Sensitivity",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Assistant - Wake Word Sensitivity"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Stop Word Mode",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Assistant - Stop Word Mode"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Speaker Channel",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Outputs - Speaker Channel"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Microphone Privacy Gate ESP32",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Microphone Privacy Gate ESP32"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Wake Engine Running",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "health/status",
+      "display_name": "Diagnostic - Wake Engine Running"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Speaker Muted",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Outputs - Speaker Muted"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Wake Word Count",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Wake Word Count"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Toggle Speaker Mute",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Outputs - Toggle Speaker Mute"
+    },
+    {
+      "file": "zerocore-v2-product.yaml",
+      "name": "Start Assist",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Assistant - Start Assist"
+    },
+    {
+      "file": "zerocore-v2-speakers.yaml",
+      "name": "Internal Speaker Level",
+      "category": "config",
+      "disabled_by_default": true,
+      "purpose": "configuration",
+      "display_name": "Outputs - Internal Speaker Level"
+    },
+    {
+      "file": "zerocore-v2-speakers.yaml",
+      "name": "External Speaker Level",
+      "category": "config",
+      "disabled_by_default": true,
+      "purpose": "configuration",
+      "display_name": "Outputs - External Speaker Level"
+    },
+    {
+      "file": "zerocore-v2-speakers.yaml",
+      "name": "Audio Output",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use; native category without HA configuration",
+      "display_name": "Outputs - Audio Output"
+    },
+    {
+      "file": "zerocore-v2-speakers.yaml",
+      "name": "Active Audio Output",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Active Audio Output"
+    },
+    {
+      "file": "zerocore-v2-speakers.yaml",
+      "name": "Test Internal Speakers Left then Right",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - Test Internal Speakers Left then Right"
+    },
+    {
+      "file": "zerocore-v2-spi.yaml",
+      "name": "XMOS SPI Boot",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS SPI Boot"
+    },
+    {
+      "file": "zerocore-v2-timers.yaml",
+      "name": "Stop Timer Ringing",
+      "category": null,
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Stop Timer Ringing"
+    },
+    {
+      "file": "zerocore-v2-timers.yaml",
+      "name": "Test Timer 5 Seconds",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Test Timer 5 Seconds"
+    },
+    {
+      "file": "zerocore-v2-timers.yaml",
+      "name": "Timer Ringing",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "daily use",
+      "display_name": "Assistant - Timer Ringing"
+    },
+    {
+      "file": "zerocore-v2-timers.yaml",
+      "name": "Next Timer Remaining",
+      "category": null,
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Next Timer Remaining"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "Audio Feedback",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Assistant - Audio Feedback"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "Test Wake Feedback",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Test Wake Feedback"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "Audio Feedback Busy",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Audio Feedback Busy"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS UI Extension Available",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS UI Extension Available"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS Runtime Last Failure",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS Runtime Last Failure"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS UI Acknowledged State",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - XMOS UI Acknowledged State"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS Microphone Mute Acknowledged",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS Microphone Mute Acknowledged"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "WiFi Signal",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "health/status",
+      "display_name": "Diagnostic - WiFi Signal"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "Audio Feedback Queued Count",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Audio Feedback Queued Count"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS Raw Microphone D0 RMS",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS Raw Microphone D0 RMS"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS Raw Microphone D1 RMS",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS Raw Microphone D1 RMS"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS Raw Microphone D2 RMS",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS Raw Microphone D2 RMS"
+    },
+    {
+      "file": "zerocore-v2-ui.yaml",
+      "name": "XMOS Raw Microphone D3 RMS",
+      "category": "diagnostic",
+      "disabled_by_default": false,
+      "purpose": "owner requested visible",
+      "display_name": "Diagnostic - XMOS Raw Microphone D3 RMS"
+    },
+    {
+      "file": "zerocore-v2-ux-feedback.yaml",
+      "name": "Startup Sound",
+      "category": "config",
+      "disabled_by_default": false,
+      "purpose": "configuration",
+      "display_name": "Assistant - Startup Sound"
+    },
+    {
+      "file": "zerocore-v2-ux-feedback.yaml",
+      "name": "Test Startup Feedback",
+      "category": "diagnostic",
+      "disabled_by_default": true,
+      "purpose": "owner requested hidden; available on manual enable",
+      "display_name": "Diagnostic - Test Startup Feedback"
+    },
+    {
+      "file": "zerocore-v2-product-ui.yaml",
+      "name": "PAJ Motion",
+      "category": null,
+      "disabled_by_default": false,
+      "purpose": "recent gesture; not occupancy",
+      "display_name": "Inputs - PAJ Motion"
+    }
+  ],
+  "renames": {
+    "Mute Microphone ESP32": "Mute Microphone"
+  },
+  "existing_ha_registry_override": false,
+  "custom_order_supported": false,
+  "conditional_visibility_supported": false,
+  "auto_apply_when_idle": true,
+  "display_labels": {
+    "VoiceDSP V2 Player": "Outputs - Volume",
+    "Audio OFF": "Diagnostic - Audio OFF",
+    "LINE output minus 30 dB": "Diagnostic - LINE output minus 30 dB",
+    "Internal HP guarded minus 36 dB": "Diagnostic - Internal HP guarded minus 36 dB",
+    "Microphone Geometry": "Inputs - Microphone Geometry",
+    "V2 hardware and power state": "Diagnostic - V2 hardware and power state",
+    "Software qualification": "Diagnostic - Software qualification",
+    "Audio Controller Ready": "Diagnostic - Audio Controller Ready",
+    "Jack Connected": "Inputs - Jack Connected",
+    "AEC Profile State": "Diagnostic - AEC Profile State",
+    "External AEC Mono Reference": "Diagnostic - External AEC Mono Reference",
+    "External Amplifier - Fault or Unexpected Shutdown": "Diagnostic - External Amplifier - Fault or Unexpected Shutdown",
+    "External Amplifier - SD FAULT State": "Diagnostic - External Amplifier - SD FAULT State",
+    "External Amplifier - Raw Pins": "Diagnostic - External Amplifier - Raw Pins",
+    "Navigation Up": "Inputs - Navigation Up",
+    "Navigation Down": "Inputs - Navigation Down",
+    "Navigation Left": "Inputs - Navigation Left",
+    "Navigation Right": "Inputs - Navigation Right",
+    "Navigation Inputs Available": "Diagnostic - Navigation Inputs Available",
+    "Wake Word": "Assistant - Wake Word",
+    "Action": "Diagnostic - Action",
+    "Active Wake Word": "Diagnostic - Active Wake Word",
+    "LED Ring": "Outputs - LED Ring",
+    "AEC Capture 90s": "Diagnostic - AEC Capture 90s",
+    "AEC Capture Stop": "Diagnostic - AEC Capture Stop",
+    "AEC Raw 90s": "Diagnostic - AEC Raw 90s",
+    "AEC Restore Processing": "Diagnostic - AEC Restore Processing",
+    "AEC Profile Voice Preserve": "Diagnostic - AEC Profile Voice Preserve",
+    "AEC Profile V2 Default": "Diagnostic - AEC Profile V2 Default",
+    "AEC Profile Original": "Diagnostic - AEC Profile Original",
+    "AEC Bench State": "Diagnostic - AEC Bench State",
+    "AEC Runtime Parameters": "Diagnostic - AEC Runtime Parameters",
+    "Full Speaker - Filter Profile": "Outputs - Full Speaker - Filter Profile",
+    "Full Speaker - Crossover": "Outputs - Full Speaker - Crossover",
+    "Full Speaker - Woofer Trim": "Outputs - Full Speaker - Woofer Trim",
+    "Full Speaker - Tweeter Trim": "Outputs - Full Speaker - Tweeter Trim",
+    "Full Speaker - Apply When Idle": "Outputs - Full Speaker - Apply When Idle",
+    "Full Speaker - Applied Filter": "Diagnostic - Full Speaker - Applied Filter",
+    "XMOS DOA Angle 0": "Diagnostic - XMOS DOA Angle 0",
+    "XMOS DOA Energy 0": "Diagnostic - XMOS DOA Energy 0",
+    "XMOS DOA Angle 1": "Diagnostic - XMOS DOA Angle 1",
+    "XMOS DOA Energy 1": "Diagnostic - XMOS DOA Energy 1",
+    "XMOS DOA Angle 2": "Diagnostic - XMOS DOA Angle 2",
+    "XMOS DOA Energy 2": "Diagnostic - XMOS DOA Energy 2",
+    "XMOS DOA Angle 3": "Diagnostic - XMOS DOA Angle 3",
+    "XMOS DOA Energy 3": "Diagnostic - XMOS DOA Energy 3",
+    "XMOS DOA Selected 0": "Diagnostic - XMOS DOA Selected 0",
+    "XMOS DOA Selected 1": "Diagnostic - XMOS DOA Selected 1",
+    "XMOS DOA Geometry": "Diagnostic - XMOS DOA Geometry",
+    "Audio Startup Diagnostics": "Diagnostic - Audio Startup Diagnostics",
+    "External Amplifier GPIO State": "Diagnostic - External Amplifier GPIO State",
+    "Test External Speaker Low Level": "Diagnostic - Test External Speaker Low Level",
+    "ESP32 + XMOS Firmware": "Diagnostic - ESP32 + XMOS Firmware",
+    "Reload embedded XMOS firmware": "Diagnostic - Reload embedded XMOS firmware",
+    "Check firmware updates": "Diagnostic - Check firmware updates",
+    "XMOS loading progress": "Diagnostic - XMOS loading progress",
+    "XMOS firmware status": "Diagnostic - XMOS firmware status",
+    "Embedded XMOS image SHA256": "Diagnostic - Embedded XMOS image SHA256",
+    "Gesture Sensor Frame": "Inputs - Gesture Sensor Frame",
+    "Gesture Inputs Available": "Diagnostic - Gesture Inputs Available",
+    "Gesture Raw Diagnostics": "Diagnostic - Gesture Raw Diagnostics",
+    "Product Mode": "Outputs - Product Mode",
+    "Show Advanced Settings": "Diagnostic - Show Advanced Settings",
+    "Show Diagnostics": "Diagnostic - Show Diagnostics",
+    "Beta Firmware": "Diagnostic - Beta Firmware",
+    "Apply Product Mode": "Diagnostic - Apply Product Mode",
+    "Save Mode Settings": "Diagnostic - Save Mode Settings",
+    "Product Mode Status": "Diagnostic - Product Mode Status",
+    "Applied Product Mode": "Diagnostic - Applied Product Mode",
+    "Power policy": "Diagnostic - Power policy",
+    "Power - PD Reading Valid": "Diagnostic - Power - PD Reading Valid",
+    "Power - Power Good": "Diagnostic - Power - Power Good",
+    "Power - USB Type": "USB-C - PD Contract",
+    "Power - USB-C Orientation": "Diagnostic - Power - USB-C Orientation",
+    "Power - HUSB238 Registers": "Diagnostic - Power - HUSB238 Registers",
+    "Power - Read Diagnostics": "Diagnostic - Power - Read Diagnostics",
+    "Power - PD Contract Voltage": "USB-C - PD Voltage",
+    "Power - PD Contract Current": "USB-C - PD Current",
+    "Power - PD Contract Power": "USB-C - PD Power",
+    "Power - Advertised USB 5V Current": "Diagnostic - Power - Advertised USB 5V Current",
+    "Mute Microphone": "Inputs - Mute Microphone",
+    "Gesture Control": "Inputs - Gesture Control",
+    "Internal Speaker Playback": "Outputs - Internal Speaker Playback",
+    "Wake Word Sensitivity": "Assistant - Wake Word Sensitivity",
+    "Stop Word Mode": "Assistant - Stop Word Mode",
+    "Speaker Channel": "Outputs - Speaker Channel",
+    "Microphone Privacy Gate ESP32": "Diagnostic - Microphone Privacy Gate ESP32",
+    "Wake Engine Running": "Diagnostic - Wake Engine Running",
+    "Speaker Muted": "Outputs - Speaker Muted",
+    "Wake Word Count": "Diagnostic - Wake Word Count",
+    "Toggle Speaker Mute": "Outputs - Toggle Speaker Mute",
+    "Start Assist": "Assistant - Start Assist",
+    "Internal Speaker Level": "Outputs - Internal Speaker Level",
+    "External Speaker Level": "Outputs - External Speaker Level",
+    "Audio Output": "Outputs - Audio Output",
+    "Active Audio Output": "Diagnostic - Active Audio Output",
+    "Test Internal Speakers Left then Right": "Diagnostic - Test Internal Speakers Left then Right",
+    "XMOS SPI Boot": "Diagnostic - XMOS SPI Boot",
+    "Stop Timer Ringing": "Diagnostic - Stop Timer Ringing",
+    "Test Timer 5 Seconds": "Diagnostic - Test Timer 5 Seconds",
+    "Timer Ringing": "Assistant - Timer Ringing",
+    "Next Timer Remaining": "Diagnostic - Next Timer Remaining",
+    "Audio Feedback": "Assistant - Audio Feedback",
+    "Test Wake Feedback": "Diagnostic - Test Wake Feedback",
+    "Audio Feedback Busy": "Diagnostic - Audio Feedback Busy",
+    "XMOS UI Extension Available": "Diagnostic - XMOS UI Extension Available",
+    "XMOS Runtime Last Failure": "Diagnostic - XMOS Runtime Last Failure",
+    "XMOS UI Acknowledged State": "Diagnostic - XMOS UI Acknowledged State",
+    "XMOS Microphone Mute Acknowledged": "Diagnostic - XMOS Microphone Mute Acknowledged",
+    "WiFi Signal": "Diagnostic - WiFi Signal",
+    "Audio Feedback Queued Count": "Diagnostic - Audio Feedback Queued Count",
+    "XMOS Raw Microphone D0 RMS": "Diagnostic - XMOS Raw Microphone D0 RMS",
+    "XMOS Raw Microphone D1 RMS": "Diagnostic - XMOS Raw Microphone D1 RMS",
+    "XMOS Raw Microphone D2 RMS": "Diagnostic - XMOS Raw Microphone D2 RMS",
+    "XMOS Raw Microphone D3 RMS": "Diagnostic - XMOS Raw Microphone D3 RMS",
+    "Startup Sound": "Assistant - Startup Sound",
+    "Test Startup Feedback": "Diagnostic - Test Startup Feedback",
+    "PAJ Motion": "Inputs - PAJ Motion"
+  },
+  "entity_keys_preserved": true,
+  "speaker_gain_defaults_db": 0,
+  "native_assist_section": "HA-owned; no custom category supported"
+}

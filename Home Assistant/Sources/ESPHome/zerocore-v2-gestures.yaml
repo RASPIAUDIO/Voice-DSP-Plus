@@ -17,7 +17,12 @@ voicedsp_v2_gestures:
   sensor_axes: pixart_v15_front_view
   gesture:
     name: Gesture Sensor Frame
+    disabled_by_default: false
   available:
     name: Gesture Inputs Available
+    entity_category: diagnostic
+    disabled_by_default: false
   diagnostic:
     name: Gesture Raw Diagnostics
+    entity_category: diagnostic
+    disabled_by_default: true

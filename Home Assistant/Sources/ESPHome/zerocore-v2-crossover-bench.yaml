@@ -4,42 +4,50 @@ button:
   - platform: template
     name: AEC Capture 90s
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: if (!id(v2_mode_busy)) { id(v2_diagnostic_until)=millis()+90000; id(v2_mics).diagnostic_tap.arm(); }
   - platform: template
     name: AEC Capture Stop
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: id(v2_diagnostic_until)=0; id(v2_mics).diagnostic_tap.stop();
   - platform: template
     name: AEC Raw 90s
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: if (!id(v2_mode_busy)) id(v2_control).request_aec_raw(true);
   - platform: template
     name: AEC Restore Processing
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: if (!id(v2_mode_busy)) id(v2_control).request_aec_raw(false);
   - platform: template
     name: AEC Profile Voice Preserve
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: if (!id(v2_mode_busy)) id(v2_control).request_aec_profile(4);
   - platform: template
     name: AEC Profile V2 Default
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: if (!id(v2_mode_busy)) id(v2_control).request_aec_profile(6);
   - platform: template
     name: AEC Profile Original
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: if (!id(v2_mode_busy)) id(v2_control).request_aec_profile(0);
 text_sensor:
   - platform: template
     name: AEC Bench State
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 500ms
     lambda: |-
       const auto s=id(v2_control).xmos_ui_snapshot().aec;
@@ -50,6 +58,7 @@ text_sensor:
   - platform: template
     name: AEC Runtime Parameters
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 2s
     lambda: |-
       const auto s=id(v2_control).xmos_ui_snapshot().aec;

@@ -129,6 +129,7 @@ media_player:
   - platform: speaker
     id: v2_player
     name: VoiceDSP V2 Player
+    disabled_by_default: false
     volume_initial: 0.4
     announcement_pipeline:
       speaker: v2_announcement_resampler
@@ -207,20 +208,28 @@ interval:
 button:
   - platform: template
     name: Audio OFF
+    entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: id(v2_control).request(VDSP_AUDIO_OFF);
   - platform: template
     name: LINE output minus 30 dB
+    entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: id(v2_control).request(VDSP_AUDIO_LINE);
   - platform: template
     name: Internal HP guarded minus 36 dB
+    entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - lambda: id(v2_control).request_internal_level(-36);
 
 text_sensor:
   - platform: template
     name: Microphone Geometry
+    entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 1s
     lambda: |-
       if (!id(v2_control).ready()) return std::string("Unavailable");
@@ -233,11 +242,13 @@ text_sensor:
   - platform: template
     name: V2 hardware and power state
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 1s
     lambda: return id(v2_control).diagnostics();
   - platform: template
     name: Software qualification
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 60s
     lambda: return std::string("RECEPTION CANDIDATE - integration under test");
 
@@ -245,9 +256,12 @@ binary_sensor:
   - platform: template
     name: Audio Controller Ready
     entity_category: diagnostic
+    disabled_by_default: true
     lambda: return id(v2_control).ready();
   - platform: template
     name: Jack Connected
+    entity_category: diagnostic
+    disabled_by_default: false
     lambda: |-
       if (!id(v2_control).ready()) return {};
       return (id(v2_control).snapshot().port0 & 0x20u) != 0;

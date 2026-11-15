@@ -9,6 +9,8 @@ select:
   - platform: template
     id: v2_speaker_profile
     name: Full Speaker - Filter Profile
+    entity_category: config
+    disabled_by_default: false
     optimistic: true
     restore_value: true
     initial_option: Full Speaker 2-way
@@ -18,6 +20,8 @@ number:
   - platform: template
     id: v2_crossover_hz
     name: Full Speaker - Crossover
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:chart-bell-curve
     unit_of_measurement: Hz
     min_value: 6000
@@ -30,6 +34,8 @@ number:
   - platform: template
     id: v2_woofer_trim
     name: Full Speaker - Woofer Trim
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:speaker
     unit_of_measurement: dB
     min_value: -24
@@ -42,6 +48,8 @@ number:
   - platform: template
     id: v2_tweeter_trim
     name: Full Speaker - Tweeter Trim
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:speaker-wireless
     unit_of_measurement: dB
     min_value: -24
@@ -55,6 +63,8 @@ number:
 button:
   - platform: template
     name: Full Speaker - Apply When Idle
+    entity_category: config
+    disabled_by_default: true
     on_press:
       - script.execute: v2_apply_crossover
 
@@ -62,6 +72,7 @@ text_sensor:
   - platform: template
     name: Full Speaker - Applied Filter
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 1s
     lambda: return id(v2_control).crossover_diagnostics();
 
@@ -70,6 +81,7 @@ script:
     mode: single
     then:
       - lambda: |-
+          id(v2_crossover_accepted)=false;
           if (id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING ||
               id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING ||
               id(v2_assist).is_running() || id(v2_audio_test_busy)) {
@@ -84,6 +96,9 @@ script:
               !std::isfinite(id(v2_woofer_trim).state) || !std::isfinite(id(v2_tweeter_trim).state)) return;
           if (!id(v2_control).configure_crossover(mode, int(id(v2_crossover_hz).state),
               int(id(v2_woofer_trim).state), int(id(v2_tweeter_trim).state))) return;
+          id(v2_crossover_accepted)=true;
+          if (!id(v2_auto_queue).busy()) id(v2_auto_queue).applied_filter={mode,
+              int(id(v2_crossover_hz).state),int(id(v2_woofer_trim).state),int(id(v2_tweeter_trim).state)};
           if (id(v2_output_route).current_option()=="External speaker" && id(v2_control).can_request_audio()) {
             auto mono=id(v2_channel).make_call(); mono.set_option("Both mono"); mono.perform();
             const float db=id(v2_external_level_db).state;

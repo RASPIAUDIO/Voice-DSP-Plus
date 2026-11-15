@@ -25,6 +25,8 @@ switch:
   - platform: template
     id: v2_startup_sound_enabled
     name: Startup Sound
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:music-note
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
@@ -38,6 +40,7 @@ button:
   - platform: template
     name: Test Startup Feedback
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - script.execute: v2_startup_feedback
 

@@ -7,6 +7,7 @@ binary_sensor:
     id: v2_external_amp_fault
     name: External Amplifier - Fault or Unexpected Shutdown
     entity_category: diagnostic
+    disabled_by_default: false
     device_class: problem
 
 interval:
@@ -31,6 +32,7 @@ text_sensor:
   - platform: template
     name: External Amplifier - SD FAULT State
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 500ms
     lambda: |-
       if (!id(v2_control).io_diagnostic_fresh()) return std::string("Unavailable");
@@ -41,6 +43,7 @@ text_sensor:
   - platform: template
     name: External Amplifier - Raw Pins
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 1s
     lambda: |-
       if (!id(v2_control).io_diagnostic_fresh()) return std::string("Unavailable");

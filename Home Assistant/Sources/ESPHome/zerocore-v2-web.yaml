@@ -1,16 +1,3 @@
 ---
 packages:
-  controls: !include zerocore-v2-controls.yaml
-  product_modes: !include zerocore-v2-modes.yaml
-  capture: !include zerocore-v2-crossover-bench.yaml
-  crossover: !include zerocore-v2-crossover.yaml
-  amp_diagnostics: !include zerocore-v2-amp-diagnostics.yaml
-  spi: !include zerocore-v2-spi.yaml
-  firmware_menu: !include zerocore-v2-firmware-menu.yaml
-esphome:
-  includes: [timer_feedback.h]
-  name: voicedsp-v2
-  name_add_mac_suffix: true
-  friendly_name: Voice DSP+ V2
-  project:
-    version: 0.6.69-timer-gesture.20261114
+  product_ui: !include zerocore-v2-product-ui.yaml

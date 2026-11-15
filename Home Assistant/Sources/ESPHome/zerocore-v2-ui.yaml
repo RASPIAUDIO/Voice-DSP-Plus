@@ -28,6 +28,8 @@ switch:
   - platform: template
     id: v2_ui_sounds_enabled
     name: Audio Feedback
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:volume-high
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
@@ -69,6 +71,8 @@ interval:
 button:
   - platform: template
     name: Test Wake Feedback
+    entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - script.execute: {id: v2_ui_sound, cue: 0}
 
@@ -163,25 +167,30 @@ binary_sensor:
   - platform: template
     name: Audio Feedback Busy
     entity_category: diagnostic
+    disabled_by_default: true
     lambda: return id(v2_ui_sound).is_running() || id(v2_startup_feedback).is_running();
   - platform: template
     name: XMOS UI Extension Available
     entity_category: diagnostic
+    disabled_by_default: true
     lambda: return id(v2_control).xmos_ui_snapshot().available;
 text_sensor:
   - platform: template
     name: XMOS Runtime Last Failure
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 1s
     lambda: return id(v2_control).runtime_diagnostics();
   - platform: template
     name: XMOS UI Acknowledged State
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 1s
     lambda: return id(v2_control).xmos_ui_diagnostics();
   - platform: template
     name: XMOS Microphone Mute Acknowledged
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 1s
     lambda: |-
       auto s = id(v2_control).xmos_ui_snapshot();
@@ -191,16 +200,20 @@ sensor:
   - platform: wifi_signal
     id: v2_wifi_signal
     name: WiFi Signal
+    entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 5s
   - platform: template
     name: Audio Feedback Queued Count
     entity_category: diagnostic
+    disabled_by_default: true
     accuracy_decimals: 0
     update_interval: 1s
     lambda: return id(v2_sound_count);
   - platform: template
     name: XMOS Raw Microphone D0 RMS
     entity_category: diagnostic
+    disabled_by_default: false
     accuracy_decimals: 2
     update_interval: 1s
     lambda: |-
@@ -209,6 +222,7 @@ sensor:
   - platform: template
     name: XMOS Raw Microphone D1 RMS
     entity_category: diagnostic
+    disabled_by_default: false
     accuracy_decimals: 2
     update_interval: 1s
     lambda: |-
@@ -217,6 +231,7 @@ sensor:
   - platform: template
     name: XMOS Raw Microphone D2 RMS
     entity_category: diagnostic
+    disabled_by_default: false
     accuracy_decimals: 2
     update_interval: 1s
     lambda: |-
@@ -225,6 +240,7 @@ sensor:
   - platform: template
     name: XMOS Raw Microphone D3 RMS
     entity_category: diagnostic
+    disabled_by_default: false
     accuracy_decimals: 2
     update_interval: 1s
     lambda: |-

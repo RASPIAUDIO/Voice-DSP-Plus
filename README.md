@@ -24,7 +24,7 @@ speaker system with your own application.
 | --- | --- | --- |
 | Standalone computer sound card | Voice satellite with ZeroCore S3 | Pi4 audio HAT for your application |
 | 48 kHz mono input/output, Windows volume, gestures and buttons | Local wake word, Assist, music and on-device settings | 48 kHz audio, desktop controls and your Linux software |
-| **0.8.9-r4** | **0.6.69** | **48 kHz installer kit** |
+| **0.8.9-r4** | **0.6.75** | **48 kHz installer kit** |
 | [Get started](USB/README.md) | [Get started](Home%20Assistant/README.md) | [Get started](Raspberry%20Pi/README.md) |
 | [Firmware](USB/Firmware/README.md) / [Sources](USB/Sources/README.md) | [Firmware](Home%20Assistant/Firmware/README.md) / [Sources](Home%20Assistant/Sources/README.md) | [Firmware](Raspberry%20Pi/Firmware/README.md) / [Sources](Raspberry%20Pi/Sources/README.md) |
 | [Install USB V2 in your browser](https://raspiaudio.com/voicedsp/webflasher/?firmware=v2-usb-mono-48k) | [Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) | [Install on Raspberry Pi](Raspberry%20Pi/README.md) |

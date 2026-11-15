@@ -5,7 +5,7 @@ answers and hands-free controls to Home Assistant. Use your own speakers or
 the corresponding Voice Compact / Full Speaker assembly.
 
 [Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) |
-[Download 0.6.69](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
+[Download 0.6.75](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
 [All three setups](../README.md)
 
 ## Install in five steps
@@ -14,22 +14,41 @@ the corresponding Voice Compact / Full Speaker assembly.
    You need Home Assistant, 2.4 GHz Wi-Fi and a USB data cable. Remove any Pi.
 2. Connect the **ZeroCore USB data port**, not the XMOS port, to your computer.
 3. Open [RASPIAUDIO Apps: V2 installer](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2)
-   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.69** is preselected.
+   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.75** is preselected.
    Connect and Install. An erased install removes saved settings.
 4. Configure Wi-Fi using serial Improv through the installer. Alternatively use
    the fallback **VoiceDSP V2 Setup** access point (password `voicedsp-setup`).
    This particular image does not advertise BLE Improv.
-5. Add the discovered ESPHome device in Home Assistant. Wait for **Audio Controller
-   Ready** and **XMOS firmware status: Ready**, select your Assist pipeline, then
+5. Add the discovered ESPHome device in Home Assistant. Wait for **Diagnostic -
+   XMOS firmware status: Ready**, select your Assist pipeline, then
    try **Hey Jarvis**. Start with a low playback volume.
 
-Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.69.factory.bin)
+Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.75.factory.bin)
 and select it in [ESPHome Web](https://web.esphome.io/). The web installer and
 this download use identical release binaries.
 
 ## Everything on the device page
 
-### New in 0.6.69
+### New in 0.6.75: a clearer native device page
+
+No dashboard import or extra configuration: the firmware supplies the names and
+categories at discovery. Existing installations may need an ESPHome integration
+reload to refresh HA's cached metadata; custom names/overrides remain user-owned.
+
+| Native section | What you find |
+| --- | --- |
+| Controls | **Outputs - Audio Output**, main volume and daily actions |
+| Sensors | **Inputs - PAJ Motion**, USB-C PD contract, voltage, current and power |
+| Configuration | Settings grouped by **Outputs**, **Inputs**, **Assistant** prefixes |
+| Diagnostic | Firmware, power, microphone and troubleshooting information |
+| Assist | Home Assistant's native voice satellite |
+
+PAJ Motion indicates a recognized gesture for two seconds, not presence. PD Power
+is the available negotiated contract power, not measured consumption. HA controls
+the native sections and ordering; firmware cannot add arbitrary custom sections.
+The owner accepted this UI; source and live checks confirm AEC/filter preservation.
+
+### Retained from 0.6.69
 
 **Dismiss a ringing timer with any detected gesture**, including wave or circles.
 Gesture Control must be enabled. The gesture stops only the alarm, not the
@@ -61,10 +80,11 @@ No custom dashboard or admin token is required. Open the ESPHome device in HA.
 | **Full Speaker** | Separate external L woofer / R tweeter with a matched crossover |
 | **Custom** | Explicit output, level and tone settings |
 
-Select a mode, press **Apply Product Mode**, then **Save Mode Settings** to
-remember adjustments. Internal/external sliders cover **-60 to 0 dB**, in 3 dB
-steps. Zero means no general DAC/analog attenuation; player volume, amplifier
-gain and visible per-driver filter trims remain independent.
+Select a mode: it applies automatically when audio is idle, and settings are
+saved automatically. Full Speaker filter changes also wait for idle. No separate
+Apply/Save button is needed. Internal/external general gains are **0 dB**, hidden
+by default; **Outputs - Volume** remains the daily volume control. Start low after
+updating. Hardware amplifier gain and per-driver filter trims remain independent.
 
 Daily controls include speaker/microphone mute, output, bass/treble, gesture
 enable (default ON), wake sensitivity and Stop behavior. Buttons, gestures,
@@ -101,9 +121,14 @@ Do not substitute the standalone USB firmware for the paired I2S image.
 
 **Reload embedded XMOS firmware** restarts the paired boot. **XMOS loading
 progress**, **XMOS firmware status** and **Embedded XMOS image SHA256** report it.
-The update entity and Beta Firmware selector both currently offer this
-0.6.69 release. Press **Check firmware updates**, then install explicitly;
-periodic checks do not update the device automatically. Alternatively use the
+The enabled **Diagnostic - ESP32 + XMOS Firmware** update entity receives new
+paired releases directly in HA, without an ESPHome server. Stable and beta catalogs
+currently point to **0.6.75**. Checks run after networking starts and every six
+hours. Press **Diagnostic - Check firmware updates** for an immediate check,
+including after changing **Beta Firmware**, then install explicitly. Checks do
+not install automatically or guarantee a phone notification. An XMOS-only release
+still requires a new paired ESP32 package/version; no separate XMOS download is
+needed by the user. Alternatively use the
 [manual OTA instructions](Firmware/README.md).
 
 If the controller remains unavailable, stop audio and remove all power for ten

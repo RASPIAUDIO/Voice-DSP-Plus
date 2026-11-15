@@ -27,6 +27,7 @@ update:
     id: v2_firmware_update
     name: ESP32 + XMOS Firmware
     entity_category: config
+    disabled_by_default: false
     source: https://raspiaudio.github.io/ZeroCoreS3/VoiceDSPV2/manifest-stable.json
     http_request_id: v2_firmware_http
     ota_id: v2_http_ota
@@ -35,14 +36,16 @@ update:
 button:
   - platform: template
     name: Reload embedded XMOS firmware
+    entity_category: diagnostic
+    disabled_by_default: true
     icon: mdi:chip
-    entity_category: config
     on_press:
       - script.execute: v2_reload_xmos
   - platform: template
     name: Check firmware updates
-    icon: mdi:update
     entity_category: config
+    disabled_by_default: false
+    icon: mdi:update
     on_press:
       - update.check: v2_firmware_update
 
@@ -65,6 +68,7 @@ sensor:
   - platform: template
     name: XMOS loading progress
     entity_category: diagnostic
+    disabled_by_default: false
     unit_of_measurement: "%"
     accuracy_decimals: 0
     update_interval: 1s
@@ -79,6 +83,7 @@ text_sensor:
     id: v2_firmware_status
     name: XMOS firmware status
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 2s
     lambda: |-
       if (id(v2_control).update_requested()) return {};
@@ -93,6 +98,7 @@ text_sensor:
   - platform: template
     name: Embedded XMOS image SHA256
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 60s
     lambda: |-
       return std::string("207b73b9ead1e84769ca4b8b208917ab2c5086fcd809b16edca11e224759c2bc");

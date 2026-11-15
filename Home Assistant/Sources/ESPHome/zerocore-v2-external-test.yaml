@@ -9,10 +9,13 @@ text_sensor:
   - platform: template
     name: Audio Startup Diagnostics
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 2s
     lambda: return id(v2_control).startup_diagnostics();
   - platform: template
     name: External Amplifier GPIO State
+    entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 500ms
     lambda: |-
       if (!id(v2_control).ready()) return std::string("Unavailable");
@@ -25,6 +28,8 @@ text_sensor:
 button:
   - platform: template
     name: Test External Speaker Low Level
+    entity_category: diagnostic
+    disabled_by_default: false
     on_press:
       - script.execute: v2_external_test
 

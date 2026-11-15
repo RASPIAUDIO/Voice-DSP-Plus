@@ -101,6 +101,7 @@ script:
 button:
   - platform: template
     name: Stop Timer Ringing
+    disabled_by_default: true
     on_press:
       - script.stop: v2_test_timer
       - if:
@@ -111,17 +112,20 @@ button:
   - platform: template
     name: Test Timer 5 Seconds
     entity_category: diagnostic
+    disabled_by_default: true
     on_press:
       - script.execute: v2_test_timer
 
 binary_sensor:
   - platform: template
     name: Timer Ringing
+    disabled_by_default: false
     lambda: return id(v2_timer_ringing).state;
 
 sensor:
   - platform: template
     name: Next Timer Remaining
+    disabled_by_default: true
     unit_of_measurement: s
     accuracy_decimals: 0
     update_interval: 1s

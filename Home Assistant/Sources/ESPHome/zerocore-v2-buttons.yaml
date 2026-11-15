@@ -16,11 +16,17 @@ voicedsp_v2_buttons:
   controller: v2_control
   up:
     name: Navigation Up
+    disabled_by_default: false
   down:
     name: Navigation Down
+    disabled_by_default: false
   left:
     name: Navigation Left
+    disabled_by_default: false
   right:
     name: Navigation Right
+    disabled_by_default: false
   available:
     name: Navigation Inputs Available
+    entity_category: diagnostic
+    disabled_by_default: true

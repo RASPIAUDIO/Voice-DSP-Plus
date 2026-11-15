@@ -9,19 +9,21 @@ binary_sensor:
   - platform: template
     name: Power - PD Reading Valid
     entity_category: diagnostic
+    disabled_by_default: false
     lambda: return id(v2_control).power_diagnostic_fresh();
 
 text_sensor:
   - platform: template
     name: Power - Power Good
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 2s
     lambda: |-
       if (!id(v2_control).io_diagnostic_fresh()) return std::string("Unavailable");
       return std::string(id(v2_control).snapshot().pg ? "HIGH" : "LOW");
   - platform: template
     name: Power - USB Type
-    entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 2s
     lambda: |-
       if (!id(v2_control).power_diagnostic_fresh()) return std::string("Unavailable");
@@ -34,6 +36,7 @@ text_sensor:
   - platform: template
     name: Power - USB-C Orientation
     entity_category: diagnostic
+    disabled_by_default: false
     update_interval: 2s
     lambda: |-
       if (!id(v2_control).power_diagnostic_fresh()) return std::string("Unavailable");
@@ -43,6 +46,7 @@ text_sensor:
   - platform: template
     name: Power - HUSB238 Registers
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 5s
     lambda: |-
       if (!id(v2_control).power_diagnostic_fresh()) return std::string("Unavailable");
@@ -54,6 +58,7 @@ text_sensor:
   - platform: template
     name: Power - Read Diagnostics
     entity_category: diagnostic
+    disabled_by_default: true
     update_interval: 5s
     lambda: |-
       const auto s = id(v2_control).snapshot();
@@ -66,7 +71,7 @@ text_sensor:
 sensor:
   - platform: template
     name: Power - PD Contract Voltage
-    entity_category: diagnostic
+    disabled_by_default: false
     unit_of_measurement: V
     accuracy_decimals: 1
     update_interval: 2s
@@ -76,7 +81,7 @@ sensor:
       return p.kind == VDSP_POWER_PD ? p.contract_mv / 1000.0f : NAN;
   - platform: template
     name: Power - PD Contract Current
-    entity_category: diagnostic
+    disabled_by_default: false
     unit_of_measurement: A
     accuracy_decimals: 2
     update_interval: 2s
@@ -86,7 +91,7 @@ sensor:
       return p.kind == VDSP_POWER_PD ? p.contract_ma / 1000.0f : NAN;
   - platform: template
     name: Power - PD Contract Power
-    entity_category: diagnostic
+    disabled_by_default: false
     unit_of_measurement: W
     accuracy_decimals: 1
     update_interval: 2s
@@ -97,6 +102,7 @@ sensor:
   - platform: template
     name: Power - Advertised USB 5V Current
     entity_category: diagnostic
+    disabled_by_default: false
     unit_of_measurement: A
     accuracy_decimals: 2
     update_interval: 2s

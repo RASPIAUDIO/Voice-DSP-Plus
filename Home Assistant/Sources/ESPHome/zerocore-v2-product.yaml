@@ -29,7 +29,8 @@ globals:
 switch:
   - platform: template
     id: v2_mic_mute
-    name: Mute Microphone ESP32
+    name: Mute Microphone
+    disabled_by_default: false
     icon: mdi:microphone-off
     optimistic: true
     restore_mode: ALWAYS_OFF
@@ -48,6 +49,8 @@ switch:
   - platform: template
     id: v2_gesture_actions
     name: Gesture Control
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:hand-wave
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
@@ -56,6 +59,8 @@ select:
   - platform: template
     id: v2_internal_playback
     name: Internal Speaker Playback
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:speaker-multiple
     optimistic: true
     restore_value: true
@@ -68,6 +73,8 @@ select:
   - platform: template
     id: v2_sensitivity
     name: Wake Word Sensitivity
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:ear-hearing
     optimistic: true
     restore_value: true
@@ -78,6 +85,8 @@ select:
   - platform: template
     id: v2_stop_mode
     name: Stop Word Mode
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:stop-circle-outline
     optimistic: true
     restore_value: true
@@ -86,6 +95,8 @@ select:
   - platform: template
     id: v2_channel
     name: Speaker Channel
+    entity_category: config
+    disabled_by_default: false
     icon: mdi:surround-sound
     optimistic: true
     restore_value: true
@@ -98,18 +109,24 @@ binary_sensor:
   - platform: template
     name: Microphone Privacy Gate ESP32
     entity_category: diagnostic
+    disabled_by_default: true
     lambda: return id(v2_mic_mute).state;
   - platform: template
     name: Wake Engine Running
     entity_category: diagnostic
+    disabled_by_default: false
     lambda: return id(v2_wake).is_running();
   - platform: template
     name: Speaker Muted
+    entity_category: diagnostic
+    disabled_by_default: false
     lambda: return id(v2_player).is_muted();
 
 sensor:
   - platform: template
     name: Wake Word Count
+    entity_category: diagnostic
+    disabled_by_default: false
     accuracy_decimals: 0
     update_interval: 1s
     lambda: return id(v2_wake_count);
@@ -117,10 +134,12 @@ sensor:
 button:
   - platform: template
     name: Toggle Speaker Mute
+    disabled_by_default: false
     on_press:
       - script.execute: v2_toggle_speaker
   - platform: template
     name: Start Assist
+    disabled_by_default: false
     on_press:
       - script.execute:
           id: v2_dispatch_wake

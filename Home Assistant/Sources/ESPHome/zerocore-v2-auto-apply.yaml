@@ -1,0 +1,145 @@
+---
+esphome:
+  # The system include declares the global type before ESPHome's global storage.
+  # The local include also copies the header into the generated source directory.
+  includes: [<auto_apply.h>, auto_apply.h]
+
+globals:
+  - id: v2_auto_queue
+    type: vdsp_auto::Queue
+  - {id: v2_crossover_accepted, type: bool, initial_value: 'false'}
+  - {id: v2_auto_filter_external, type: bool, initial_value: 'false'}
+
+select:
+  - id: !extend v2_product_mode
+    on_value:
+      - lambda: |-
+          id(v2_auto_queue).mode(x == "Voice Compact" ? 0 : x == "Full Speaker" ? 1 : 2, millis());
+          if (id(v2_auto_queue).accepts()) id(v2_mode_status).publish_state("Pending - waiting for audio idle");
+  - id: !extend v2_speaker_profile
+    on_value:
+      - script.execute: v2_queue_filter
+  - id: !extend v2_output_route
+    on_value:
+      - script.execute: v2_queue_save
+  - id: !extend v2_channel
+    on_value:
+      - script.execute: v2_queue_save
+number:
+  - id: !extend v2_crossover_hz
+    on_value:
+      - script.execute: v2_queue_filter
+  - id: !extend v2_woofer_trim
+    on_value:
+      - script.execute: v2_queue_filter
+  - id: !extend v2_tweeter_trim
+    on_value:
+      - script.execute: v2_queue_filter
+  - id: !extend v2_internal_level_db
+    on_value:
+      - script.execute: v2_queue_save
+  - id: !extend v2_external_level_db
+    on_value:
+      - script.execute: v2_queue_save
+
+interval:
+  - interval: 250ms
+    then:
+      - lambda: |-
+          const auto a = id(v2_control).xmos_ui_snapshot().aec;
+          const auto state = id(v2_player).state;
+          const bool idle = (state == media_player::MEDIA_PLAYER_STATE_IDLE ||
+              state == media_player::MEDIA_PLAYER_STATE_PAUSED) &&
+              id(v2_control).ready() && !id(v2_control).update_requested() &&
+              !id(v2_mode_busy) && !id(v2_audio_test_busy) &&
+              !id(v2_assist).is_running() && !id(v2_dispatch_wake).is_running() &&
+              !id(v2_timer_ringing).state && !id(v2_tts_pending) &&
+              !id(v2_ui_sound).is_running() && !id(v2_startup_feedback).is_running() &&
+              (id(v2_diagnostic_until) == 0 || int32_t(id(v2_diagnostic_until)-millis()) <= 0) &&
+              a.mux_valid && !a.raw && a.mux[0]==8 && a.mux[1]==0 && a.mux[2]==8 && a.mux[3]==1;
+          if (id(v2_auto_queue).poll(idle, millis()) != vdsp_auto::Task::NONE)
+            id(v2_auto_apply).execute();
+
+script:
+  - id: v2_queue_save
+    then:
+      - lambda: |-
+          if (!id(v2_mode_busy) && !id(v2_audio_test_busy)) id(v2_auto_queue).save(millis());
+  - id: v2_queue_filter
+    then:
+      - lambda: |-
+          if (!id(v2_auto_queue).accepts()) return;
+          const auto p = id(v2_speaker_profile).current_option();
+          const float hz=id(v2_crossover_hz).state, l=id(v2_woofer_trim).state, r=id(v2_tweeter_trim).state;
+          if (!std::isfinite(hz) || !std::isfinite(l) || !std::isfinite(r)) return;
+          const int mode=p=="Full Speaker 2-way"?1:p=="Woofer measurement only"?2:
+              p=="Tweeter measurement only"?3:p=="Diagnostic Left only"?4:p=="Diagnostic Right only"?5:0;
+          id(v2_auto_queue).filter({mode,int(hz),int(l),int(r)},millis());
+          id(v2_mode_status).publish_state("Pending filter - waiting for audio idle");
+  - id: v2_auto_apply
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: return id(v2_auto_queue).task == vdsp_auto::Task::MODE;
+          then:
+            - lambda: |-
+                id(v2_auto_queue).internal_write = true;
+                id(v2_product_mode).publish_state(vdsp_modes::name(id(v2_auto_queue).active_mode));
+                id(v2_auto_queue).internal_write = false;
+            - script.execute: v2_apply_product_mode
+            - script.wait: v2_apply_product_mode
+            - lambda: |-
+                const bool ok = !id(v2_mode_failed) && id(v2_active_mode) == id(v2_auto_queue).active_mode;
+                ESP_LOGI("v2_auto_apply", "Mode completed success=%d", ok);
+                id(v2_auto_queue).finish(ok);
+          else:
+            - if:
+                condition:
+                  lambda: return id(v2_auto_queue).task == vdsp_auto::Task::FILTER;
+                then:
+                  - lambda: |-
+                      const auto f = id(v2_auto_queue).active_filter;
+                      const char *profiles[]={"External full range","Full Speaker 2-way","Woofer measurement only",
+                          "Tweeter measurement only","Diagnostic Left only","Diagnostic Right only"};
+                      id(v2_auto_queue).internal_write = true;
+                      id(v2_speaker_profile).publish_state(profiles[f.profile]);
+                      id(v2_crossover_hz).publish_state(f.hz);
+                      id(v2_woofer_trim).publish_state(f.woofer);
+                      id(v2_tweeter_trim).publish_state(f.tweeter);
+                      id(v2_auto_queue).internal_write = false;
+                      id(v2_auto_filter_external) = id(v2_output_route).current_option()=="External speaker";
+                  - script.execute: v2_apply_crossover
+                  - lambda: |-
+                      id(v2_mode_busy)=true;
+                      id(v2_audio_test_busy)=true;
+                  - wait_until:
+                      condition:
+                        lambda: |-
+                          if (!id(v2_crossover_accepted) || !id(v2_auto_filter_external)) return true;
+                          const auto f=id(v2_auto_queue).active_filter;
+                          const auto s=id(v2_control).crossover_diagnostics();
+                          return s.find("applied=1 mode="+std::to_string(f.profile)+" fc="+std::to_string(f.hz)+
+                              " L="+std::to_string(f.woofer)+" R="+std::to_string(f.tweeter)+" ")==0 &&
+                              s.find(" rc=0;")!=std::string::npos;
+                      timeout: 15s
+                  - lambda: |-
+                      const auto f=id(v2_auto_queue).active_filter;
+                      const auto s=id(v2_control).crossover_diagnostics();
+                      const bool confirmed = s.find("applied=1 mode="+std::to_string(f.profile)+" fc="+
+                          std::to_string(f.hz)+" L="+std::to_string(f.woofer)+" R="+std::to_string(f.tweeter)+" ")==0 &&
+                          s.find(" rc=0;")!=std::string::npos;
+                      const bool ok=id(v2_crossover_accepted) && id(v2_control).ready() &&
+                          (!id(v2_auto_filter_external) || confirmed);
+                      id(v2_mode_busy)=false; id(v2_audio_test_busy)=false;
+                      if (ok) id(v2_auto_queue).applied_filter=f;
+                      // Save after the last queued change, not an intermediate preset publication.
+                      if (ok && !id(v2_auto_queue).pending()) id(v2_save_mode).execute();
+                      id(v2_mode_status).publish_state(ok ? (id(v2_auto_filter_external) ?
+                          "Filter applied - AEC preserved" : "Filter saved for external output - AEC preserved") :
+                          "ERROR - filter unconfirmed; change a setting to retry");
+                      ESP_LOGI("v2_auto_apply", "Filter completed success=%d external=%d", ok,id(v2_auto_filter_external));
+                      id(v2_auto_queue).finish(ok);
+                else:
+                  - script.execute: v2_save_mode
+                  - lambda: id(v2_auto_queue).finish(true);
