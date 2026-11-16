@@ -33,12 +33,35 @@
       </section>
 
       <section class="panel">
-        <h2>USB recovery without Home Assistant</h2>
+        <h2>Safe Recovery 0.5.8 - USB / I2S</h2>
         <p>Running the factory RAM tester, or missing the USB update interface?
-          Use <a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=USBRecovery" target="_blank" rel="noopener"><strong>ZeroCore S3 / Voice DSP+ V2 USB Recovery (Beta)</strong></a>.
-          It temporarily loads USB firmware through SPI. Then return here to install the persistent USB upgrade.</p>
+          <a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=USBRecovery" target="_blank" rel="noopener"><strong>Install Safe Recovery 0.5.8 on ZeroCore S3</strong></a>.
+          It permanently installs XMOS Safe Mode plus I2S. Wait for <code>INSTALL_QSPI_VERIFIED</code> before disconnecting.</p>
+        <p>Then return here, power-cycle Voice DSP+ and connect to <strong>Voice DSP+ USB Recovery 5s</strong> during the five-second window.
+          Choose USB Mono 48 kHz for a standalone USB sound card, or I2S for a host-controlled device.
+          Once connected for DFU, the update can take longer than five seconds. Later USB / I2S updates do not need ZeroCore.</p>
         <p class="details">No Home Assistant, Wi-Fi or XTAG. V2 only. Replaces the ESP32 application;
-          does not itself write XMOS QSPI. Blank/corrupt QSPI still requires factory provisioning.</p>
+          writes and verifies XMOS QSPI. If Safe Mode is already installed, skip Recovery and use its USB window directly.</p>
+        <p class="details"><strong>For Home Assistant, reinstall its application on ZeroCore after Recovery:</strong>
+          <a href="https://apps.raspiaudio.com/#device=ZeroCoreS3&amp;application=VoiceDSPV2" target="_blank" rel="noopener">Install Voice DSP+ V2 Home Assistant</a>.
+          Recovery alone does not initialize I2S audio; static LEDs while waiting for a host are not proof of a failed flash.</p>
+      </section>
+
+      <section id="factory-check" class="panel" aria-labelledby="factory-check-heading">
+        <h2 id="factory-check-heading">Factory Check - ZeroCore S3</h2>
+        <p>Validated test-only firmware <strong>0.6.0</strong>: four microphones,
+          RGB LEDs, PAJ gestures, four buttons and continuous external L/R tones.</p>
+        <p><a href="firmware/voicedsp-factory-check-0.6.0-zerocore-s3.bin" download>
+          Download Factory Check 0.6.0 (.bin)</a></p>
+        <p class="details"><strong>ESP32-S3 binary, not an XMOS DFU image.</strong>
+          Flash this complete image to the ZeroCore S3 at offset <code>0x0</code>,
+          using its USB port. It replaces the ESP32 application. Do not select
+          this file in the XMOS updater below.</p>
+        <p class="details">Mount ZeroCore on Voice DSP+ V2 and connect the internal speakers.
+          After installation, power off both boards, then power on to start the test.
+          External tones also play continuously: use suitable full-range test speakers,
+          not an unprotected tweeter. The XMOS test runs in RAM only;
+          its permanent firmware is not overwritten. Power off to stop the test.</p>
       </section>
 
       <section class="panel">
@@ -50,9 +73,9 @@
           Normal installation checks the VDSP2-USBMONO USB identity. Force mode bypasses this check. A blank board or an
           I2S-only board needs USB Recovery or SPI provisioning before using this updater.
           <a href="https://github.com/RASPIAUDIO/Voice-DSP-Plus/blob/V2/USB/Firmware/README.md">V2 installation and recovery guide</a></p>
-        <p class="details"><strong>I2S is not a USB sound card.</strong> Installing I2S removes USB audio and browser updating after reboot.
-          A host must configure I2S audio. Returning to USB requires the ZeroCore recovery loader or Raspberry Pi/SPI.
-          The I2S application is accepted; this new USB-to-I2S update package still needs a hardware installation test.</p>
+        <p class="details"><strong>I2S is not a USB sound card.</strong> A host must configure I2S audio.
+          With Safe Mode installed, use the five-second USB recovery window to switch back to USB.
+          Older boards without Safe Mode need the ZeroCore Safe Recovery installer linked above first.</p>
       </section>
 
       <section id="connectPanel" class="panel">
