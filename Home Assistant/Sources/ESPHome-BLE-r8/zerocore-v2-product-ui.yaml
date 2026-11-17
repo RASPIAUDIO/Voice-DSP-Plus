@@ -1,0 +1,26 @@
+---
+packages:
+  base: !include zerocore-v2-web-base.yaml
+
+esphome:
+  includes: [paj_motion.h]
+
+binary_sensor:
+  - platform: template
+    id: v2_paj_motion
+    name: PAJ Motion
+    device_class: motion
+    icon: mdi:hand-wave
+    disabled_by_default: false
+    lambda: |-
+      const auto host = id(v2_control).snapshot();
+      const auto &s = host.gesture;
+      const uint32_t now = static_cast<uint32_t>(millis_64());
+      const bool available = id(v2_control).ready() && host.error == 0 &&
+          s.ready && s.health_valid &&
+          static_cast<uint32_t>(now - s.health_sampled_ms) <= VDSP_GESTURE_HEALTH_STALE_MS;
+      if (!available) {
+        if (id(v2_paj_motion).has_state()) id(v2_paj_motion).invalidate_state();
+        return {};
+      }
+      return vdsp_ui::paj_recent_motion(now, s.event_ms, s.event_raw);

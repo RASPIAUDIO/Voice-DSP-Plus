@@ -1,0 +1,249 @@
+---
+packages:
+  speakers: !include zerocore-v2-external-test.yaml
+  timers: !include zerocore-v2-timers.yaml
+
+esphome:
+  project:
+    version: 0.6.27-speaker-cues.20261109
+
+wifi:
+  # Mains-powered streaming device: avoid modem-sleep latency. RSSI still matters.
+  power_save_mode: NONE
+  on_connect:
+    - logger.log: "V2_WIFI connected"
+  on_disconnect:
+    - logger.log: "V2_WIFI disconnected"
+
+media_player:
+  - id: !extend v2_player
+    files:
+      - {id: v2_wake_sound, file: assets/voice-pe/wake_word_triggered.flac}
+      - {id: v2_mute_on_sound, file: assets/voice-pe/mute_switch_on.flac}
+      - {id: v2_mute_off_sound, file: assets/voice-pe/mute_switch_off.flac}
+      - {id: v2_jack_in_sound, file: assets/voice-pe/jack_connected.flac}
+      - {id: v2_jack_out_sound, file: assets/voice-pe/jack_disconnected.flac}
+
+switch:
+  - platform: template
+    id: v2_ui_sounds_enabled
+    name: Audio Feedback
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:volume-high
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+  - id: !extend v2_mic_mute
+    on_turn_on:
+      - script.execute: {id: v2_ui_sound, cue: 1}
+    on_turn_off:
+      - script.execute: {id: v2_ui_sound, cue: 2}
+
+globals:
+  - {id: v2_jack_observed, type: bool, initial_value: 'false'}
+  - {id: v2_previous_jack, type: bool, initial_value: 'false'}
+  - {id: v2_sound_count, type: uint32_t, initial_value: '0'}
+  - {id: v2_speaker_cue_before, type: uint32_t, initial_value: '0'}
+
+interval:
+  - interval: 5s
+    then:
+      - lambda: |-
+          ESP_LOGI("v2_liveness", "MAIN_ALIVE uptime_ms=%lu wifi_dbm=%.0f player=%d wake=%d assist=%d",
+              static_cast<unsigned long>(millis()), id(v2_wifi_signal).state,
+              static_cast<int>(id(v2_player).state), id(v2_wake).is_running(),
+              id(v2_assist).is_running());
+  - interval: 250ms
+    then:
+      - lambda: |-
+          if (!id(v2_control).ready()) {
+            id(v2_jack_observed) = false;
+            return;
+          }
+          const bool jack = (id(v2_control).snapshot().port0 & 0x20u) != 0;
+          if (id(v2_jack_observed) && jack != id(v2_previous_jack)) {
+            id(v2_ui_sound).execute(jack ? 3 : 4);
+            id(v2_feedback_transient).execute(jack ? 10 : 11);
+          }
+          id(v2_previous_jack) = jack;
+          id(v2_jack_observed) = true;
+
+button:
+  - platform: template
+    name: Test Wake Feedback
+    entity_category: diagnostic
+    disabled_by_default: true
+    on_press:
+      - script.execute: {id: v2_ui_sound, cue: 0}
+
+voice_assistant:
+  on_client_connected:
+    - lambda: ESP_LOGI("v2_startup", "STARTUP_TIMING event=ha_voice_connected uptime_ms=%lu", static_cast<unsigned long>(millis()));
+    - lambda: id(v2_ui_ha_connected) = true;
+    - script.execute: {id: v2_xmos_phase, phase: 0}
+  on_client_disconnected:
+    - lambda: id(v2_ui_ha_connected) = false;
+    - script.execute: {id: v2_xmos_phase, phase: 3}
+  on_start:
+    - script.execute: {id: v2_xmos_phase, phase: 4}
+  on_listening:
+    - script.execute: {id: v2_xmos_phase, phase: 4}
+  on_intent_progress:
+    - if:
+        condition:
+          lambda: return !x.empty();
+        then:
+          - script.execute: {id: v2_xmos_phase, phase: 7}
+  on_stt_vad_start:
+    - script.execute: {id: v2_xmos_phase, phase: 5}
+  on_stt_vad_end:
+    - script.execute: {id: v2_xmos_phase, phase: 6}
+  on_tts_start:
+    - script.execute: {id: v2_xmos_phase, phase: 7}
+  on_end:
+    - script.execute: {id: v2_xmos_phase, phase: 0}
+  on_error:
+    - script.execute: {id: v2_xmos_phase, phase: 8}
+
+script:
+  - id: v2_ui_sound
+    mode: single
+    parameters:
+      cue: int
+    then:
+      - if:
+          condition:
+            lambda: |-
+              // Never unmute, enable an output or change volume for a UI sound.
+              if (cue < 0 || cue > 5 || millis() < 5000U ||
+                  !id(v2_ui_sounds_enabled).state || !id(v2_control).ready() ||
+                  id(v2_mode_busy) || id(v2_control).update_requested() ||
+                  id(v2_audio_test_busy) || id(v2_timer_ringing).state || id(v2_player).is_muted() ||
+                  id(v2_control).snapshot().route == VDSP_AUDIO_OFF ||
+                  id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING ||
+                  id(v2_assist).is_running()) return false;
+              return cue == 0 || !id(v2_dispatch_wake).is_running();
+          then:
+            - mixer_speaker.apply_ducking:
+                id: v2_media_input
+                decibel_reduction: 20
+                duration: 0ms
+            - lambda: |-
+                audio::AudioFile *sounds[] = {id(v2_wake_sound), id(v2_mute_on_sound),
+                    id(v2_mute_off_sound), id(v2_jack_in_sound), id(v2_jack_out_sound),
+                    id(v2_startup_sound)};
+                id(v2_player).play_file(sounds[cue], true, false);
+                id(v2_sound_count)++;
+                ESP_LOGI("v2_feedback", "VoicePE cue=%d route=%u volume=%.3f", cue,
+                    unsigned(id(v2_control).snapshot().route), id(v2_player).volume);
+            # Wait through the actual asset, not the old 350 ms synthetic beep.
+            - wait_until:
+                condition:
+                  lambda: return id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING;
+                timeout: 1500ms
+            - wait_until:
+                condition:
+                  lambda: return id(v2_player).state != media_player::MEDIA_PLAYER_STATE_ANNOUNCING;
+                timeout: 5s
+            - if:
+                condition:
+                  lambda: |-
+                    return !id(v2_assist).is_running() && !id(v2_dispatch_wake).is_running() &&
+                        !id(v2_toggle_speaker).is_running() && !id(v2_timer_ringing).state;
+                then:
+                  - mixer_speaker.apply_ducking:
+                      id: v2_media_input
+                      decibel_reduction: 0
+                      duration: 100ms
+  - id: v2_xmos_phase
+    parameters:
+      phase: int
+    then:
+      - lambda: |-
+          id(v2_ui_phase) = phase;
+          id(v2_ui_phase_ms) = millis();
+          id(v2_refresh_feedback).execute();
+
+binary_sensor:
+  - platform: template
+    name: Audio Feedback Busy
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: return id(v2_ui_sound).is_running() || id(v2_startup_feedback).is_running();
+  - platform: template
+    name: XMOS UI Extension Available
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: return id(v2_control).xmos_ui_snapshot().available;
+text_sensor:
+  - platform: template
+    name: XMOS Runtime Last Failure
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 1s
+    lambda: return id(v2_control).runtime_diagnostics();
+  - platform: template
+    name: XMOS UI Acknowledged State
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 1s
+    lambda: return id(v2_control).xmos_ui_diagnostics();
+  - platform: template
+    name: XMOS Microphone Mute Acknowledged
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 1s
+    lambda: |-
+      auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.available || !s.mute_valid) return std::string("Unknown");
+      return std::string(s.muted ? "Muted" : "Unmuted");
+sensor:
+  - platform: wifi_signal
+    id: v2_wifi_signal
+    name: WiFi Signal
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 5s
+  - platform: template
+    name: Audio Feedback Queued Count
+    entity_category: diagnostic
+    disabled_by_default: true
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: return id(v2_sound_count);
+  - platform: template
+    name: XMOS Raw Microphone D0 RMS
+    entity_category: diagnostic
+    disabled_by_default: false
+    accuracy_decimals: 2
+    update_interval: 1s
+    lambda: |-
+      auto s = id(v2_control).xmos_ui_snapshot();
+      return s.levels_valid ? s.levels[0] : NAN;
+  - platform: template
+    name: XMOS Raw Microphone D1 RMS
+    entity_category: diagnostic
+    disabled_by_default: false
+    accuracy_decimals: 2
+    update_interval: 1s
+    lambda: |-
+      auto s = id(v2_control).xmos_ui_snapshot();
+      return s.levels_valid ? s.levels[1] : NAN;
+  - platform: template
+    name: XMOS Raw Microphone D2 RMS
+    entity_category: diagnostic
+    disabled_by_default: false
+    accuracy_decimals: 2
+    update_interval: 1s
+    lambda: |-
+      auto s = id(v2_control).xmos_ui_snapshot();
+      return s.levels_valid ? s.levels[2] : NAN;
+  - platform: template
+    name: XMOS Raw Microphone D3 RMS
+    entity_category: diagnostic
+    disabled_by_default: false
+    accuracy_decimals: 2
+    update_interval: 1s
+    lambda: |-
+      auto s = id(v2_control).xmos_ui_snapshot();
+      return s.levels_valid ? s.levels[3] : NAN;

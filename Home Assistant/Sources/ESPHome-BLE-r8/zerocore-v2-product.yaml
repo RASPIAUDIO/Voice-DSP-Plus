@@ -1,0 +1,419 @@
+---
+# Additive reception UI. Retains the installed device identity for Home Assistant.
+# Reuses V1 control behavior, NOT its incompatible PCAL driver or XMOS command IDs.
+packages:
+  hardware: !include zerocore-v2-gestures.yaml
+
+esphome:
+  name: voicedsp-v2-active-dev
+  friendly_name: VoiceDSP V2 Active Development
+  project:
+    version: 0.6.3-reception.20261109
+  on_boot:
+    priority: -100
+    then:
+      - script.execute: v2_apply_sensitivity
+      - script.execute: v2_apply_channel
+
+globals:
+  - id: v2_mute_transition_ms
+    type: uint32_t
+    initial_value: '0'
+  - id: v2_have_mute_transition
+    type: bool
+    initial_value: 'false'
+  - id: v2_wake_count
+    type: uint32_t
+    initial_value: '0'
+
+switch:
+  - platform: template
+    id: v2_mic_mute
+    name: Mute Microphone
+    disabled_by_default: false
+    icon: mdi:microphone-off
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - lambda: |-
+          id(v2_mics).set_privacy_mute(true);
+          id(v2_control).request_xmos_mute(true);
+          id(v2_refresh_feedback).execute();
+      - voice_assistant.stop:
+      - micro_wake_word.stop:
+    on_turn_off:
+      - lambda: |-
+          id(v2_mics).set_privacy_mute(false);
+          id(v2_control).request_xmos_mute(false);
+          id(v2_refresh_feedback).execute();
+  - platform: template
+    id: v2_gesture_actions
+    name: Gesture Control
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:hand-wave
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+select:
+  - platform: template
+    id: v2_internal_playback
+    name: Internal Speaker Playback
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:speaker-multiple
+    optimistic: true
+    restore_value: true
+    initial_option: Mono - Recommended for AEC
+    options:
+      - Mono - Recommended for AEC
+      - Stereo - AEC may be degraded
+    on_value:
+      - script.execute: v2_apply_channel
+  - platform: template
+    id: v2_sensitivity
+    name: Wake Word Sensitivity
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:ear-hearing
+    optimistic: true
+    restore_value: true
+    initial_option: Very sensitive
+    options: [Slightly sensitive, Moderately sensitive, Very sensitive]
+    on_value:
+      - script.execute: v2_apply_sensitivity
+  - platform: template
+    id: v2_stop_mode
+    name: Stop Word Mode
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:stop-circle-outline
+    optimistic: true
+    restore_value: true
+    initial_option: Music and responses
+    options: [Disabled, Music, "Timers only", "Music and timers", "Responses only", "Music and responses", "Music, timers and responses"]
+  - platform: template
+    id: v2_channel
+    name: Speaker Channel
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:surround-sound
+    optimistic: true
+    restore_value: true
+    initial_option: Both mono
+    options: [Stereo, Both mono, Left, Right]
+    on_value:
+      - script.execute: v2_apply_channel
+
+binary_sensor:
+  - platform: template
+    name: Microphone Privacy Gate ESP32
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: return id(v2_mic_mute).state;
+  - platform: template
+    name: Wake Engine Running
+    entity_category: diagnostic
+    disabled_by_default: false
+    lambda: return id(v2_wake).is_running();
+  - platform: template
+    name: Speaker Muted
+    entity_category: diagnostic
+    disabled_by_default: false
+    lambda: return id(v2_player).is_muted();
+
+sensor:
+  - platform: template
+    name: Wake Word Count
+    entity_category: diagnostic
+    disabled_by_default: false
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: return id(v2_wake_count);
+
+button:
+  - platform: template
+    name: Toggle Speaker Mute
+    disabled_by_default: false
+    on_press:
+      - script.execute: v2_toggle_speaker
+  - platform: template
+    name: Start Assist
+    disabled_by_default: false
+    on_press:
+      - script.execute:
+          id: v2_dispatch_wake
+          word: !lambda return id(v2_wake_choice).current_option();
+
+# Event entities remain exposed for custom Home Assistant automations.
+voicedsp_v2_buttons:
+  up:
+    on_event:
+      - if:
+          condition:
+            lambda: return !id(v2_mode_busy) && event_type == "short_press";
+          then:
+            - media_player.volume_up: v2_player
+  down:
+    on_event:
+      - if:
+          condition:
+            lambda: return !id(v2_mode_busy) && event_type == "short_press";
+          then:
+            - media_player.volume_down: v2_player
+  left:
+    on_event:
+      - if:
+          condition:
+            lambda: return !id(v2_mode_busy) && event_type == "short_press";
+          then:
+            - script.execute: v2_toggle_speaker
+  right:
+    on_event:
+      - if:
+          condition:
+            lambda: return !id(v2_mode_busy) && event_type == "short_press";
+          then:
+            - script.execute: v2_action_button
+voicedsp_v2_gestures:
+  gesture:
+    on_event:
+      - script.execute:
+          id: v2_gesture_action
+          gesture: !lambda return event_type;
+
+interval:
+  - interval: 1s
+    then:
+      - script.execute: v2_apply_channel
+      - lambda: |-
+          const auto mode = id(v2_stop_mode).current_option();
+          const bool timer = id(v2_timer_ringing).state &&
+              (mode == "Timers only" || mode == "Music and timers" || mode == "Music, timers and responses");
+          const bool music = (mode == "Music" || mode == "Music and timers" || mode == "Music and responses" || mode == "Music, timers and responses") &&
+              id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING &&
+              !id(v2_assist).is_running();
+          const bool response = (mode == "Responses only" || mode == "Music and responses" || mode == "Music, timers and responses") &&
+              id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING &&
+              id(v2_tts_pending) && millis() - id(v2_tts_started_ms) >= 1000U;
+          const bool enabled = (timer || music || response) && !id(v2_mic_mute).state;
+          if (enabled != id(v2_stop_word).is_enabled()) {
+            if (enabled) id(v2_stop_word).enable();
+            else id(v2_stop_word).disable();
+          }
+
+script:
+  - id: v2_apply_sensitivity
+    then:
+      - lambda: |-
+          const auto mode = id(v2_sensitivity).current_option();
+          id(v2_jarvis).set_probability_cutoff(mode == "Slightly sensitive" ? 247 :
+              mode == "Moderately sensitive" ? 235 : 128);
+          id(v2_stop_word).set_probability_cutoff(mode == "Slightly sensitive" ? 128 :
+              mode == "Moderately sensitive" ? 115 : 89);
+  - id: v2_apply_channel
+    then:
+      - lambda: |-
+          // Jack always stays stereo. Both uses (L+R)/2, never an unclipped sum.
+          const auto option = id(v2_channel).current_option();
+          const auto route = id(v2_output_route).current_option();
+          const bool stereo = id(v2_internal_playback).current_option() == "Stereo - AEC may be degraded";
+          const int r = route == "Internal stereo" ? 1 : route == "External speaker" ? 2 :
+              route == "LINE OUT stereo" ? 3 : 0;
+          const int c = option == "Both mono" ? 1 : option == "Left" ? 2 : option == "Right" ? 3 : 0;
+          const auto wanted = vdsp_modes::channel(vdsp_modes::playback_channel(r,c,stereo));
+          if (option != wanted) {
+            auto channel = id(v2_channel).make_call();
+            channel.set_option(wanted);
+            channel.perform();
+            return;
+          }
+          const bool jack = (id(v2_control).snapshot().port0 & 0x20u) != 0;
+          id(v2_i2s_speaker).set_output_channel_mode(jack || option == "Stereo" ? 3 :
+              option == "Left" ? 1 : option == "Right" ? 2 : 0);
+  - id: v2_toggle_speaker
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return !id(v2_mode_busy) && (!id(v2_have_mute_transition) ||
+                  millis() - id(v2_mute_transition_ms) >= 1000U);
+          then:
+            - lambda: |-
+                id(v2_have_mute_transition) = true;
+                id(v2_mute_transition_ms) = millis();
+            - if:
+                condition:
+                  lambda: return id(v2_player).is_muted();
+                then:
+                  - lambda: id(v2_ui_transient) = -1;
+                  - media_player.unmute: v2_player
+                  - script.execute: v2_refresh_feedback
+                  - wait_until:
+                      condition:
+                        lambda: return !id(v2_player).is_muted();
+                      timeout: 1s
+                  - if:
+                      condition:
+                        lambda: return !id(v2_player).is_muted();
+                      then:
+                        - script.execute: {id: v2_ui_sound, cue: 2}
+                        - script.wait: v2_ui_sound
+                else:
+                  - script.execute: {id: v2_feedback_transient, state: 8}
+                  - lambda: id(v2_speaker_cue_before) = id(v2_sound_count);
+                  - script.execute: {id: v2_ui_sound, cue: 1}
+                  - script.wait: v2_ui_sound
+                  - media_player.mute: v2_player
+                  - wait_until:
+                      condition:
+                        lambda: return id(v2_player).is_muted();
+                      timeout: 1s
+            - lambda: id(v2_mute_transition_ms) = millis();
+            - script.execute: v2_refresh_feedback
+            - if:
+                condition:
+                  lambda: |-
+                    return !id(v2_assist).is_running() &&
+                        !id(v2_dispatch_wake).is_running() && !id(v2_timer_ringing).state;
+                then:
+                  - mixer_speaker.apply_ducking:
+                      id: v2_media_input
+                      decibel_reduction: 0
+                      duration: 100ms
+  - id: v2_gesture_action
+    parameters:
+      gesture: string
+    then:
+      - lambda: |-
+          ESP_LOGI("v2_gesture_action", "event=%s enabled=%d ready=%d mode_busy=%d muted=%d",
+              gesture.c_str(), id(v2_gesture_actions).state, id(v2_control).ready(),
+              id(v2_mode_busy), id(v2_player).is_muted());
+          if (id(v2_mode_busy) || !id(v2_gesture_actions).state || !id(v2_control).ready()) return;
+          // A fresh gesture dismisses the alarm before any normal gesture action.
+          if (gesture.empty() || gesture == "none") return;
+          if (id(v2_timer_ringing).state) {
+            id(v2_have_mute_transition) = true;
+            id(v2_mute_transition_ms) = millis();
+            id(v2_test_timer).stop();
+            id(v2_timer_ringing).turn_off();
+            id(v2_refresh_feedback).execute();
+            ESP_LOGI("v2_gesture_action", "timer dismissed by %s", gesture.c_str());
+            return;
+          }
+          // Only the six established gestures act; combined/wave/circles stay diagnostic.
+          const bool reliable = gesture == "sensor_left" || gesture == "sensor_right" ||
+              gesture == "sensor_up" || gesture == "sensor_down" ||
+              gesture == "sensor_forward" || gesture == "sensor_backward";
+          if (!reliable) return;
+          if (id(v2_have_mute_transition) && millis() - id(v2_mute_transition_ms) < 1000U) {
+            ESP_LOGI("v2_gesture_action", "ignored: one-second mute cooldown");
+            return;
+          }
+          if (id(v2_player).is_muted() || gesture == "sensor_forward") {
+            id(v2_toggle_speaker).execute();
+            return;
+          }
+          auto call = id(v2_player).make_call();
+          // Owner-checked product frame: physical left is raw 0x02 (sensor_right).
+          if (gesture == "sensor_right") call.set_command(media_player::MEDIA_PLAYER_COMMAND_VOLUME_UP);
+          else if (gesture == "sensor_left") call.set_command(media_player::MEDIA_PLAYER_COMMAND_VOLUME_DOWN);
+          else if (gesture == "sensor_up") call.set_command(media_player::MEDIA_PLAYER_COMMAND_NEXT);
+          else if (gesture == "sensor_down") call.set_command(media_player::MEDIA_PLAYER_COMMAND_PREVIOUS);
+          else return;
+          call.perform();
+  - id: v2_dispatch_wake
+    mode: single
+    parameters:
+      word: string
+    then:
+      - if:
+          condition:
+            lambda: return word == id(v2_stop_word).get_wake_word() || word == "stop";
+          then:
+            - if:
+                condition:
+                  lambda: |-
+                    if (id(v2_timer_ringing).state && !id(v2_mic_mute).state &&
+                        (id(v2_stop_mode).current_option() == "Timers only" ||
+                         id(v2_stop_mode).current_option() == "Music and timers" ||
+                         id(v2_stop_mode).current_option() == "Music, timers and responses")) {
+                      id(v2_timer_ringing).turn_off();
+                      return false; // Do not stop the underlying music.
+                    }
+                    if (!id(v2_mic_mute).state && id(v2_tts_pending) &&
+                        (id(v2_stop_mode).current_option() == "Responses only" ||
+                         id(v2_stop_mode).current_option() == "Music and responses" ||
+                         id(v2_stop_mode).current_option() == "Music, timers and responses") &&
+                        id(v2_player).state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING) {
+                      id(v2_interrupt_response).execute();
+                      return false;
+                    }
+                    return (id(v2_stop_mode).current_option() == "Music" ||
+                            id(v2_stop_mode).current_option() == "Music and timers" ||
+                            id(v2_stop_mode).current_option() == "Music and responses" ||
+                            id(v2_stop_mode).current_option() == "Music, timers and responses") &&
+                        !id(v2_mic_mute).state &&
+                        id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING &&
+                        !id(v2_assist).is_running();
+                then:
+                  - media_player.stop:
+                      id: v2_player
+                      announcement: false
+          else:
+            - if:
+                condition:
+                  switch.is_on: v2_timer_ringing
+                then:
+                  - switch.turn_off: v2_timer_ringing
+            - if:
+                condition:
+                  and:
+                    - lambda: return !id(v2_mode_busy) && id(v2_control).ready() && !id(v2_mic_mute).state;
+                    - voice_assistant.connected:
+                    - not:
+                        voice_assistant.is_running:
+                then:
+                  - lambda: id(v2_wake_count)++;
+                  - mixer_speaker.apply_ducking:
+                      id: v2_media_input
+                      decibel_reduction: 20
+                      duration: 100ms
+                  - script.execute: {id: v2_xmos_phase, phase: 4}
+                  - script.execute: {id: v2_ui_sound, cue: 0}
+                  - script.wait: v2_ui_sound
+                  - delay: 300ms
+                  - if:
+                      condition:
+                        and:
+                          - lambda: return !id(v2_mode_busy) && id(v2_control).ready() && !id(v2_mic_mute).state;
+                          - voice_assistant.connected:
+                      then:
+                        - voice_assistant.start:
+                            wake_word: !lambda return word;
+                      else:
+                        - mixer_speaker.apply_ducking:
+                            id: v2_media_input
+                            decibel_reduction: 0
+                            duration: 100ms
+
+voice_assistant:
+  on_end:
+    - if:
+        condition:
+          lambda: return !id(v2_timer_ringing).state;
+        then:
+          - mixer_speaker.apply_ducking:
+              id: v2_media_input
+              decibel_reduction: 0
+              duration: 1s
+  on_error:
+    - if:
+        condition:
+          lambda: return !id(v2_timer_ringing).state;
+        then:
+          - mixer_speaker.apply_ducking:
+              id: v2_media_input
+              decibel_reduction: 0
+              duration: 1s

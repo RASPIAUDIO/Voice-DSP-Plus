@@ -1,0 +1,6 @@
+---
+packages:
+  bypass: !include zerocore-v2-power-bypass.yaml
+esphome:
+  project:
+    version: 0.6.35-route-ack.20261110

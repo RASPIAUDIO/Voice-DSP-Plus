@@ -1,0 +1,13 @@
+---
+packages:
+  ui: !include zerocore-v2-ui.yaml
+esphome:
+  project:
+    version: 0.6.33-power-bypass.20261110
+text_sensor:
+  - platform: template
+    name: Power policy
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 60s
+    lambda: return std::string("DEV BYPASS - PG/PD ignored, no timer");

@@ -1,0 +1,272 @@
+---
+esphome:
+  includes: [product_modes.h]
+  on_boot:
+    priority: -100
+    then:
+      - lambda: vdsp_modes::migrate_levels(id(v2_unity_memory), id(v2_mode_memory));
+      # Flashing takes minutes; start the normal audio-ready timeout afterwards.
+      - wait_until:
+          condition:
+            lambda: return id(v2_control).qspi_status() <= 0 || id(v2_control).qspi_status() >= 8;
+      - wait_until:
+          condition:
+            lambda: |-
+              const auto a=id(v2_control).xmos_ui_snapshot().aec;
+              // This boot chain runs before the feedback script; do not wait
+              // for a flag that a later action in the same chain must set.
+              return millis() >= 5000U && id(v2_control).ready() && a.mux_valid && !a.raw;
+          timeout: 45s
+      - lambda: |-
+          if (id(v2_saved_mode)<0 || id(v2_saved_mode)>2) id(v2_saved_mode)=0;
+          id(v2_product_mode).publish_state(vdsp_modes::name(id(v2_saved_mode)));
+          id(v2_apply_product_mode).execute();
+      - script.wait: v2_apply_product_mode
+      - lambda: |-
+          id(v2_restoring_mode) = false;
+          id(v2_auto_queue).arm();
+
+globals:
+  - id: v2_restoring_mode
+    type: bool
+    initial_value: 'true'
+  - id: v2_mode_memory
+    type: std::array<int, 21>
+    restore_value: true
+    initial_value: 'vdsp_modes::legacy_defaults'
+  - id: v2_unity_memory
+    type: std::array<int, 22>
+    restore_value: true
+    initial_value: 'vdsp_modes::uninitialized'
+  - id: v2_saved_mode
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: v2_active_mode
+    type: int
+    initial_value: '-1'
+  - id: v2_mode_target
+    type: int
+    initial_value: '0'
+  - id: v2_mode_settings
+    type: std::array<int, 7>
+    initial_value: 'std::array<int, 7>{}'
+  - id: v2_mode_busy
+    type: bool
+    initial_value: 'false'
+  - id: v2_mode_failed
+    type: bool
+    initial_value: 'false'
+  - id: v2_mode_previous_mute
+    type: bool
+    initial_value: 'false'
+  - id: v2_diagnostic_until
+    type: uint32_t
+    initial_value: '0'
+
+select:
+  - platform: template
+    id: v2_product_mode
+    name: Product Mode
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:tune-variant
+    optimistic: true
+    initial_option: Voice Compact
+    options: [Voice Compact, Full Speaker, Custom]
+
+switch:
+  - platform: template
+    name: Show Advanced Settings
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:tune
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+  - platform: template
+    name: Show Diagnostics
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:bug-outline
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+  - platform: template
+    id: v2_beta_firmware
+    name: Beta Firmware
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:flask-outline
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - lambda: id(v2_firmware_update).set_source_url("https://raspiaudio.github.io/ZeroCoreS3/VoiceDSPV2/manifest-beta.json");
+    on_turn_off:
+      - lambda: id(v2_firmware_update).set_source_url("https://raspiaudio.github.io/ZeroCoreS3/VoiceDSPV2/manifest-stable.json");
+
+button:
+  - platform: template
+    name: Apply Product Mode
+    entity_category: config
+    disabled_by_default: true
+    icon: mdi:check-circle-outline
+    on_press:
+      - script.execute: v2_apply_product_mode
+  - platform: template
+    name: Save Mode Settings
+    entity_category: config
+    disabled_by_default: true
+    icon: mdi:content-save-outline
+    on_press:
+      - script.execute: v2_save_mode
+
+text_sensor:
+  - platform: template
+    id: v2_mode_status
+    name: Product Mode Status
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:information-outline
+    update_interval: never
+  - platform: template
+    name: Applied Product Mode
+    entity_category: diagnostic
+    disabled_by_default: false
+    icon: mdi:speaker-multiple
+    update_interval: 1s
+    lambda: return std::string(vdsp_modes::name(id(v2_active_mode)));
+
+script:
+  - id: v2_save_mode
+    then:
+      - lambda: |-
+          if (id(v2_mode_busy) || id(v2_audio_test_busy) || id(v2_active_mode)<0 ||
+              !id(v2_control).ready()) return;
+          const auto r=id(v2_output_route).current_option();
+          const auto c=id(v2_channel).current_option();
+          const float vals[]={id(v2_internal_level_db).state,id(v2_external_level_db).state,
+              id(v2_crossover_hz).state,id(v2_woofer_trim).state,id(v2_tweeter_trim).state};
+          for (float v:vals) if (!std::isfinite(v)) return;
+          vdsp_modes::Settings s{r=="Internal stereo"?1:r=="External speaker"?2:r=="LINE OUT stereo"?3:0,
+              c=="Both mono"?1:c=="Left"?2:c=="Right"?3:0,
+              int(vals[0]),int(vals[1]),int(vals[2]),int(vals[3]),int(vals[4])};
+          // Pending filter controls may already describe the next preset.
+          if (id(v2_auto_queue).armed) {
+            const auto f=id(v2_auto_queue).applied_filter;
+            s[4]=f.hz; s[5]=f.woofer; s[6]=f.tweeter;
+          }
+          if (vdsp_modes::save(id(v2_unity_memory),id(v2_active_mode),s)) {
+            // Commit the debounced, accepted settings before a physical power cut.
+            v2_unity_memory->update();
+            v2_saved_mode->update();
+            const bool stored = global_preferences->sync();
+            id(v2_mode_status).publish_state(stored ? "Settings saved on device" :
+                "ERROR - settings not committed; keep power connected");
+            ESP_LOGI("v2_modes", "Settings committed=%d mode=%d route=%d", stored, id(v2_active_mode), s[0]);
+          }
+
+  - id: v2_apply_product_mode
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: |-
+              const auto a=id(v2_control).xmos_ui_snapshot().aec;
+              return id(v2_control).ready() && !id(v2_audio_test_busy) &&
+                  (id(v2_diagnostic_until)==0 || int32_t(id(v2_diagnostic_until)-millis())<=0) &&
+                  !id(v2_control).update_requested() && !id(v2_assist).is_running() &&
+                  !id(v2_dispatch_wake).is_running() && !id(v2_timer_ringing).state &&
+                  (id(v2_player).state==media_player::MEDIA_PLAYER_STATE_IDLE ||
+                   id(v2_player).state==media_player::MEDIA_PLAYER_STATE_PAUSED) &&
+                  a.mux_valid && !a.raw && a.mux[0]==8 && a.mux[1]==0 && a.mux[2]==8 && a.mux[3]==1;
+          then:
+            - script.execute: v2_save_mode
+            - lambda: |-
+                const auto n=id(v2_product_mode).current_option();
+                id(v2_mode_target)=n=="Voice Compact"?0:n=="Full Speaker"?1:2;
+                id(v2_mode_settings)=vdsp_modes::effective(
+                    vdsp_modes::read(id(v2_unity_memory),id(v2_mode_target)),
+                    // Restore the actual saved route at boot; preset selection
+                    // still deliberately chooses its normal default output.
+                    id(v2_restoring_mode) ? 2 : id(v2_mode_target),
+                    id(v2_internal_playback).current_option()=="Stereo - AEC may be degraded");
+                id(v2_mode_failed)=!vdsp_modes::valid(id(v2_mode_settings));
+            - if:
+                condition:
+                  lambda: return !id(v2_mode_failed);
+                then:
+                  - lambda: |-
+                      id(v2_mode_busy)=true;
+                      id(v2_audio_test_busy)=true;
+                      id(v2_mode_previous_mute)=id(v2_player).is_muted();
+                      id(v2_mode_status).publish_state("Applying - output muted");
+                  - media_player.mute: v2_player
+                  - select.set: {id: v2_output_route, option: "OFF"}
+                  - delay: 250ms
+                  - wait_until:
+                      condition:
+                        lambda: return id(v2_control).ready() && id(v2_control).snapshot().route==VDSP_AUDIO_OFF && id(v2_player).is_muted();
+                      timeout: 10s
+                  - lambda: |-
+                      if (!id(v2_control).ready() || id(v2_control).snapshot().route!=VDSP_AUDIO_OFF ||
+                          !id(v2_player).is_muted()) { id(v2_mode_failed)=true; return; }
+                      const auto s=id(v2_mode_settings);
+                      auto num=[](auto *n,int v){auto c=n->make_call();c.set_value(v);c.perform();};
+                      id(v2_auto_queue).internal_write=true;
+                      num(id(v2_internal_level_db),s[2]); num(id(v2_external_level_db),s[3]);
+                      num(id(v2_crossover_hz),s[4]); num(id(v2_woofer_trim),s[5]);num(id(v2_tweeter_trim),s[6]);
+                      auto p=id(v2_speaker_profile).make_call();p.set_option("Full Speaker 2-way");p.perform();
+                      id(v2_auto_queue).internal_write=false;
+                      // All product modes retain the accepted LR4 topology; debug profiles remain separate.
+                      if (!id(v2_control).configure_crossover(1,s[4],s[5],s[6])) {
+                        id(v2_mode_failed)=true;return;
+                      }
+                      auto r=id(v2_output_route).make_call();r.set_option(vdsp_modes::route(s[0]));r.perform();
+                      auto c=id(v2_channel).make_call();c.set_option(vdsp_modes::channel(s[1]));c.perform();
+                  - delay: 5s
+                  - wait_until:
+                      condition:
+                        lambda: |-
+                          if (id(v2_mode_failed)) return true;
+                          const auto s=id(v2_mode_settings);
+                          const unsigned routes[]={VDSP_AUDIO_OFF,VDSP_AUDIO_DAC_SPEAKERS,VDSP_AUDIO_HT326,VDSP_AUDIO_LINE};
+                          const auto a=id(v2_control).xmos_ui_snapshot().aec;
+                          return id(v2_control).ready() && id(v2_control).snapshot().route==routes[s[0]] &&
+                              (s[0]!=2 || (a.profile_valid && a.profile==4 && a.profile_error==0 &&
+                              id(v2_control).crossover_diagnostics().find("applied=1 mode=1 fc="+std::to_string(s[4])+" L="+std::to_string(s[5])+" R="+std::to_string(s[6])+" ")==0));
+                      timeout: 20s
+                  - lambda: |-
+                      const auto s=id(v2_mode_settings);
+                      const unsigned routes[]={VDSP_AUDIO_OFF,VDSP_AUDIO_DAC_SPEAKERS,VDSP_AUDIO_HT326,VDSP_AUDIO_LINE};
+                      const auto a=id(v2_control).xmos_ui_snapshot().aec;
+                      const bool filter_ok=id(v2_control).crossover_diagnostics().find(
+                          "applied=1 mode=1 fc="+std::to_string(s[4])+" L="+std::to_string(s[5])+" R="+std::to_string(s[6])+" ")==0;
+                      if (!id(v2_control).ready() || id(v2_control).snapshot().route!=routes[s[0]] ||
+                          id(v2_assist).is_running() || (id(v2_player).state!=media_player::MEDIA_PLAYER_STATE_IDLE &&
+                           id(v2_player).state!=media_player::MEDIA_PLAYER_STATE_PAUSED) ||
+                          !a.mux_valid || a.raw || a.mux[0]!=8 || a.mux[1]!=0 || a.mux[2]!=8 || a.mux[3]!=1 ||
+                          (s[0]==2 && (!filter_ok || !a.profile_valid || a.profile!=4 || a.profile_error)))
+                        id(v2_mode_failed)=true;
+                      if (id(v2_mode_failed)) {
+                        auto r=id(v2_output_route).make_call();r.set_option("OFF");r.perform();
+                        auto m=id(v2_player).make_call();m.set_command(media_player::MEDIA_PLAYER_COMMAND_MUTE);m.perform();
+                        id(v2_active_mode)=-1;
+                        id(v2_mode_status).publish_state("ERROR - output OFF and muted; inspect diagnostics");
+                      } else {
+                        id(v2_active_mode)=id(v2_mode_target);
+                        id(v2_saved_mode)=id(v2_mode_target);
+                        id(v2_auto_queue).applied_filter={1,s[4],s[5],s[6]};
+                        vdsp_modes::save(id(v2_unity_memory),id(v2_active_mode),s);
+                        if (!id(v2_mode_previous_mute)) {
+                          auto m=id(v2_player).make_call();m.set_command(media_player::MEDIA_PLAYER_COMMAND_UNMUTE);m.perform();
+                        }
+                        id(v2_mode_status).publish_state("Applied - AEC preserved");
+                      }
+                      id(v2_audio_test_busy)=false;id(v2_mode_busy)=false;
+                else:
+                  - text_sensor.template.publish:
+                      id: v2_mode_status
+                      state: "Invalid stored settings - output unchanged"
+          else:
+            - text_sensor.template.publish:
+                id: v2_mode_status
+                state: "Not applied - stop playback, Assist and tests; controller must be ready"

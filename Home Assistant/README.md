@@ -5,27 +5,39 @@ answers and hands-free controls to Home Assistant. Use your own speakers or
 the corresponding Voice Compact / Full Speaker assembly.
 
 [Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) |
-[Download 0.6.75](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
+[Download 0.6.75 r8](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
 [All three setups](../README.md)
 
 ## Install in five steps
 
 1. With power off, mount **RASPIAUDIO ZeroCore S3** on **Voice DSP+ V2**.
    You need Home Assistant, 2.4 GHz Wi-Fi and a USB data cable. Remove any Pi.
-2. Connect the **ZeroCore USB data port**, not the XMOS port, to your computer.
+2. If XMOS is blank or runs USB-only firmware, provision persistent I2S with
+   [Safe Recovery](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=USBRecovery)
+   first. Then connect the **ZeroCore USB data port**, not XMOS, for this installation.
 3. Open [RASPIAUDIO Apps: V2 installer](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2)
-   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.75** is preselected.
+   in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.75 r8** is preselected.
    Connect and Install. An erased install removes saved settings.
 4. Configure Wi-Fi using serial Improv through the installer. Alternatively use
    the fallback **VoiceDSP V2 Setup** access point (password `voicedsp-setup`).
-   This particular image does not advertise BLE Improv.
+   BLE Improv is also available for ten minutes when no Wi-Fi is saved, using a
+   compatible nearby client. Bluetooth stops after setup and stays off with saved
+   Wi-Fi. A Home Assistant VM needs working Bluetooth access for BLE provisioning.
 5. Add the discovered ESPHome device in Home Assistant. Wait for **Diagnostic -
    XMOS firmware status: Ready**, select your Assist pipeline, then
    try **Hey Jarvis**. Start with a low playback volume.
 
-Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.75.factory.bin)
+Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.75-r8-ble.factory.bin)
 and select it in [ESPHome Web](https://web.esphome.io/). The web installer and
 this download use identical release binaries.
+
+## New in r8
+
+The owner validated idle DOA, output memorization and the Home Assistant timer.
+BLE no longer replaces the normal startup sequence. Boot restores the saved
+output; accepted settings commit after the idle/debounce gate. Choosing a new
+product mode still applies that preset's output. AEC/filter tuning is unchanged.
+[Release notes and known limits](Firmware/RELEASE-r8.md).
 
 ## Everything on the device page
 
@@ -115,21 +127,21 @@ Internal square or external LINE/SQUARE arrays are selected at startup.
 
 ## Updates and recovery
 
-The ESP32 image contains its matching XMOS firmware. Each boot loads it into
-**XMOS RAM**, leaving QSPI unchanged. No XTAG is required for this normal path.
-Do not substitute the standalone USB firmware for the paired I2S image.
+The ESP32 includes matching XMOS payloads but routine startup **resumes the
+persistent I2S image already installed in XMOS QSPI**, without a RAM upload.
+Blank or USB-only boards require Safe Recovery (I2S) first.
 
-**Reload embedded XMOS firmware** restarts the paired boot. **XMOS loading
-progress**, **XMOS firmware status** and **Embedded XMOS image SHA256** report it.
-The enabled **Diagnostic - ESP32 + XMOS Firmware** update entity receives new
-paired releases directly in HA, without an ESPHome server. Stable and beta catalogs
-currently point to **0.6.75**. Checks run after networking starts and every six
-hours. Press **Diagnostic - Check firmware updates** for an immediate check,
-including after changing **Beta Firmware**, then install explicitly. Checks do
-not install automatically or guarantee a phone notification. An XMOS-only release
-still requires a new paired ESP32 package/version; no separate XMOS download is
-needed by the user. Alternatively use the
-[manual OTA instructions](Firmware/README.md).
+**Install XMOS in Flash** explicitly performs persistent installation.
+**Reload embedded XMOS firmware** is temporary RAM recovery, not a QSPI update.
+Do not substitute standalone USB firmware for this paired I2S configuration.
+
+**Diagnostic - ESP32 + XMOS Firmware** offers r8 directly in HA, without an
+ESPHome server. Stable and beta catalogs offer the same version. Checks run
+after networking starts and every six hours; press **Diagnostic - Check firmware
+updates** for an immediate check. Installation is manual, and no phone notification
+is guaranteed. A board already on r8 is up to date. This ESP32 update does not
+change XMOS; future XMOS updates must follow their persistent-install instructions.
+See [manual OTA instructions](Firmware/README.md).
 
 If the controller remains unavailable, stop audio and remove all power for ten
 seconds. Do not add a second I2C owner or repeatedly reload a blocked bus.

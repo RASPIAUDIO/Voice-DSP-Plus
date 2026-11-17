@@ -1,0 +1,59 @@
+---
+# ESPHome 2026.8.1 uses esp32_improv (renamed improv_ble in newer releases).
+# BLE is a first-install transport, never an audio transport or a proxy.
+esp32_ble:
+  id: v2_setup_ble
+  enable_on_boot: false
+  max_connections: 1
+
+esp32_improv:
+  id: v2_ble_improv
+  authorizer: none
+  on_start:
+    - logger.log: "V2_BLE_SETUP advertising for Wi-Fi provisioning"
+  on_provisioned:
+    - logger.log: "V2_BLE_SETUP Wi-Fi provisioned"
+  on_stop:
+    - ble.disable:
+
+esphome:
+  on_boot:
+    # All inherited packages use a mapping here. A list replaces that mapping
+    # during package merge, silently dropping mode restoration/startup feedback.
+    priority: -100
+    then:
+      - if:
+          condition:
+            lambda: return !wifi::global_wifi_component->has_sta();
+          then:
+            - logger.log: "V2_BLE_SETUP first-install window open for 10 minutes"
+            - ble.enable:
+            - script.execute: v2_ble_setup_window
+          else:
+            - logger.log: "V2_BLE_SETUP saved Wi-Fi present; Bluetooth stays disabled"
+
+wifi:
+  on_connect:
+    - script.execute: v2_ble_setup_finish
+
+script:
+  - id: v2_ble_setup_window
+    mode: single
+    then:
+      - delay: 10min
+      - lambda: id(v2_ble_improv).stop();
+      - ble.disable:
+      - logger.log: "V2_BLE_SETUP window closed; USB provisioning remains available"
+  - id: v2_ble_setup_finish
+    mode: restart
+    then:
+      # Improv clients need time to read the success response and HA redirect.
+      - delay: 15s
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - script.stop: v2_ble_setup_window
+            - lambda: id(v2_ble_improv).stop();
+            - ble.disable:
+            - logger.log: "V2_BLE_SETUP connected; Bluetooth disabled for audio operation"

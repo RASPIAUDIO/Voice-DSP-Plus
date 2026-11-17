@@ -1,0 +1,6 @@
+---
+packages:
+  internal: !include zerocore-v2-internal-level.yaml
+esphome:
+  project:
+    version: 0.6.36-speaker-gain.20261110

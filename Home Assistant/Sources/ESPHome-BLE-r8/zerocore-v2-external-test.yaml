@@ -1,0 +1,102 @@
+---
+packages:
+  internal: !include zerocore-v2-speakers.yaml
+esphome:
+  project:
+    version: 0.6.14-ota-quiesce.20261109
+
+text_sensor:
+  - platform: template
+    name: Audio Startup Diagnostics
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 2s
+    lambda: return id(v2_control).startup_diagnostics();
+  - platform: template
+    name: External Amplifier GPIO State
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 500ms
+    lambda: |-
+      if (!id(v2_control).ready()) return std::string("Unavailable");
+      const auto s = id(v2_control).snapshot();
+      char value[80];
+      snprintf(value, sizeof(value), "P0=%02x ENABLE=%u SD_N=%u route=%u", s.port0,
+          (s.port0 & 0x10u) != 0, (s.port0 & 0x80u) != 0, s.route);
+      return std::string(value);
+
+button:
+  - platform: template
+    name: Test External Speaker Low Level
+    entity_category: diagnostic
+    disabled_by_default: false
+    on_press:
+      - script.execute: v2_external_test
+
+script:
+  - id: v2_external_test
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: return id(v2_control).ready() && !id(v2_audio_test_busy);
+          then:
+            - lambda: |-
+                id(v2_audio_test_busy) = true;
+                id(v2_test_previous_volume) = id(v2_player).volume;
+                id(v2_test_previous_mute) = id(v2_player).is_muted();
+            - media_player.stop: v2_player
+            - select.set:
+                id: v2_output_route
+                option: "OFF"
+            - delay: 200ms
+            - select.set:
+                id: v2_channel
+                option: Stereo
+            # Fixed owner-requested test attenuation; no exposed level entity.
+            - lambda: |-
+                id(v2_control).request(VDSP_AUDIO_HT326, 6); // -3 dB
+            - wait_until:
+                condition:
+                  lambda: return id(v2_control).ready() && id(v2_control).snapshot().route == VDSP_AUDIO_HT326;
+                timeout: 8s
+            - if:
+                condition:
+                  lambda: return id(v2_control).ready() && id(v2_control).snapshot().route == VDSP_AUDIO_HT326;
+                then:
+                  - media_player.volume_set:
+                      id: v2_player
+                      volume: 100%
+                  - media_player.unmute: v2_player
+                  - wait_until:
+                      condition:
+                        lambda: return id(v2_player).volume >= 0.99f && !id(v2_player).is_muted();
+                      timeout: 3s
+                  - if:
+                      condition:
+                        lambda: return id(v2_player).volume >= 0.99f && !id(v2_player).is_muted();
+                      then:
+                        - media_player.speaker.play_on_device_media_file:
+                            id: v2_player
+                            media_file: v2_internal_stereo_test_file
+                            announcement: false
+                        - wait_until:
+                            condition:
+                              lambda: return id(v2_player).state == media_player::MEDIA_PLAYER_STATE_PLAYING;
+                            timeout: 5s
+                        - wait_until:
+                            condition:
+                              lambda: return id(v2_player).state != media_player::MEDIA_PLAYER_STATE_PLAYING;
+                            timeout: 10s
+            - media_player.stop: v2_player
+            - lambda: id(v2_control).request(VDSP_AUDIO_OFF);
+            - media_player.volume_set:
+                id: v2_player
+                volume: !lambda return id(v2_test_previous_volume);
+            - delay: 100ms
+            - if:
+                condition:
+                  lambda: return id(v2_test_previous_mute);
+                then:
+                  - media_player.mute: v2_player
+            - lambda: id(v2_audio_test_busy) = false;

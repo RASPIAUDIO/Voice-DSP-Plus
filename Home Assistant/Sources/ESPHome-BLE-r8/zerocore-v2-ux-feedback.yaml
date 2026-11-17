@@ -1,0 +1,142 @@
+---
+packages:
+  baseline: !include zerocore-v2-gesture-directions.yaml
+esphome:
+  project:
+    version: 0.6.43-ui-recovery.20261110
+  on_boot:
+    priority: -100
+    then:
+      - script.execute: v2_startup_feedback
+
+globals:
+  - {id: v2_ui_phase, type: int, initial_value: '0'}
+  - {id: v2_ui_phase_ms, type: uint32_t, initial_value: '0'}
+  - {id: v2_ui_transient, type: int, initial_value: '-1'}
+  - {id: v2_ui_transient_ms, type: uint32_t, initial_value: '0'}
+  - {id: v2_ui_last_sent, type: int, initial_value: '-1'}
+  - {id: v2_ui_progress_sent, type: int, initial_value: '-1'}
+  - {id: v2_ui_session, type: uint32_t, initial_value: '0'}
+  - {id: v2_ui_ha_connected, type: bool, initial_value: 'false'}
+  - {id: v2_startup_done, type: bool, initial_value: 'false'}
+  - {id: v2_startup_owns_route, type: bool, initial_value: 'false'}
+
+switch:
+  - platform: template
+    id: v2_startup_sound_enabled
+    name: Startup Sound
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:music-note
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+interval:
+  - interval: 100ms
+    then:
+      - script.execute: v2_refresh_feedback
+
+button:
+  - platform: template
+    name: Test Startup Feedback
+    entity_category: diagnostic
+    disabled_by_default: true
+    on_press:
+      - script.execute: v2_startup_feedback
+
+script:
+  - id: v2_feedback_transient
+    parameters:
+      state: int
+    then:
+      - lambda: |-
+          id(v2_ui_transient) = state;
+          id(v2_ui_transient_ms) = millis();
+      - script.execute: v2_refresh_feedback
+
+  - id: v2_refresh_feedback
+    then:
+      - lambda: |-
+          if (id(v2_control).update_requested()) return;
+          const auto ui = id(v2_control).xmos_ui_snapshot();
+          if (!ui.available) {
+            id(v2_ui_last_sent) = -1;
+            id(v2_ui_progress_sent) = -1;
+            return;
+          }
+          const uint32_t now = millis();
+          if (id(v2_ui_transient) >= 0 && now - id(v2_ui_transient_ms) >= 1200U)
+            id(v2_ui_transient) = -1;
+          // End/error callbacks can be missed after a disconnect: never retain a
+          // listening/thinking/replying display when Assist is no longer running.
+          if (id(v2_ui_phase) >= 4 && now - id(v2_ui_phase_ms) > 3000U &&
+              !id(v2_assist).is_running()) id(v2_ui_phase) = 0;
+          int wanted = id(v2_ui_phase);
+          if (!id(v2_ui_ha_connected)) wanted = 4;
+          if (!id(v2_startup_done)) wanted = 4;
+          if (id(v2_ui_transient) >= 0) wanted = id(v2_ui_transient);
+          uint32_t remaining = UINT32_MAX, total = 0;
+          for (const auto &timer : id(v2_assist).get_timers()) {
+            if (timer.is_active && timer.seconds_left > 0 && timer.seconds_left < remaining) {
+              remaining = timer.seconds_left;
+              total = timer.total_seconds;
+            }
+          }
+          const auto timer_ui = vdsp_timer_feedback::choose(wanted,
+              id(v2_timer_ringing).state, id(v2_mic_mute).state || id(v2_player).is_muted(),
+              now, remaining != UINT32_MAX, remaining, total);
+          wanted = timer_ui.state;
+          unsigned progress = timer_ui.progress;
+          // Volume replaces idle/countdown only, never mute, Assist or alarms.
+          if (ui.style_available && id(v2_volume_display_active) &&
+              (wanted == 0 || wanted == 12) && !id(v2_timer_ringing).state &&
+              !id(v2_mic_mute).state && !id(v2_player).is_muted()) {
+            wanted = 15;
+            progress = static_cast<unsigned>(std::max(0.0f, std::min(1.0f, id(v2_player).volume)) * 100.0f + 0.5f);
+          }
+          const bool new_session = ui.session_cookie != id(v2_ui_session);
+          if (int(progress) != id(v2_ui_progress_sent) || new_session) {
+            id(v2_control).request_xmos_ui_progress(progress);
+            id(v2_ui_progress_sent) = progress;
+          }
+          if (wanted != id(v2_ui_last_sent) || new_session) {
+            id(v2_control).request_xmos_ui_state(wanted);
+            id(v2_ui_last_sent) = wanted;
+            id(v2_ui_session) = ui.session_cookie;
+            ESP_LOGI("v2_feedback", "LED requested=%d speaker_muted=%d", wanted, id(v2_player).is_muted());
+            ESP_LOGI("v2_startup", "STARTUP_TIMING event=led_request uptime_ms=%lu", static_cast<unsigned long>(millis()));
+          }
+
+  - id: v2_startup_feedback
+    mode: single
+    then:
+      - wait_until:
+          condition:
+            lambda: return id(v2_control).ready() && millis() >= 5000U;
+          timeout: 25s
+      # Release the product-mode boot gate, then let it restore the selected
+      # route and levels. Feedback must never choose or power an output itself.
+      - lambda: id(v2_startup_done) = true;
+      - wait_until:
+          condition:
+            lambda: return id(v2_active_mode) >= 0 && !id(v2_mode_busy);
+          timeout: 40s
+      - delay: 300ms
+      - if:
+          condition:
+            lambda: |-
+              return id(v2_startup_sound_enabled).state && id(v2_active_mode) >= 0 &&
+                  !id(v2_mode_busy) && id(v2_control).ready() &&
+                  !id(v2_control).update_requested() && !id(v2_audio_test_busy) &&
+                  id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE &&
+                  !id(v2_assist).is_running() && !id(v2_dispatch_wake).is_running() &&
+                  !id(v2_timer_ringing).state;
+          then:
+            - script.execute: {id: v2_ui_sound, cue: 5}
+            - script.wait: v2_ui_sound
+      - script.execute: v2_refresh_feedback
+
+media_player:
+  - id: !extend v2_player
+    files:
+      - {id: v2_startup_sound, file: assets/voice-pe/center_button_long_press.flac}

@@ -1,0 +1,141 @@
+---
+# Paired ESP32/XMOS release, installed only on explicit user request.
+http_request:
+  id: v2_firmware_http
+  verify_ssl: true
+  timeout: 15s
+
+ota:
+  - platform: http_request
+    id: v2_http_ota
+    on_begin:
+      - voice_assistant.stop:
+      - micro_wake_word.stop:
+      - media_player.stop: v2_player
+      - lambda: |-
+          // Synchronous pre-write barrier, also used by native ESPHome OTA.
+          if (!id(v2_control).prepare_update()) {
+            ESP_LOGE("v2_update", "Worker stop timeout; abort HTTP OTA by reboot");
+            App.safe_reboot();
+          }
+    on_error:
+      - lambda: |-
+          if (id(v2_control).update_requested()) App.safe_reboot();
+
+update:
+  - platform: http_request
+    id: v2_firmware_update
+    name: ESP32 + XMOS Firmware
+    entity_category: config
+    disabled_by_default: false
+    source: https://raspiaudio.github.io/ZeroCoreS3/VoiceDSPV2/manifest-stable.json
+    http_request_id: v2_firmware_http
+    ota_id: v2_http_ota
+    update_interval: 6h
+
+button:
+  - platform: template
+    name: Diagnostic - Install XMOS in Flash
+    entity_category: diagnostic
+    disabled_by_default: false
+    icon: mdi:memory
+    on_press:
+      - if:
+          condition:
+            lambda: return id(v2_control).ready() && id(v2_player).state == media_player::MEDIA_PLAYER_STATE_IDLE;
+          then:
+            - voice_assistant.stop:
+            - micro_wake_word.stop:
+            - lambda: |-
+                if (id(v2_control).arm_qspi_install()) {
+                  App.safe_reboot();
+                } else {
+                  ESP_LOGE("v2_update", "Persistent install not armed; no QSPI write");
+                }
+          else:
+            - lambda: ESP_LOGW("v2_update", "Persistent install requires ready controller and idle player");
+  - platform: template
+    name: Reload embedded XMOS firmware
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:chip
+    on_press:
+      - script.execute: v2_reload_xmos
+  - platform: template
+    name: Check firmware updates
+    entity_category: config
+    disabled_by_default: false
+    icon: mdi:update
+    on_press:
+      - update.check: v2_firmware_update
+
+script:
+  - id: v2_reload_xmos
+    mode: single
+    then:
+      - voice_assistant.stop:
+      - micro_wake_word.stop:
+      - media_player.stop: v2_player
+      - lambda: |-
+          id(v2_firmware_status).publish_state("Stopping audio - restarting ESP32");
+          if (id(v2_control).prepare_update() && id(v2_control).arm_spi_reload()) {
+            App.safe_reboot();
+          } else {
+            id(v2_firmware_status).publish_state("ERROR - worker stop timeout; full power cycle needed");
+          }
+
+sensor:
+  - platform: template
+    name: Diagnostic - XMOS Flash Phase Progress
+    entity_category: diagnostic
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      return id(v2_control).qspi_status() < 0 ? NAN : float(id(v2_control).qspi_progress());
+  - platform: template
+    name: XMOS loading progress
+    entity_category: diagnostic
+    disabled_by_default: false
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (id(v2_control).spi_boot_status() < 0) return NAN;
+      if (id(v2_control).snapshot().startup.done && id(v2_control).snapshot().error != 0) return NAN;
+      if (id(v2_control).ready()) return 100.0f;
+      return float(id(v2_control).spi_boot_progress());
+
+text_sensor:
+  - platform: template
+    name: Diagnostic - XMOS Flash Installation
+    entity_category: diagnostic
+    update_interval: 1s
+    lambda: return id(v2_control).qspi_diagnostics();
+  - platform: template
+    id: v2_firmware_status
+    name: XMOS firmware status
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 2s
+    lambda: |-
+      if (id(v2_control).update_requested()) return {};
+      if (id(v2_control).existing_boot()) {
+        if (id(v2_control).spi_boot_status() < 0) return std::string("Existing image unavailable - no automatic overwrite");
+        return id(v2_control).ready() ? std::string("Existing image ready - protocol compatible; exact build unverified") : std::string("Waiting for existing XMOS image");
+      }
+      if (id(v2_control).spi_boot_status() < 0)
+        return std::string("ERROR - SPI boot; full power cycle may be required");
+      if (id(v2_control).snapshot().startup.done && id(v2_control).snapshot().error != 0)
+        return std::string("ERROR - audio controller unavailable; see hardware diagnostics");
+      if (id(v2_control).ready()) return std::string("Ready - RAM firmware; QSPI unchanged");
+      if (id(v2_control).spi_boot_status() == 1) return std::string("Loading embedded image into XMOS RAM");
+      if (id(v2_control).spi_boot_status() == 2) return std::string("Image sent - controller not ready");
+      return std::string("Waiting for SPI boot");
+  - platform: template
+    name: Embedded XMOS image SHA256
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 60s
+    lambda: |-
+      return std::string("207b73b9ead1e84769ca4b8b208917ab2c5086fcd809b16edca11e224759c2bc");

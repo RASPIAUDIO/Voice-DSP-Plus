@@ -1,0 +1,10 @@
+---
+packages:
+  product_ui: !include zerocore-v2-product-ui.yaml
+  ble_setup: !include zerocore-v2-ble-provisioning.yaml
+esphome:
+  project:
+    version: 0.6.75-qspi-lab-r8-ble.20261117
+voicedsp_v2:
+  existing_boot: true
+  persistent_install: true

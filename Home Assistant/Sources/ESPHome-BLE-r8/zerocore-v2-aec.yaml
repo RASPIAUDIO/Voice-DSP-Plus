@@ -1,0 +1,32 @@
+---
+packages:
+  baseline: !include zerocore-v2-doa.yaml
+text_sensor:
+  - platform: template
+    name: AEC Profile State
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 2s
+    lambda: |-
+      const auto s=id(v2_control).xmos_ui_snapshot().aec;
+      char b[80];
+      snprintf(b,sizeof(b),"profile=%u valid=%d error=%d",s.profile,s.profile_valid,s.profile_error);
+      return std::string(b);
+interval:
+  - interval: 500ms
+    then:
+      - lambda: |-
+          id(v2_control).request_aec_product_mode(
+              id(v2_control).ready() &&
+              id(v2_control).snapshot().route == VDSP_AUDIO_HT326,
+              id(v2_control).ready() &&
+              id(v2_control).snapshot().route == VDSP_AUDIO_DAC_SPEAKERS);
+binary_sensor:
+  - platform: template
+    name: External AEC Mono Reference
+    entity_category: diagnostic
+    disabled_by_default: false
+    lambda: |-
+      return id(v2_control).ready() &&
+          id(v2_control).snapshot().route == VDSP_AUDIO_HT326 &&
+          id(v2_channel).current_option() != "Stereo";

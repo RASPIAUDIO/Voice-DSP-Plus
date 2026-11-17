@@ -1,0 +1,121 @@
+---
+packages:
+  baseline: !include zerocore-v2-ux-feedback.yaml
+esphome:
+  project:
+    version: 0.6.46-doa-selected.20261110
+sensor:
+  - platform: template
+    name: XMOS DOA Angle 0
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.angles_valid || uint32_t(millis() - s.angles_ms) > 1500) return NAN;
+      return s.azimuths[0] * 57.295779513f;
+  - platform: template
+    name: XMOS DOA Energy 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.energies_valid || uint32_t(millis() - s.energies_ms) > 1500) return NAN;
+      return s.energies[0];
+  - platform: template
+    name: XMOS DOA Angle 1
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.angles_valid || uint32_t(millis() - s.angles_ms) > 1500) return NAN;
+      return s.azimuths[1] * 57.295779513f;
+  - platform: template
+    name: XMOS DOA Energy 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.energies_valid || uint32_t(millis() - s.energies_ms) > 1500) return NAN;
+      return s.energies[1];
+  - platform: template
+    name: XMOS DOA Angle 2
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.angles_valid || uint32_t(millis() - s.angles_ms) > 1500) return NAN;
+      return s.azimuths[2] * 57.295779513f;
+  - platform: template
+    name: XMOS DOA Energy 2
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.energies_valid || uint32_t(millis() - s.energies_ms) > 1500) return NAN;
+      return s.energies[2];
+  - platform: template
+    name: XMOS DOA Angle 3
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.angles_valid || uint32_t(millis() - s.angles_ms) > 1500) return NAN;
+      return s.azimuths[3] * 57.295779513f;
+  - platform: template
+    name: XMOS DOA Energy 3
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.energies_valid || uint32_t(millis() - s.energies_ms) > 1500) return NAN;
+      return s.energies[3];
+  - platform: template
+    name: XMOS DOA Selected 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.selected_valid || uint32_t(millis() - s.selected_ms) > 1500) return NAN;
+      return s.selected[0] * 57.295779513f;
+  - platform: template
+    name: XMOS DOA Selected 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 400ms
+    accuracy_decimals: 3
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.selected_valid || uint32_t(millis() - s.selected_ms) > 1500) return NAN;
+      return s.selected[1] * 57.295779513f;
+text_sensor:
+  - platform: template
+    name: XMOS DOA Geometry
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 2s
+    lambda: |-
+      const auto s = id(v2_control).xmos_ui_snapshot();
+      if (!s.geometry_valid) return std::string("unavailable err=") + std::to_string(s.doa_error);
+      char b[220];
+      snprintf(b, sizeof(b), "%.4f,%.4f,%.4f;%.4f,%.4f,%.4f;%.4f,%.4f,%.4f;%.4f,%.4f,%.4f",
+        s.geometry[0], s.geometry[1], s.geometry[2], s.geometry[3], s.geometry[4], s.geometry[5],
+        s.geometry[6], s.geometry[7], s.geometry[8], s.geometry[9], s.geometry[10], s.geometry[11]);
+      return std::string(b);

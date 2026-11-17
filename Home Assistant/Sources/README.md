@@ -1,19 +1,19 @@
 # Home Assistant sources
 
-Source package for **Voice DSP+ 0.6.75**, with the owner-accepted native device UI,
+Source package for **Voice DSP+ 0.6.75 r8**, with the owner-accepted native device UI,
 idle-time mode/filter application and existing timer/PAJ functionality.
 [Install the original binary](../Firmware/README.md) | [Provenance](../../UPSTREAM.md)
 
 ## ESP32
 
-`ESPHome/zerocore-v2-web.yaml` is the entry point. Local packages, components,
+`ESPHome-BLE-r8/zerocore-v2-web.yaml` is the entry point. Local packages, components,
 models, UI sounds, dependency lock and the exact embedded XMOS image are included.
 The developer's absolute build directory was removed and the local Improv path
 in the reference lock file was made relative; firmware logic is unchanged.
 Wi-Fi is provisioned after installation; no personal credentials are included.
 
 Use Python 3.12 with **ESPHome 2026.8.1** (ESP-IDF 5.5.5 in the dependency lock). In a virtual
-environment, from `ESPHome/`:
+environment, from `ESPHome-BLE-r8/`:
 
 ```sh
 python -m pip install esphome==2026.8.1
@@ -29,7 +29,8 @@ automatically an acoustically validated release.
 ## Matching XMOS source
 
 `XMOS/` contains the source changes for the exact I2S/UI image embedded in ESP32,
-including the 0.6.67 LED controls. Versions 0.6.68 through 0.6.75 do not change XMOS.
+including the 0.6.67 LED controls. The r8 processing payload is unchanged; ESP32 additionally bundles persistent
+installation and RAM-writer images used only by explicit actions.
 Use the shared [reconstruction tool](../../USB/Sources/prepare_xmos.py) with your
 licensed XVF3800 3.2.1 archive:
 
@@ -48,9 +49,10 @@ cmake --preset rel_app_xvf3800_windows -DVOICEDSP_V2_CAPTURE=ON -DPython3_EXECUT
 cmake --build build/app_xvf3800 --target application_xvf3800_v2-i2s-ui-intdev-lr48-auto-rpi-i2c-doa-neopixel
 ```
 
-The ESP32 sends its embedded SPI image to XMOS RAM on every boot. This version
-does not install a persistent XMOS QSPI image. The USB release has a different
-transport and cannot be substituted here.
+Routine r8 startup resumes persistent XMOS I2S. Explicit Install XMOS in Flash
+and temporary Reload embedded XMOS firmware actions are distinct. Blank boards
+need initial I2S Safe Recovery provisioning. The standalone USB firmware uses
+a different transport and cannot be substituted here.
 
 Do not replace AEC profiles or crossover defaults with another mode's values.
 This package deliberately preserves the previously accepted settings.

@@ -1,0 +1,112 @@
+---
+packages:
+  speaker_gain: !include zerocore-v2-speaker-gain.yaml
+esphome:
+  project:
+    version: 0.6.37-power-diagnostics.20261110
+
+binary_sensor:
+  - platform: template
+    name: Power - PD Reading Valid
+    entity_category: diagnostic
+    disabled_by_default: false
+    lambda: return id(v2_control).power_diagnostic_fresh();
+
+text_sensor:
+  - platform: template
+    name: Power - Power Good
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 2s
+    lambda: |-
+      if (!id(v2_control).io_diagnostic_fresh()) return std::string("Unavailable");
+      return std::string(id(v2_control).snapshot().pg ? "HIGH" : "LOW");
+  - platform: template
+    name: Power - USB Type
+    disabled_by_default: false
+    update_interval: 2s
+    lambda: |-
+      if (!id(v2_control).power_diagnostic_fresh()) return std::string("Unavailable");
+      switch (id(v2_control).snapshot().power_sample.kind) {
+        case VDSP_POWER_UNATTACHED: return std::string("USB-C unattached");
+        case VDSP_POWER_5V: return std::string("USB 5 V without explicit PD contract");
+        case VDSP_POWER_PD: return std::string("USB-C Power Delivery");
+        default: return std::string("Attached - contract unknown");
+      }
+  - platform: template
+    name: Power - USB-C Orientation
+    entity_category: diagnostic
+    disabled_by_default: false
+    update_interval: 2s
+    lambda: |-
+      if (!id(v2_control).power_diagnostic_fresh()) return std::string("Unavailable");
+      const auto p = id(v2_control).snapshot().power_sample;
+      if (!p.attached) return std::string("Unattached");
+      return std::string(p.cc2 ? "CC2" : "CC1");
+  - platform: template
+    name: Power - HUSB238 Registers
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 5s
+    lambda: |-
+      if (!id(v2_control).power_diagnostic_fresh()) return std::string("Unavailable");
+      const auto p = id(v2_control).snapshot().power_sample;
+      char value[80];
+      snprintf(value, sizeof(value), "STATUS0=0x%02X STATUS1=0x%02X response=%u",
+        p.raw_status0, p.raw_status1, p.response);
+      return std::string(value);
+  - platform: template
+    name: Power - Read Diagnostics
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 5s
+    lambda: |-
+      const auto s = id(v2_control).snapshot();
+      char value[96];
+      snprintf(value, sizeof(value), "fresh=%u last_rc=%d errors=%lu; read only",
+        id(v2_control).power_diagnostic_fresh(), s.power_error,
+        static_cast<unsigned long>(s.power_errors));
+      return std::string(value);
+
+sensor:
+  - platform: template
+    name: Power - PD Contract Voltage
+    disabled_by_default: false
+    unit_of_measurement: V
+    accuracy_decimals: 1
+    update_interval: 2s
+    lambda: |-
+      if (!id(v2_control).power_diagnostic_fresh()) return NAN;
+      const auto p = id(v2_control).snapshot().power_sample;
+      return p.kind == VDSP_POWER_PD ? p.contract_mv / 1000.0f : NAN;
+  - platform: template
+    name: Power - PD Contract Current
+    disabled_by_default: false
+    unit_of_measurement: A
+    accuracy_decimals: 2
+    update_interval: 2s
+    lambda: |-
+      if (!id(v2_control).power_diagnostic_fresh()) return NAN;
+      const auto p = id(v2_control).snapshot().power_sample;
+      return p.kind == VDSP_POWER_PD ? p.contract_ma / 1000.0f : NAN;
+  - platform: template
+    name: Power - PD Contract Power
+    disabled_by_default: false
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    update_interval: 2s
+    lambda: |-
+      if (!id(v2_control).power_diagnostic_fresh()) return NAN;
+      const auto p = id(v2_control).snapshot().power_sample;
+      return p.kind == VDSP_POWER_PD ? p.contract_mw / 1000.0f : NAN;
+  - platform: template
+    name: Power - Advertised USB 5V Current
+    entity_category: diagnostic
+    disabled_by_default: false
+    unit_of_measurement: A
+    accuracy_decimals: 2
+    update_interval: 2s
+    lambda: |-
+      if (!id(v2_control).power_diagnostic_fresh()) return NAN;
+      const auto p = id(v2_control).snapshot().power_sample;
+      return p.kind == VDSP_POWER_5V && p.legacy_current_known ? p.legacy_ma / 1000.0f : NAN;

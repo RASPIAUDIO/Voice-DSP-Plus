@@ -1,0 +1,32 @@
+---
+# Additive offline candidate; includes the unchanged audio/Assist configuration.
+packages:
+  audio: !include zerocore-v2-active.yaml
+esphome:
+  name: voicedsp-v2-buttons-dev
+  friendly_name: VoiceDSP V2 Buttons Development
+  project:
+    version: 0.6.1-buttons-dev.20261007
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [voicedsp_v2_buttons]
+voicedsp_v2_buttons:
+  controller: v2_control
+  up:
+    name: Navigation Up
+    disabled_by_default: false
+  down:
+    name: Navigation Down
+    disabled_by_default: false
+  left:
+    name: Navigation Left
+    disabled_by_default: false
+  right:
+    name: Navigation Right
+    disabled_by_default: false
+  available:
+    name: Navigation Inputs Available
+    entity_category: diagnostic
+    disabled_by_default: true

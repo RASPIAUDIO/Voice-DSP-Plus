@@ -1,0 +1,28 @@
+---
+# Offline candidate: no automatic gesture-to-audio actions.
+packages:
+  buttons: !include zerocore-v2-buttons.yaml
+esphome:
+  name: voicedsp-v2-gestures-dev
+  friendly_name: VoiceDSP V2 Gestures Development
+  project:
+    version: 0.6.2-gestures-dev.20261007
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [voicedsp_v2_gestures]
+voicedsp_v2_gestures:
+  controller: v2_control
+  sensor_axes: pixart_v15_front_view
+  gesture:
+    name: Gesture Sensor Frame
+    disabled_by_default: false
+  available:
+    name: Gesture Inputs Available
+    entity_category: diagnostic
+    disabled_by_default: false
+  diagnostic:
+    name: Gesture Raw Diagnostics
+    entity_category: diagnostic
+    disabled_by_default: true
