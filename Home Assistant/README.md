@@ -4,11 +4,40 @@
 answers and hands-free controls to Home Assistant. Use your own speakers or
 the corresponding Voice Compact / Full Speaker assembly.
 
-[Install Home Assistant V2](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2) |
+[Quick start: Voice Compact](#quick-start-voice-compact) |
+[Prepare a DIY board](#prepare-a-diy-or-unprovisioned-board) |
 [Download 0.6.75 r8](Firmware/README.md) | [ESPHome sources](Sources/README.md) |
 [All three setups](../README.md)
 
-## Install in five steps
+## Quick start: Voice Compact
+
+If your Voice Compact already runs the BLE-enabled Home Assistant firmware,
+just plug it in. You do not need to flash it or connect it to a computer.
+
+1. Power on your **Voice Compact** and turn on Bluetooth on your phone.
+2. Open the **Home Assistant** mobile app. Go to **Settings > Devices & services**.
+   Under **Discovered**, look for **`voicedsp-v2-xxxxxx`**, labeled **Improv via BLE**.
+   The suffix is different for each unit.
+3. Tap **Add** on that card, then enter the name and password for your **2.4 GHz
+   Wi-Fi** network and submit.
+
+<img src="Documentation/assets/voice-dsp-v2-improv-ble-discovery.jpg" width="360" alt="Home Assistant mobile app: a Voice DSP V2 card under Discovered, labeled Improv via BLE, with the Add button">
+
+Once the device joins Wi-Fi, accept the **ESPHome** discovery in the same menu
+if prompted. Select your Assist pipeline, wait for **Diagnostic - XMOS firmware
+status: Ready**, then try **Hey Jarvis**. Start with a low playback volume.
+
+**Don't see it?** For this discovery screen, your Home Assistant instance needs
+a working [Bluetooth integration](https://www.home-assistant.io/integrations/bluetooth/)
+and an adapter or a [Bluetooth proxy](https://www.home-assistant.io/connectivity/bluetooth/)
+that supports connections and is within range. Bluetooth on the phone alone
+does not replace that connection. On r8, a device without saved Wi-Fi advertises
+for ten minutes after startup; power-cycle it to reopen that window. If Wi-Fi
+is already configured, look for **ESPHome** instead. If BLE is unavailable,
+use the **VoiceDSP V2 Setup** access point (password `voicedsp-setup`) or serial
+Improv via the ZeroCore USB port.
+
+## Prepare a DIY or unprovisioned board
 
 1. With power off, mount **RASPIAUDIO ZeroCore S3** on **Voice DSP+ V2**.
    You need Home Assistant, 2.4 GHz Wi-Fi and a USB data cable. Remove any Pi.
@@ -18,14 +47,9 @@ the corresponding Voice Compact / Full Speaker assembly.
 3. Open [RASPIAUDIO Apps: V2 installer](https://apps.raspiaudio.com/#device=ZeroCoreS3&application=VoiceDSPV2)
    in Chrome/Edge. ZeroCore S3 / Voice DSP+ V2 **0.6.75 r8** is preselected.
    Connect and Install. An erased install removes saved settings.
-4. Configure Wi-Fi using serial Improv through the installer. Alternatively use
-   the fallback **VoiceDSP V2 Setup** access point (password `voicedsp-setup`).
-   BLE Improv is also available for ten minutes when no Wi-Fi is saved, using a
-   compatible nearby client. Bluetooth stops after setup and stays off with saved
-   Wi-Fi. A Home Assistant VM needs working Bluetooth access for BLE provisioning.
-5. Add the discovered ESPHome device in Home Assistant. Wait for **Diagnostic -
-   XMOS firmware status: Ready**, select your Assist pipeline, then
-   try **Hey Jarvis**. Start with a low playback volume.
+4. Configure Wi-Fi with serial Improv through the installer or follow the
+   [Bluetooth quick start](#quick-start-voice-compact) above. Then add the device
+   through ESPHome and select your Assist pipeline.
 
 Manual fallback: download the [factory image](Firmware/voicedsp-v2-0.6.75-r8-ble.factory.bin)
 and select it in [ESPHome Web](https://web.esphome.io/). The web installer and
