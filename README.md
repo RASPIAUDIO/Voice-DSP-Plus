@@ -1,6 +1,6 @@
-![Voice DSP+ V2: USB, Home Assistant and Raspberry Pi](Raspberry%20Pi/Documentation/assets/voice-dsp-guide.svg)
-
 # Voice DSP+ V2
+
+<a href="https://raspiaudio.com/product/voicedsp/"><img src="docs/images/voice-dsp-plus-v2-front.webp" width="280" alt="Voice DSP+ V2 board, front view with its four buttons and LED ring"></a>
 
 **Give your project a voice. Choose your microphones, speakers and host.**
 
@@ -19,6 +19,8 @@ speaker system with your own application.
 > Do not mix V1 and V2 firmware or pinouts.
 
 ## Choose your setup
+
+![Voice DSP+ V2: USB, Home Assistant and Raspberry Pi](Raspberry%20Pi/Documentation/assets/voice-dsp-guide.svg)
 
 | USB | Home Assistant | Raspberry Pi |
 | --- | --- | --- |
