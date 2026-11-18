@@ -56,6 +56,32 @@ speaker or an enclosure with its own passive crossover can use flat external mod
 Do not directly parallel two 4 ohm drivers into a 2 ohm load. Do not connect a
 70/100 V distributed-audio speaker without a suitable interface.
 
+### Connect a passive external speaker
+
+**1. Disconnect power and identify the pair.** With the board oriented as in
+this photo, the green terminal reads **R+ | R- | L- | L+** from left to right.
+For one 4 or 8 ohm passive full-range speaker, use either complete pair and
+leave the other pair empty. Match the speaker's `+` and `-` markings; do not
+wire across the two channels or share a return.
+
+![Green terminal close-up showing R+, R-, L-, L+ from left to right](assets/external-speaker-pinout.png)
+
+**2. Secure both wires.** With power still disconnected, open each terminal
+clamp with a small screwdriver, insert the stripped end in the wire opening,
+then secure it. Tug gently to check the connection and make sure no bare strand
+can touch the next terminal.
+
+![Close-up of a speaker wire at an individual terminal on the green connector](assets/external-speaker-wire-detail.png)
+
+**3. Check the wiring, then select External.** In this example, red is on
+**R+** and black is on **R-**; the L pair is empty. For Raspberry Pi, plug
+[USB-C PD into Voice DSP+ only](#power), then select **External** in
+[Voice DSP+ Output](../README.md#choose-where-the-sound-plays) and test at low volume.
+
+![One passive speaker wired to the right pair, with red on R+ and black on R-](assets/external-speaker-right-channel.png)
+
+### Full Speaker: separate woofer and tweeter
+
 For the measured two-way enclosure: **red/black woofer wires -> L (P2)**;
 **tweeter -> R (P1)**. Select Full Speaker, not flat external. Both channels carry
 the same mono program through different frequency filters, not stereo music.

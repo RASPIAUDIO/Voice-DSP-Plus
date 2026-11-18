@@ -95,7 +95,8 @@ from the application menu. External and Full Speaker ask you to confirm PD wirin
 The photo's **2 x 20 W** label identifies the external terminal. The [published
 amplifier capability](https://raspiaudio.com/product/voicedsp/) is **up to 2 x 25 W**
 with 4 ohm speakers and a suitable 20 V PD supply, not guaranteed continuous power.
-See [speaker wiring and polarity](Documentation/hardware.md#speaker-connections).
+See [how to connect a passive external speaker](Documentation/hardware.md#connect-a-passive-external-speaker)
+for the illustrated wiring steps and terminal polarity.
 
 > **External / Full Speaker:** connect USB-C PD directly to Voice DSP+
 > (65 W or more recommended, with a 20 V profile). Do not also power the Pi
