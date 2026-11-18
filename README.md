@@ -72,6 +72,7 @@ The XMOS handles audio processing; the Pi runs your software.
 
 [Getting started](Raspberry%20Pi/README.md) |
 [Desktop audio and output guide](Raspberry%20Pi/README.md#4-use-it-like-a-sound-card) |
+[Hear the AEC demo](Raspberry%20Pi/README.md#hear-the-aec-on-raspberry-pi-4) |
 [AEC, DOA and raw captures](Raspberry%20Pi/Documentation/raspberry-pi-controls.md) |
 [40-pin pinout](Raspberry%20Pi/Documentation/pinout.md)
 

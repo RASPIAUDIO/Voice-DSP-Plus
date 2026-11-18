@@ -11,6 +11,8 @@ validated AEC policy on internal and external outputs.
 **[Download the installer](Firmware/voicedsp-v2-pi48-r8.run)** |
 [Checksums and firmware](Firmware/README.md) | [Source code](Sources/README.md)
 
+[Watch the Raspberry Pi 4 AEC demo](#hear-the-aec-on-raspberry-pi-4)
+
 ## 1. Connect
 
 ![Voice DSP+ powers the Pi through the header; use one PD supply](Documentation/assets/pi-connection.svg)
@@ -113,6 +115,15 @@ system audio icons for volume or mute.
 arecord -r 48000 -c 1 -f S16_LE -d 8 my-voice.wav
 aplay my-voice.wav
 ```
+
+## Hear the AEC on Raspberry Pi 4
+
+**[Watch the 2-minute demo with sound](https://raspiaudio.com/product/voicedsp/#raspberry-pi-aec-demo)**
+
+A Voice DSP+ V2 on a Raspberry Pi 4 plays a beat through an external speaker
+while recording speech through the processed microphone at 48 kHz. The video
+then plays back the recording so you can hear how much of the beat remains.
+This is a listening demo, not an AEC on/off comparison or a measured benchmark.
 
 ## Controls and development
 
