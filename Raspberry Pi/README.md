@@ -59,28 +59,60 @@ QSPI is not rewritten. This is an audio kit, not a bundled wake-word or HA app.
 
 ## 4. Use it like a sound card
 
-- **Speaker / microphone icons:** left-click for volume/mute; right-click for
-  device selection. It may appear as **VoiceDSP V2 I2S**.
-- **Voice DSP+ Output:** choose Internal, External or Full Speaker from the
-  tray or application menu. External modes ask for PD wiring confirmation.
-- **Volume:** internal hardware gain is 0 dB; desktop volume starts at 25%
-  and is subsequently remembered. Start quietly.
+After reboot, the desktop setup makes Voice DSP+ the default audio device.
+To check or change it, use the icons in the **top-right panel**:
+
+### Select the speaker and microphone
+
+**Playback:** right-click the **speaker** icon and select **VoiceDSP V2 I2S**.
+
+![Raspberry Pi OS speaker menu with VoiceDSP V2 I2S selected](Documentation/assets/pi-desktop-speaker-menu.png)
+
+**Recording:** right-click the **microphone** icon and select **VoiceDSP V2 I2S**.
+
+![Raspberry Pi OS microphone menu with VoiceDSP V2 I2S selected](Documentation/assets/pi-desktop-microphone-menu.png)
+
+### Choose where the sound plays
+
+Open **Voice DSP+ Output**, the speaker-in-a-screen icon at the **far left of
+the tray icons shown below**, and choose **Internal**, **External** or
+**Full Speaker**. This changes the physical output without changing the
+**VoiceDSP V2 I2S** device in Raspberry Pi OS. You can also open the selector
+from the application menu. External and Full Speaker ask you to confirm PD wiring.
+
+![Voice DSP+ Output tray menu with Internal, External and Full Speaker](Documentation/assets/pi-desktop-output-menu.png)
+
+| Output | Connector and use |
+| --- | --- |
+| **Internal** | The two small **CN3/CN4** stereo speaker connectors, outlined in green and labeled **2 x 1 W** in the photo. The Pi kit was tested with 8 ohm loads. |
+| **External** | The large **green screw terminal** (P1/P2), outlined in red below. Connect suitable 4 or 8 ohm passive full-range speakers or an enclosure with its own passive crossover. |
+| **Full Speaker** | The **same green terminal**, not a third connector. The matched [Voice DSP Full Speaker](https://raspiaudio.com/product/voicedsp-speaker/) profile splits one mono signal with an active crossover: **L = woofer**, **R = tweeter**. This is not a stereo pair. |
+
+![Voice DSP+ V2 rear: green external terminal outlined in red, small internal speaker connectors outlined in green](Documentation/assets/voice-dsp-v2-speaker-connectors.png)
+
+The photo's **2 x 20 W** label identifies the external terminal. The [published
+amplifier capability](https://raspiaudio.com/product/voicedsp/) is **up to 2 x 25 W**
+with 4 ohm speakers and a suitable 20 V PD supply, not guaranteed continuous power.
+See [speaker wiring and polarity](Documentation/hardware.md#speaker-connections).
+
+> **External / Full Speaker:** connect USB-C PD directly to Voice DSP+
+> (65 W or more recommended, with a 20 V profile). Do not also power the Pi
+> through its own USB-C port.
+
+**Never select unfiltered External for a bare tweeter.** Full Speaker's LR4
+9500 Hz / 0 and -6 dB trims belong to the tested assembly, not a universal preset.
+
+### Try a short recording
+
+Start quietly. At core boot the output is OFF/-30 dB; desktop startup then
+selects Internal at hardware 0 dB, with the desktop volume initially at 25%.
+This Pi kit remembers desktop volume, not the output route. Left-click the
+system audio icons for volume or mute.
 
 ```sh
 arecord -r 48000 -c 1 -f S16_LE -d 8 my-voice.wav
 aplay my-voice.wav
 ```
-
-| Output | What to connect |
-| --- | --- |
-| Internal | Two small internal speakers, tested with 8 ohm loads |
-| External | Full-range passive speaker or enclosure with passive crossover |
-| Full Speaker | Matched L woofer / R tweeter, validated active crossover |
-
-**Never select unfiltered External for a bare tweeter.** Full Speaker's LR4
-9500 Hz / 0 and -6 dB trims belong to the tested assembly, not a universal preset.
-At core boot the output is OFF/-30 dB; desktop startup then selects Internal
-at hardware 0 dB. The route itself is not persisted by this Pi kit.
 
 ## Controls and development
 

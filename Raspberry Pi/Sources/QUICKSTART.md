@@ -24,10 +24,13 @@ journalctl -u voicedsp-v2-48k-setup.service -b --no-pager
 python3 /opt/voicedsp-v2-48k/scripts/verify_installation.py
 ```
 
-Desktop speaker/microphone default to Voice DSP+. Use the panel icons for
-volume/mute and Voice DSP+ Output for Internal / External / Full Speaker.
-Full Speaker is required for the matched L woofer / R tweeter assembly;
-unfiltered External is only for full-range speakers or passive crossovers.
+Desktop speaker and microphone default to Voice DSP+. In the top-right panel,
+right-click each icon to select **VoiceDSP V2 I2S**. Open the separate
+**Voice DSP+ Output** tray icon to choose **Internal**, **External** or
+**Full Speaker**. External and Full Speaker use the same green screw terminal;
+Full Speaker is for the matched L woofer / R tweeter assembly, while unfiltered
+External is for full-range speakers or passive crossovers. See the
+[illustrated desktop and wiring guide](https://github.com/RASPIAUDIO/Voice-DSP-Plus/blob/V2/Raspberry%20Pi/README.md#4-use-it-like-a-sound-card).
 
 The core starts OFF/-30 dB; desktop setup selects Internal at hardware 0 dB,
 initially 25% desktop volume. The desktop volume is remembered, not the route.

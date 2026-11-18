@@ -71,6 +71,7 @@ The XMOS handles audio processing; the Pi runs your software.
 > **Never power both USB-C inputs at once.**
 
 [Getting started](Raspberry%20Pi/README.md) |
+[Desktop audio and output guide](Raspberry%20Pi/README.md#4-use-it-like-a-sound-card) |
 [AEC, DOA and raw captures](Raspberry%20Pi/Documentation/raspberry-pi-controls.md) |
 [40-pin pinout](Raspberry%20Pi/Documentation/pinout.md)
 
